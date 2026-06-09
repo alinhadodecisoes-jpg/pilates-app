@@ -7,9 +7,9 @@ export function Sidebar() {
 
   return (
     <div className="w-64 bg-daimach-dark text-daimach-light p-4 min-h-screen border-r border-daimach-primary/20">
-      <div className="flex items-center gap-2 mb-6">
-        <img src="/logo.svg" alt="Daimach" className="h-8" />
-        <h2 className="text-xl font-bold">Daimach</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <img src="/images/logo-daimach-oficial.jpeg" alt="Daimach" className="h-10 w-10 rounded" />
+        <h2 className="text-xl font-bold text-daimach-light">Daimach</h2>
       </div>
 
       {role === 'admin' && (
