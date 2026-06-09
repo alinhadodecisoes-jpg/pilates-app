@@ -1,0 +1,243 @@
+================================================================================
+                    TESTE MANUAL DE LOGIN — PILATES APP
+================================================================================
+Data: 08/06/2026
+Hora: 21:26 (após correções)
+Servidor: npm run dev
+
+================================================================================
+PASSO 1: PREPARAÇÃO
+================================================================================
+
+1. Abrir PowerShell ou Terminal
+2. Navegar para: cd C:\Users\willa\pilates-app
+3. Verificar que o servidor está rodando:
+   npm run dev
+4. Aguardar até ver: "✓ Ready in XXXms"
+
+================================================================================
+PASSO 2: TESTE DE REGISTRO
+================================================================================
+
+ABRIR ABA ANÔNIMA (Ctrl+Shift+P no Chrome/Firefox)
+
+URL: http://localhost:3000/register
+
+Preencher formulário:
+┌─────────────────────────────────────────────────┐
+│ Nome: Teste Silva                              │
+│ Email: teste.novo.20260608.001@gmail.com       │
+│ Senha: Teste123!                               │
+│ Confirmar Senha: Teste123!                     │
+│ [X] Criar Conta                                │
+└─────────────────────────────────────────────────┘
+
+RESULTADO ESPERADO:
+✅ Mensagem verde: "Cadastro realizado! Faça login com suas credenciais."
+✅ Redireciona para /login (NÃO é loop)
+✅ F12 → Console: SEM erro vermelho
+
+REGISTRAR RESULTADO:
+[ ] Sucesso
+[ ] Erro (descrever qual)
+
+================================================================================
+PASSO 3: TESTE DE LOGIN COM EMAIL
+================================================================================
+
+URL: http://localhost:3000/login
+
+Preencher formulário:
+┌─────────────────────────────────────────────────┐
+│ Email: teste.novo.20260608.001@gmail.com       │
+│ Senha: Teste123!                               │
+│ [Entrar com E-mail]                            │
+└─────────────────────────────────────────────────┘
+
+AÇÕES:
+1. Clique no botão "Entrar com E-mail"
+2. Aguarde o spinner: "Entrando..."
+3. Verifique URL na barra de endereço
+
+RESULTADO ESPERADO:
+✅ URL muda para: http://localhost:3000/aluno/dashboard
+✅ Página carrega com:
+   - Logo Daimach (imagem oficial no topo)
+   - Título "Daimach.Movement"
+   - Cards com "Próxima Aula", "Status de Mensalidade", "Plano Atual"
+✅ NÃO volta para /login (sem loop)
+✅ F12 → Console: SEM erro 406/409
+
+REGISTRAR RESULTADO:
+[ ] Sucesso (foi para /aluno/dashboard)
+[ ] Falha (descrever qual)
+[ ] Erro no console (copiar mensagem exata)
+
+================================================================================
+PASSO 4: TESTE DE NAVEGAÇÃO NO DASHBOARD
+================================================================================
+
+DENTRO DO /aluno/dashboard:
+
+Clique em cada menu item e verifique se carrega:
+
+┌────────────────────┐
+│ Dashboard      [ ] │
+├────────────────────┤
+│ Minhas Aulas   [ ] │
+├────────────────────┤
+│ Reposições     [ ] │
+├────────────────────┤
+│ Evolução       [ ] │
+└────────────────────┘
+
+RESULTADO ESPERADO:
+✅ Cada página carrega (pode estar vazia, mas não dá erro)
+✅ Logo e "Daimach.Movement" aparecem em todas as páginas
+✅ Não há redirecionamento automático para /login
+
+REGISTRAR RESULTADO:
+[ ] Dashboard carrega
+[ ] Minhas Aulas carrega
+[ ] Reposições carrega
+[ ] Evolução carrega
+
+================================================================================
+PASSO 5: TESTE DE LOGOUT
+================================================================================
+
+DENTRO DO /aluno/dashboard:
+
+Procure pelo botão "Sair" ou "Logout" (geralmente no canto superior direito ou inferior)
+
+Clique no botão de logout
+
+RESULTADO ESPERADO:
+✅ Redireciona imediatamente para /login
+✅ Todos os dados da sessão são limpos
+✅ Pode fazer login novamente normalmente
+
+REGISTRAR RESULTADO:
+[ ] Logout funciona
+[ ] Volta para /login
+
+================================================================================
+PASSO 6: TESTE DE LOGIN COM GOOGLE (OPCIONAL)
+================================================================================
+
+ABRIR ABA ANÔNIMA NOVA
+
+URL: http://localhost:3000/login
+
+Clique no botão "Entrar com Google"
+
+Após clicar:
+1. Redirecionará para o Google
+2. Clique em seu email (alinhado.decisoes@gmail.com é um exemplo)
+3. Autorize a aplicação
+4. Deverá redirecionar de volta para o app
+
+RESULTADO ESPERADO:
+✅ Autorização do Google funciona
+✅ Redireciona para /aluno/dashboard (ou /admin/dashboard se for admin)
+✅ Sessão é estabelecida com sucesso
+
+REGISTRAR RESULTADO:
+[ ] Google OAuth funciona
+[ ] Redireciona corretamente
+
+================================================================================
+PASSO 7: VERIFICAR CONSOLE (F12)
+================================================================================
+
+Depois de todos os testes:
+
+1. Pressione F12 para abrir Developer Tools
+2. Vá para aba "Console"
+3. Procure por:
+
+❌ ERROS CRÍTICOS (vermelho):
+   - TypeError
+   - 406 Not Acceptable
+   - 409 Conflict
+   - Network error
+
+✅ ADVERTÊNCIAS ACEITÁVEIS (amarelo):
+   - "Unreachable code"
+   - "Deprecation warning"
+
+REGISTRAR RESULTADO:
+[ ] Nenhum erro crítico no console
+[ ] Tem advertências (listar quais)
+[ ] Erros encontrados:
+   ___________________________________________
+
+================================================================================
+RESUMO FINAL
+================================================================================
+
+Complete este checklist:
+
+Teste 1 - Registro:
+[ ] Cadastro realizado
+[ ] Mensagem de sucesso aparece
+[ ] Redireciona para /login (sem loop)
+
+Teste 2 - Login Email:
+[ ] Login aceita email/senha
+[ ] Redireciona para /aluno/dashboard
+[ ] Dashboard carrega com logo e cards
+[ ] Sem loop /login ↔ /aluno/dashboard
+
+Teste 3 - Navegação:
+[ ] Dashboard carrega
+[ ] Minhas Aulas carrega
+[ ] Reposições carrega
+[ ] Evolução carrega
+
+Teste 4 - Logout:
+[ ] Logout funciona
+[ ] Redireciona para /login
+
+Teste 5 - Google:
+[ ] OAuth funciona (opcional)
+
+Teste 6 - Console:
+[ ] Sem erros críticos (406, 409, etc)
+
+================================================================================
+SE ALGUM TESTE FALHAR
+================================================================================
+
+Anote EXATAMENTE:
+1. Qual teste falhou
+2. O que aconteceu (não o que deveria)
+3. Se há erro no console (F12), copie a mensagem inteira
+4. URL que estava na barra de endereço
+
+Exemplo:
+"Teste 2 falhou:
+ - Cliquei em 'Entrar com E-mail'
+ - O spinner apareceu mas ficou preso
+ - Após 10 segundos voltou para /login automaticamente
+ - No console (F12) apareceu erro: 'TypeError: Cannot read property...'
+ - URL voltou para http://localhost:3000/login?error=..."
+
+================================================================================
+PRÓXIMO PASSO APÓS TESTES
+================================================================================
+
+Após completar TODOS os testes acima:
+
+1. Se TODOS passaram ✅:
+   → Sistema está funcionando!
+   → Próximo: Executar SQL no Supabase (desativar RLS)
+   → Depois: Deploy em produção
+
+2. Se ALGUM falhou ❌:
+   → Descreva o erro exato acima
+   → Vamos debugar e corrigir
+
+================================================================================
+FIM DOS TESTES
+================================================================================
