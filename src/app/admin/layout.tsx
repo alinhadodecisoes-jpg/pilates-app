@@ -35,9 +35,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-slate-900 text-slate-50 flex">
       <aside className="flex flex-col w-64 bg-slate-800 border-r border-slate-700 shrink-0">
         <div className="h-16 flex items-center px-5 border-b border-slate-700 space-x-3">
-          <img src="/logo.svg" alt="Logo" width={36} height={36} />
+          <img src="/images/logo-oficial.jpeg" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
-            <p className="font-bold text-white text-sm">Gestão Pilates</p>
+            <p className="font-bold text-white text-sm">Daimach.Movement</p>
             <p className="text-xs text-slate-400">Admin</p>
           </div>
         </div>

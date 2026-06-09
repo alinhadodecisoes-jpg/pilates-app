@@ -84,7 +84,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 text-slate-50">
       <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-700">
         <div className="flex flex-col items-center mb-6">
-          <img src="/logo.svg" alt="Logo" width={48} height={48} className="mb-3" />
+          <img src="/images/logo-oficial.jpeg" alt="Logo" width={72} height={72} className="mb-3 rounded-2xl object-contain shadow-lg" />
           <h2 className="text-2xl font-bold text-white">Criar Conta</h2>
           <p className="text-slate-400 text-sm mt-1">Junte-se ao estúdio de Pilates</p>
         </div>

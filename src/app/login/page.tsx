@@ -83,10 +83,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-daimach-dark text-daimach-light">
       <div className="w-full max-w-md bg-daimach-dark rounded-2xl shadow-xl p-6 sm:p-8 border border-daimach-primary/30">
-        <div className="flex flex-col items-center mb-8">
-          <img src="/images/logo-daimach-oficial.jpeg" alt="Daimach" width={80} height={80} className="mb-4 rounded-lg" />
-          <h2 className="text-3xl font-bold text-daimach-light">Daimach.Movement</h2>
-          <p className="text-daimach-accent text-lg mt-2">Pilates & Fisioterapia</p>
+        <div className="flex flex-col items-center mb-6">
+          <img src="/images/logo-oficial.jpeg" alt="Logo" width={72} height={72} className="mb-3 rounded-2xl object-contain shadow-lg" />
+          <h2 className="text-2xl font-bold text-white">Acesso ao Estúdio</h2>
+          <p className="text-slate-400 text-sm mt-1">Entre com sua conta para continuar</p>
         </div>
 
         {registered && (
