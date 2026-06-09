@@ -75,3 +75,19 @@ export interface DashboardStats {
   inadimplentes: number;
   turmas_ativas: number;
 }
+
+export interface PhysicalTherapySession {
+  id: number;
+  user_id: string;
+  therapist_id?: string | null;
+  session_date: string;
+  therapy_type?: string | null;
+  duration_minutes?: number | null;
+  cost?: number | null;
+  status: 'scheduled' | 'completed' | 'canceled';
+  notes?: string | null;
+  created_at?: string;
+  // joined
+  aluno?: { full_name?: string | null; email?: string | null } | null;
+  therapist?: { full_name?: string | null; email?: string | null } | null;
+}

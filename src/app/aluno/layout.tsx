@@ -36,6 +36,7 @@ export default function AlunoLayout({ children }: { children: React.ReactNode })
     { name: 'Dashboard', path: '/aluno/dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { name: 'Minhas Aulas', path: '/aluno/minhas-aulas', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
     { name: 'Reposições', path: '/aluno/reposicoes', icon: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' },
+    { name: 'Fisioterapia', path: '/aluno/fisioterapia', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
     { name: 'Evolução', path: '/aluno/evolucao', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
   ];
 
