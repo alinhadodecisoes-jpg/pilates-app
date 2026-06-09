@@ -1,17 +1,17 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Pilates Studio',
-  description: 'Sistema de Gestão para Estúdio de Pilates',
+  title: 'Daimach.Movement - Pilates & Fisioterapia',
+  description: 'Gerenciamento completo de Pilates e Fisioterapia',
   appleWebApp: {
-    title: 'Pilates Studio',
-    statusBarStyle: 'default',
+    title: 'Daimach.Movement',
+    statusBarStyle: 'black-translucent',
   },
 };
 
 export const viewport = {
-  themeColor: '#7c3aed',
+  themeColor: '#06b6d4',
 };
 
 export default function RootLayout({
@@ -27,3 +27,4 @@ export default function RootLayout({
     </html>
   );
 }
+

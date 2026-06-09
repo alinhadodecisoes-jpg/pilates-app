@@ -1,11 +1,11 @@
 {
-  "name": "Pilates Studio",
-  "short_name": "Pilates",
-  "description": "Gestão completa para estúdio de Pilates",
+  "name": "Daimach.Movement",
+  "short_name": "Daimach",
+  "description": "Gerenciamento de Pilates e Fisioterapia",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#10b981",
+  "background_color": "#1a1a2e",
+  "theme_color": "#06b6d4",
   "orientation": "portrait",
   "icons": [
     {

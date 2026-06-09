@@ -1,0 +1,15 @@
+﻿.btn-primary {
+  @apply bg-daimach-primary text-daimach-light font-bold py-2 px-4 rounded hover:bg-daimach-primary/90 transition;
+}
+
+.btn-secondary {
+  @apply bg-daimach-secondary text-daimach-light font-bold py-2 px-4 rounded hover:bg-daimach-secondary/90 transition;
+}
+
+.btn-accent {
+  @apply bg-daimach-accent text-daimach-dark font-bold py-2 px-4 rounded hover:bg-daimach-accent/90 transition;
+}
+
+.card-daimach {
+  @apply bg-daimach-dark border border-daimach-primary/30 rounded-lg p-6 hover:border-daimach-primary transition;
+}

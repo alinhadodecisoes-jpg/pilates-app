@@ -81,12 +81,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 text-slate-50">
-      <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-700">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-daimach-dark text-daimach-light">
+      <div className="w-full max-w-md bg-daimach-dark rounded-2xl shadow-xl p-6 sm:p-8 border border-daimach-primary/30">
         <div className="flex flex-col items-center mb-6">
           <img src="/logo.svg" alt="Logo" width={48} height={48} className="mb-3" />
-          <h2 className="text-2xl font-bold text-white">Acesso ao Estúdio</h2>
-          <p className="text-slate-400 text-sm mt-1">Entre com sua conta para continuar</p>
+          <h2 className="text-2xl font-bold text-daimach-light">Daimach.Movement</h2>
+          <p className="text-daimach-light/60 text-sm mt-1">Pilates & Fisioterapia</p>
         </div>
 
         {registered && (
@@ -135,7 +135,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading || googleLoading}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-daimach-primary hover:bg-daimach-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-daimach-dark font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (
               <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Entrando...</>

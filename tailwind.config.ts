@@ -35,6 +35,16 @@ const config: Config = {
           800: '#155e75',
           900: '#164e63',
         },
+        // Cores do Daimach.Movement
+        'daimach-primary': '#06b6d4',    // Turquesa/Aqua
+        'daimach-secondary': '#ec4899',  // Rosa/Magenta
+        'daimach-dark': '#1a1a2e',       // Cinza escuro
+        'daimach-accent': '#fbbf24',     // Ouro/Amarelo
+        'daimach-light': '#f8fafc',      // Cinza claro
+      },
+      backgroundImage: {
+        'daimach-gradient': 'linear-gradient(135deg, #06b6d4 0%, #ec4899 100%)',
+        'daimach-dark-gradient': 'linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%)',
       },
     },
   },
