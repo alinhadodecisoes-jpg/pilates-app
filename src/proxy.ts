@@ -1,61 +1,28 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const pathname = request.nextUrl.pathname
 
-  // Ignorar arquivos estáticos e APIs
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/images') ||
-    pathname === '/' ||
-    pathname === '/register'
-  ) {
-    return NextResponse.next();
+  // Rotas públicas que não precisam de autenticação
+  const publicRoutes = ['/', '/login', '/register', '/api/auth/callback']
+
+  if (publicRoutes.includes(pathname)) {
+    return NextResponse.next()
   }
 
-  const response = NextResponse.next({ request });
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set({ name, value, ...options });
-            response.cookies.set({ name, value, ...options });
-          });
-        },
-      },
-    }
-  );
+  // Verificar sessão do Supabase armazenada em cookie
+  const token = request.cookies.get('sb-access-token')?.value
 
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // LOGIN: não redirecionar quando vem do registro (?registered=true)
-  if (pathname === '/login') {
-    const registered = request.nextUrl.searchParams.get('registered');
-    if (session && !registered) {
-      return NextResponse.redirect(new URL('/aluno/dashboard', request.url));
-    }
-    return response;
+  // Se não tem token e está tentando acessar rota protegida, redirecionar para /login
+  if (!token && (pathname.startsWith('/admin') || pathname.startsWith('/aluno') || pathname.startsWith('/professor'))) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Rotas privadas: exige sessão
-  if (pathname.startsWith('/aluno') || pathname.startsWith('/admin')) {
-    if (!session) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  return response;
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
-};
+}
