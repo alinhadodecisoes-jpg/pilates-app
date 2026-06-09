@@ -91,6 +91,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    // attended / no_show — admin/professor marca presença após a aula
+    if (action === 'attended' || action === 'no_show') {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: action })
+        .eq('session_id', session_id)
+        .eq('user_id', user_id);
+
+      if (error) throw error;
+
+      // Refletir em attendances_pilates para manter histórico (Sprint 1)
+      if (action === 'attended') {
+        const { data: sessionRow } = await supabase
+          .from('class_sessions')
+          .select('session_date, class_id')
+          .eq('id', session_id)
+          .maybeSingle();
+
+        if (sessionRow) {
+          await supabase.from('attendances_pilates').upsert(
+            {
+              user_id,
+              class_id: sessionRow.class_id,
+              date: sessionRow.session_date,
+              status: 'present',
+            },
+            { onConflict: 'user_id,class_id,date', ignoreDuplicates: false }
+          );
+        }
+      }
+
+      return NextResponse.json({ success: true, status: action });
+    }
+
     return NextResponse.json({ error: 'action inválida' }, { status: 400 });
   } catch (err) {
     console.error('Erro /api/bookings:', err);

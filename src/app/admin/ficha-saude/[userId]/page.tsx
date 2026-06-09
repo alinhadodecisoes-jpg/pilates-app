@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { printDocument } from '@/lib/pilates/pdf-export';
 
 interface InjuryItem { local: string; descricao: string; data: string }
 interface SurgeryItem { tipo: string; data: string }
@@ -107,6 +108,71 @@ export default function AdminFichaSaudePage() {
             {aluno?.email} {aluno?.phone ? `• ${aluno.phone}` : ''}
           </p>
         </div>
+        {record && (
+          <button
+            onClick={() => {
+              const imc = record.height_cm && record.weight_kg
+                ? (record.weight_kg / Math.pow(record.height_cm / 100, 2)).toFixed(1)
+                : null;
+              printDocument({
+                title: 'Ficha de Saúde',
+                subtitle: aluno?.full_name || aluno?.email || '',
+                sections: [
+                  {
+                    title: 'Dados Gerais',
+                    rows: [
+                      { label: 'Data de Nascimento', value: record.birth_date ? new Date(record.birth_date + 'T12:00:00').toLocaleDateString('pt-BR') : null },
+                      { label: 'Tipo Sanguíneo', value: record.blood_type },
+                      { label: 'Altura', value: record.height_cm ? `${record.height_cm} cm` : null },
+                      { label: 'Peso', value: record.weight_kg ? `${record.weight_kg} kg` : null },
+                      { label: 'IMC', value: imc },
+                    ],
+                  },
+                  {
+                    title: 'Objetivo',
+                    rows: [{ label: 'Objetivo principal', value: record.main_goal }],
+                  },
+                  {
+                    title: 'Histórico Clínico',
+                    rows: [
+                      { label: 'Lesões', value: record.injuries?.length ? record.injuries.map((i) => `${i.local}: ${i.descricao}`).join('; ') : null },
+                      { label: 'Cirurgias', value: record.surgeries?.length ? record.surgeries.map((s) => `${s.tipo} (${s.data})`).join('; ') : null },
+                      { label: 'Condições crônicas', value: record.chronic_conditions?.join(', ') },
+                      { label: 'Medicamentos', value: record.medications?.length ? record.medications.map((m) => `${m.nome} ${m.dose}`).join('; ') : null },
+                      { label: 'Alergias', value: record.allergies },
+                    ],
+                  },
+                  {
+                    title: 'Restrições e Liberação',
+                    rows: [
+                      { label: 'Restrições físicas', value: record.physical_restrictions },
+                      { label: 'Liberação médica', value: record.doctor_clearance ? 'Sim' : 'NÃO — verificar antes de iniciar' },
+                      { label: 'Obs. médico', value: record.doctor_notes },
+                    ],
+                  },
+                  {
+                    title: 'Contato de Emergência',
+                    rows: [
+                      { label: 'Nome', value: record.emergency_contact_name },
+                      { label: 'Telefone', value: record.emergency_contact_phone },
+                    ],
+                  },
+                  {
+                    title: 'Consentimento LGPD',
+                    rows: [
+                      { label: 'Termo assinado', value: record.consent_signed ? 'Sim' : 'Não' },
+                      { label: 'Data', value: record.consent_date ? new Date(record.consent_date).toLocaleDateString('pt-BR') : null },
+                    ],
+                  },
+                ],
+                footer: `Documento confidencial — uso exclusivo Daimach.Movement | ${aluno?.email || ''} | Gerado em ${new Date().toLocaleDateString('pt-BR')}`,
+              });
+            }}
+            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          >
+            🖨️ Exportar PDF
+          </button>
+        )}
       </div>
 
       {/* Alerta de restrições */}

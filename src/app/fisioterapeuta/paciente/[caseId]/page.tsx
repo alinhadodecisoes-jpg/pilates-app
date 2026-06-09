@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { printDocument } from '@/lib/pilates/pdf-export';
 
 interface PhysioCase {
   id: number;
@@ -200,6 +201,53 @@ export default function ProntuarioPage() {
               Dar Alta
             </button>
           )}
+          <button
+            onClick={() => {
+              printDocument({
+                title: 'Prontuário de Fisioterapia',
+                subtitle: alunoName,
+                sections: [
+                  {
+                    title: 'Dados do Caso',
+                    rows: [
+                      { label: 'Paciente', value: alunoName },
+                      { label: 'Queixa principal', value: physioCase.chief_complaint },
+                      { label: 'Diagnóstico', value: physioCase.diagnosis },
+                      { label: 'Plano de tratamento', value: physioCase.treatment_plan },
+                      { label: 'Data de início', value: physioCase.start_date ? new Date(physioCase.start_date + 'T12:00:00').toLocaleDateString('pt-BR') : null },
+                      { label: 'Status', value: statusConfig[physioCase.status].label },
+                      { label: 'Notas de alta', value: physioCase.discharge_notes },
+                    ],
+                  },
+                  ...(healthRecord ? [{
+                    title: 'Alertas da Ficha de Saúde',
+                    rows: [
+                      { label: 'Restrições físicas', value: healthRecord.physical_restrictions },
+                      { label: 'Condições crônicas', value: healthRecord.chronic_conditions?.join(', ') },
+                      { label: 'Liberação médica', value: healthRecord.doctor_clearance ? 'Sim' : 'NÃO' },
+                      { label: 'Alergias', value: healthRecord.allergies },
+                      { label: 'Medicamentos', value: healthRecord.medications?.map((m: any) => `${m.nome} ${m.dose}`).join('; ') },
+                    ],
+                  }] : []),
+                  ...evolutions.map((evo, i) => ({
+                    title: `Evolução ${evolutions.length - i} — ${new Date(evo.evolution_date).toLocaleDateString('pt-BR')}`,
+                    rows: [
+                      { label: 'S (Subjetivo)', value: evo.subjective },
+                      { label: 'O (Objetivo)', value: evo.objective },
+                      { label: 'A (Avaliação)', value: evo.assessment },
+                      { label: 'P (Plano)', value: evo.plan },
+                      { label: 'Escala de dor', value: evo.pain_scale != null ? `${evo.pain_scale}/10` : null },
+                      { label: 'Técnicas', value: evo.techniques_used },
+                    ],
+                  })),
+                ],
+                footer: `Prontuário confidencial — Daimach.Movement | ${(physioCase.aluno as any)?.email || ''} | Gerado em ${new Date().toLocaleDateString('pt-BR')}`,
+              });
+            }}
+            className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded-full"
+          >
+            🖨️ PDF
+          </button>
         </div>
       </div>
 

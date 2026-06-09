@@ -226,6 +226,9 @@ CREATE TABLE IF NOT EXISTS google_tokens (
   refresh_token TEXT,
   expiry TIMESTAMP,
   scope TEXT,
+  google_email TEXT,
+  google_name TEXT,
+  is_valid BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

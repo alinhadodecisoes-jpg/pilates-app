@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
+interface Booking {
+  id: number;
+  user_id: string;
+  status: string;
+  aluno?: { full_name: string | null; email: string | null } | null;
+}
+
 interface ClassSession {
   id: number;
   class_id: number;
@@ -12,7 +19,7 @@ interface ClassSession {
   time_end: string;
   capacity: number;
   status: 'scheduled' | 'canceled' | 'done';
-  turma?: { name: string; professor?: { full_name: string | null } | null } | null;
+  turma?: { name: string } | null;
   _booked_count?: number;
 }
 
@@ -36,6 +43,9 @@ export default function AdminAgendaPage() {
   const [generating, setGenerating] = useState(false);
   const [weekRef, setWeekRef] = useState(new Date());
   const [generateResult, setGenerateResult] = useState<string>('');
+  const [presenceModal, setPresenceModal] = useState<ClassSession | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [markingPresence, setMarkingPresence] = useState<string | null>(null);
   const supabase = getSupabaseBrowserClient();
 
   const weekDates = getWeekDates(weekRef);
@@ -97,6 +107,38 @@ export default function AdminAgendaPage() {
     await loadSessions();
   };
 
+  const openPresenceModal = async (session: ClassSession) => {
+    setPresenceModal(session);
+    const { data } = await supabase
+      .from('bookings')
+      .select('id, user_id, status, aluno:users_pilates!user_id(full_name, email)')
+      .eq('session_id', session.id)
+      .in('status', ['booked', 'attended', 'no_show']);
+    setBookings((data as any[]) || []);
+  };
+
+  const handleMarkPresence = async (
+    sessionId: number,
+    userId: string,
+    action: 'attended' | 'no_show'
+  ) => {
+    const key = `${sessionId}-${userId}`;
+    setMarkingPresence(key);
+    try {
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, session_id: sessionId, user_id: userId }),
+      });
+      // Update local state
+      setBookings((prev) =>
+        prev.map((b) => (b.user_id === userId ? { ...b, status: action } : b))
+      );
+    } finally {
+      setMarkingPresence(null);
+    }
+  };
+
   const prevWeek = () => {
     const d = new Date(weekRef);
     d.setDate(d.getDate() - 7);
@@ -117,26 +159,25 @@ export default function AdminAgendaPage() {
     );
   }
 
-  // Group sessions by date
   const byDate: Record<string, ClassSession[]> = {};
   for (const s of sessions) {
     if (!byDate[s.session_date]) byDate[s.session_date] = [];
     byDate[s.session_date].push(s);
   }
 
+  const today = new Date().toISOString().slice(0, 10);
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Agenda de Aulas</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={handleGenerate}
-            disabled={generating}
-            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
-          >
-            {generating ? '⏳ Gerando...' : '📅 Gerar Agenda do Mês'}
-          </button>
-        </div>
+        <button
+          onClick={handleGenerate}
+          disabled={generating}
+          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
+        >
+          {generating ? '⏳ Gerando...' : '📅 Gerar Agenda do Mês'}
+        </button>
       </div>
 
       {generateResult && (
@@ -163,10 +204,11 @@ export default function AdminAgendaPage() {
 
       {/* Grade semanal */}
       <div className="grid grid-cols-7 gap-2">
-        {weekDates.map((date, i) => {
+        {weekDates.map((date) => {
           const dateStr = date.toISOString().slice(0, 10);
           const daySessions = byDate[dateStr] ?? [];
-          const isToday = dateStr === new Date().toISOString().slice(0, 10);
+          const isToday = dateStr === today;
+          const isPast = dateStr < today;
 
           return (
             <div key={dateStr} className="min-h-[120px]">
@@ -191,23 +233,30 @@ export default function AdminAgendaPage() {
                           : 'bg-green-600/20 border-green-600/30'
                       }`}
                     >
-                      <p className="text-white font-medium truncate">
-                        {s.time_start?.slice(0, 5)}
-                      </p>
+                      <p className="text-white font-medium truncate">{s.time_start?.slice(0, 5)}</p>
                       <p className="text-slate-300 truncate">
                         {(s.turma as any)?.name || `Turma ${s.class_id}`}
                       </p>
-                      <p className="text-slate-400">
-                        {s._booked_count}/{s.capacity}
-                      </p>
-                      {!isCanceled && (
-                        <button
-                          onClick={() => handleCancelSession(s.id)}
-                          className="text-red-400 hover:text-red-300 text-[10px] mt-0.5"
-                        >
-                          Cancelar
-                        </button>
-                      )}
+                      <p className="text-slate-400">{s._booked_count}/{s.capacity}</p>
+                      <div className="flex flex-col gap-0.5 mt-0.5">
+                        {!isCanceled && (
+                          <button
+                            onClick={() => handleCancelSession(s.id)}
+                            className="text-red-400 hover:text-red-300 text-[10px]"
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                        {/* Presença: apenas para aulas passadas ou de hoje */}
+                        {(isPast || isToday) && !isCanceled && (
+                          <button
+                            onClick={() => openPresenceModal(s)}
+                            className="text-blue-400 hover:text-blue-300 text-[10px]"
+                          >
+                            ✅ Presença
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -221,6 +270,80 @@ export default function AdminAgendaPage() {
         <div className="text-center py-10 text-slate-500">
           <p>Nenhuma sessão encontrada para esta semana.</p>
           <p className="text-sm mt-2">Clique em &quot;Gerar Agenda do Mês&quot; para criar sessões.</p>
+        </div>
+      )}
+
+      {/* Modal de presença */}
+      {presenceModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-lg">
+            <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-white font-bold text-lg">
+                  ✅ Presença —{' '}
+                  {(presenceModal.turma as any)?.name || `Turma ${presenceModal.class_id}`}
+                </h2>
+                <p className="text-slate-400 text-sm">
+                  {new Date(presenceModal.session_date + 'T12:00:00').toLocaleDateString('pt-BR')}{' '}
+                  {presenceModal.time_start?.slice(0, 5)}–{presenceModal.time_end?.slice(0, 5)}
+                </p>
+              </div>
+              <button onClick={() => setPresenceModal(null)} className="text-slate-400 hover:text-white text-xl">✕</button>
+            </div>
+            <div className="p-5 space-y-3 max-h-80 overflow-y-auto">
+              {bookings.length === 0 ? (
+                <p className="text-slate-400 text-center py-4">Nenhuma reserva para esta sessão.</p>
+              ) : (
+                bookings.map((b) => {
+                  const key = `${presenceModal.id}-${b.user_id}`;
+                  return (
+                    <div key={b.id} className="flex items-center justify-between bg-slate-700/50 rounded-xl px-4 py-3">
+                      <div>
+                        <p className="text-white text-sm font-medium">
+                          {(b.aluno as any)?.full_name || 'Aluno'}
+                        </p>
+                        <p className="text-slate-400 text-xs">{(b.aluno as any)?.email}</p>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        {b.status === 'attended' && (
+                          <span className="text-green-400 text-xs font-medium">✅ Presente</span>
+                        )}
+                        {b.status === 'no_show' && (
+                          <span className="text-red-400 text-xs font-medium">❌ Faltou</span>
+                        )}
+                        {b.status === 'booked' && (
+                          <>
+                            <button
+                              onClick={() => handleMarkPresence(presenceModal.id, b.user_id, 'attended')}
+                              disabled={markingPresence === key}
+                              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-3 py-1 rounded-lg text-xs"
+                            >
+                              ✅ Presente
+                            </button>
+                            <button
+                              onClick={() => handleMarkPresence(presenceModal.id, b.user_id, 'no_show')}
+                              disabled={markingPresence === key}
+                              className="bg-red-600/20 hover:bg-red-600/40 text-red-400 px-3 py-1 rounded-lg text-xs border border-red-600/30"
+                            >
+                              ❌ Faltou
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="p-4 border-t border-slate-700 flex justify-end">
+              <button
+                onClick={() => setPresenceModal(null)}
+                className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

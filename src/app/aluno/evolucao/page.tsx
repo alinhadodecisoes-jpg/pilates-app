@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { printDocument } from '@/lib/pilates/pdf-export';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -111,7 +112,41 @@ export default function EvolucaoPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-10">
-      <h1 className="text-2xl font-bold text-white">Minha Evolução</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Minha Evolução</h1>
+        {latest && (
+          <button
+            onClick={() => {
+              printDocument({
+                title: 'Evolução Física',
+                subtitle: `Última avaliação: ${new Date(latest.evaluation_date + 'T00:00:00').toLocaleDateString('pt-BR')}`,
+                sections: evaluations.map((ev, i) => ({
+                  title: `Avaliação ${i + 1} — ${new Date(ev.evaluation_date + 'T00:00:00').toLocaleDateString('pt-BR')}`,
+                  rows: [
+                    { label: 'Peso', value: ev.weight ? `${ev.weight} kg` : null },
+                    { label: 'Altura', value: ev.height ? `${ev.height} cm` : null },
+                    { label: 'IMC', value: ev.bmi ? String(ev.bmi) : null },
+                    { label: '% Gordura', value: ev.body_fat ? `${ev.body_fat}%` : null },
+                    { label: 'Massa muscular', value: ev.muscle_mass ? `${ev.muscle_mass} kg` : null },
+                    { label: 'Cintura', value: ev.measurements?.waist ? `${ev.measurements.waist} cm` : null },
+                    { label: 'Quadril', value: ev.measurements?.hip ? `${ev.measurements.hip} cm` : null },
+                    { label: 'Busto', value: ev.measurements?.bust ? `${ev.measurements.bust} cm` : null },
+                    { label: 'Avaliação postural', value: ev.posture_assessment },
+                    { label: 'Flexibilidade', value: ev.flexibility_notes },
+                    { label: 'Força', value: ev.strength_notes },
+                    { label: 'Objetivos', value: ev.goals },
+                    { label: 'Observações', value: ev.notes },
+                  ],
+                })),
+                footer: `Documento confidencial — Daimach.Movement | ${new Date().toLocaleDateString('pt-BR')}`,
+              });
+            }}
+            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm"
+          >
+            🖨️ Exportar PDF
+          </button>
+        )}
+      </div>
 
       {evaluations.length === 0 ? (
         <div className="bg-slate-800 rounded-xl p-10 border border-slate-700 text-center space-y-3">
