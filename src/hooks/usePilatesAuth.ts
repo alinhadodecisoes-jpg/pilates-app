@@ -51,7 +51,7 @@ export function usePilatesAuth() {
 
           // Redirecionar só se estiver na rota errada
           const path = window.location.pathname;
-          if (userRole === 'admin' && !path.startsWith('/admin')) {
+          if (userRole === 'admin' && !path.startsWith('/admin') && !path.startsWith('/fisioterapeuta')) {
             console.log('[ROUTE] → /admin/dashboard');
             router.push('/admin/dashboard');
           } else if (userRole === 'professor' && !path.startsWith('/professor')) {
