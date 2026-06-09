@@ -11,8 +11,6 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true,
     useLegacyBridge: false,
-    targetSdk: 36,
-    minSdk: 24,
   },
   plugins: {
     PushNotifications: {
