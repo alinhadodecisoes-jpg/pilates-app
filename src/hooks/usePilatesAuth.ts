@@ -7,6 +7,8 @@ import type { User } from '@supabase/supabase-js';
 
 type UserRole = 'admin' | 'professor' | 'aluno' | 'fisioterapeuta';
 
+let authInitialized = false;
+
 export function usePilatesAuth() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -19,60 +21,95 @@ export function usePilatesAuth() {
 
     const checkAuth = async () => {
       try {
+        // TENTAR OBTER SESSÃO ATUAL
         const { data: { session } } = await supabase.auth.getSession();
 
+        if (!mounted) return;
+
         if (!session) {
-          console.log('[DEBUG] Sem sessão, redirecionando para /login');
+          console.log('[AUTH] ❌ Nenhuma sessão encontrada');
+          setUser(null);
+          setRole('aluno');
           setLoading(false);
-          router.push('/login');
+
+          // Redirecionar se em rota protegida
+          if (typeof window !== 'undefined' &&
+              (window.location.pathname.startsWith('/admin') ||
+               window.location.pathname.startsWith('/professor') ||
+               window.location.pathname.startsWith('/aluno'))) {
+            router.push('/login');
+          }
           return;
         }
 
-        console.log('[DEBUG] Sessão encontrada:', session.user.email);
+        console.log('[AUTH] ✅ Sessão encontrada:', session.user.email);
         setUser(session.user);
 
-        // BUSCAR ROLE DO BANCO
+        // BUSCAR ROLE
         const { data: userProfile, error } = await supabase
           .from('users_pilates')
           .select('role')
           .eq('id', session.user.id)
           .single();
 
-        if (!error && userProfile) {
-          console.log('[DEBUG] Role detectado:', userProfile.role);
-          setRole(userProfile.role as UserRole);
-          localStorage.setItem('user_role', userProfile.role);
+        if (!mounted) return;
 
-          // REDIRECIONAR CONFORME ROLE
-          const currentPath = window.location.pathname;
-          if (userProfile.role === 'admin' && !currentPath.startsWith('/admin')) {
-            console.log('[DEBUG] Redirecionando ADMIN para /admin/dashboard');
-            router.push('/admin/dashboard');
-          } else if (userProfile.role === 'professor' && !currentPath.startsWith('/professor')) {
-            console.log('[DEBUG] Redirecionando PROFESSOR para /professor/dashboard');
-            router.push('/professor/dashboard');
-          } else if (userProfile.role === 'aluno' && !currentPath.startsWith('/aluno')) {
-            console.log('[DEBUG] Redirecionando ALUNO para /aluno/dashboard');
-            router.push('/aluno/dashboard');
-          } else if (userProfile.role === 'fisioterapeuta' && !currentPath.startsWith('/fisioterapeuta')) {
-            console.log('[DEBUG] Redirecionando FISIOTERAPEUTA');
-            router.push('/fisioterapeuta/dashboard');
-          }
-        } else {
-          console.warn('[WARN] Perfil não encontrado, usando role padrão: aluno');
+        if (error || !userProfile) {
+          console.log('[AUTH] ⚠️  Perfil não encontrado, usando "aluno"');
           setRole('aluno');
+          setLoading(false);
+          return;
         }
 
+        console.log('[AUTH] 👤 Role:', userProfile.role);
+        setRole(userProfile.role as UserRole);
         setLoading(false);
+
+        // REDIRECIONAR SE NECESSÁRIO
+        if (typeof window !== 'undefined') {
+          const path = window.location.pathname;
+          if (userProfile.role === 'admin' && !path.startsWith('/admin')) {
+            console.log('[ROUTE] → /admin/dashboard');
+            router.push('/admin/dashboard');
+          } else if (userProfile.role === 'professor' && !path.startsWith('/professor')) {
+            console.log('[ROUTE] → /professor/dashboard');
+            router.push('/professor/dashboard');
+          } else if (userProfile.role === 'aluno' && !path.startsWith('/aluno')) {
+            console.log('[ROUTE] → /aluno/dashboard');
+            router.push('/aluno/dashboard');
+          }
+        }
       } catch (err) {
-        console.error('[ERROR] Auth check failed:', err);
-        setLoading(false);
-        router.push('/login');
+        console.error('[AUTH] 💥 Erro:', err);
+        if (mounted) {
+          setLoading(false);
+          router.push('/login');
+        }
       }
     };
 
-    if (mounted) {
+    // Executar check na primeira vez
+    if (!authInitialized) {
+      authInitialized = true;
       checkAuth();
+    } else {
+      // Próximas chamadas usam listener
+      const unsubscribe = supabase.auth.onAuthStateChange((event, session) => {
+        if (mounted) {
+          if (!session) {
+            setUser(null);
+            setRole('aluno');
+          } else {
+            setUser(session.user);
+            // Role será atualizado no próximo check
+          }
+          setLoading(false);
+        }
+      });
+
+      return () => {
+        unsubscribe?.data?.subscription?.unsubscribe();
+      };
     }
 
     return () => {

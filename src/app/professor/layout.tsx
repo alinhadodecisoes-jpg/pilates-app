@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function ProfessorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
@@ -28,20 +28,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const menuItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
-    { name: 'Alunos', path: '/admin/alunos', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
-    { name: 'Turmas', path: '/admin/turmas', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-    { name: 'Planos', path: '/admin/planos', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { name: 'Dashboard', path: '/professor/dashboard', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+    { name: 'Aulas', path: '/professor/aulas', icon: 'M12 6.253v13m0-13C6.038 6.253 2 10.289 2 15.5c0 5.211 4.038 9.247 10 9.247s10-4.036 10-9.247c0-5.211-4.038-9.247-10-9.247z' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-50 flex">
-      <aside className="flex flex-col w-64 bg-slate-800 border-r border-slate-700 shrink-0">
-        <div className="h-16 flex items-center px-5 border-b border-slate-700 space-x-3">
-          <img src="/images/logo-oficial.jpeg" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
+    <div className="min-h-screen bg-daimach-dark text-daimach-light flex">
+      <aside className="flex flex-col w-64 bg-daimach-dark border-r border-daimach-primary/20 shrink-0">
+        <div className="h-16 flex items-center px-5 border-b border-daimach-primary/20 space-x-3">
+          <img src="/images/logo-daimach-oficial.jpeg" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
-            <p className="font-bold text-white text-sm">Daimach.Movement</p>
-            <p className="text-xs text-slate-400">Admin</p>
+            <p className="font-bold text-daimach-light text-sm">Daimach.Movement</p>
+            <p className="text-xs text-daimach-accent">Professor</p>
           </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1">
@@ -51,8 +49,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               href={item.path}
               className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
                 pathname === item.path
-                  ? 'bg-green-600 text-white'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-daimach-primary text-daimach-dark'
+                  : 'text-daimach-light hover:bg-daimach-primary/20'
               }`}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,24 +60,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
           ))}
         </nav>
-        <div className="p-4 border-t border-slate-700">
+        <div className="p-4 border-t border-daimach-primary/20">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-slate-700 rounded-xl transition-colors"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-daimach-secondary hover:bg-daimach-primary/20 rounded-xl transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            <span>Sair do Sistema</span>
+            <span>Sair</span>
           </button>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="h-16 bg-slate-800/50 border-b border-slate-700 flex items-center justify-end px-6 shrink-0">
+        <header className="h-16 bg-daimach-dark/50 border-b border-daimach-primary/20 flex items-center justify-end px-6 shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-bold">A</div>
-            <span className="text-sm text-slate-300">Administrador</span>
+            <div className="w-8 h-8 bg-daimach-accent rounded-full flex items-center justify-center text-sm font-bold text-daimach-dark">P</div>
+            <span className="text-sm text-daimach-light">Professor</span>
           </div>
         </header>
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
