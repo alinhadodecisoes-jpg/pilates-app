@@ -45,7 +45,7 @@ self.addEventListener('fetch', (event) => {
 
 // Push notifications
 self.addEventListener('push', (event) => {
-  let data = { title: 'Daimach', body: '', url: '/chat' };
+  let data = { title: 'Daimach.Movement', body: '', url: '/aluno/dashboard' };
   try {
     data = event.data.json();
   } catch (e) {
@@ -55,9 +55,9 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/icon.svg',
-      badge: '/icon.svg',
-      data: { url: data.url || '/chat' },
+      icon: '/images/logo-oficial.jpeg',
+      badge: '/images/logo-oficial.jpeg',
+      data: { url: data.url || '/aluno/dashboard' },
       vibrate: [200, 100, 200],
     })
   );
@@ -69,11 +69,11 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes('/chat') && 'focus' in client) {
+        if ('focus' in client) {
           return client.focus();
         }
       }
-      return clients.openWindow(event.notification.data.url || '/chat');
+      return clients.openWindow(event.notification.data.url || '/aluno/dashboard');
     })
   );
 });
