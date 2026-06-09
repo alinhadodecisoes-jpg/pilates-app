@@ -1,23 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
+// IMPORTANTE: A sessão do Supabase é salva em localStorage (client-side),
+// NÃO em cookies. Por isso o proxy server-side NÃO pode verificar autenticação.
+// A proteção de rotas é feita pelo hook usePilatesAuth no client-side.
 export async function proxy(request: NextRequest) {
-  const pathname = request.nextUrl.pathname
-
-  // Rotas públicas que não precisam de autenticação
-  const publicRoutes = ['/', '/login', '/register', '/api/auth/callback']
-
-  if (publicRoutes.includes(pathname)) {
-    return NextResponse.next()
-  }
-
-  // Verificar sessão do Supabase armazenada em cookie
-  const token = request.cookies.get('sb-access-token')?.value
-
-  // Se não tem token e está tentando acessar rota protegida, redirecionar para /login
-  if (!token && (pathname.startsWith('/admin') || pathname.startsWith('/aluno') || pathname.startsWith('/professor'))) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
+  // Passthrough total — sem redirecionamentos server-side
   return NextResponse.next()
 }
 

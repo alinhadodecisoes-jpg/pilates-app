@@ -17,100 +17,76 @@ export function usePilatesAuth() {
   useEffect(() => {
     let mounted = true;
 
-    const checkAuth = async () => {
-      console.log('[AUTH] Iniciando check de autenticação...');
+    const fetchRole = async (userId: string): Promise<UserRole> => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (!mounted) return;
-
-        if (sessionError) {
-          console.error('[AUTH] Erro ao obter sessão:', sessionError);
-          setLoading(false);
-          return;
-        }
-
-        if (!session) {
-          console.log('[AUTH] ❌ Nenhuma sessão encontrada');
-          setUser(null);
-          setRole('aluno');
-          setLoading(false);
-
-          // Redirecionar se em rota protegida
-          if (typeof window !== 'undefined' &&
-              (window.location.pathname.startsWith('/admin') ||
-               window.location.pathname.startsWith('/professor') ||
-               window.location.pathname.startsWith('/aluno'))) {
-            console.log('[ROUTE] Redirecting to /login (sem sessão)');
-            router.push('/login');
-          }
-          return;
-        }
-
-        console.log('[AUTH] ✅ Sessão encontrada:', session.user.email);
-        setUser(session.user);
-
-        // BUSCAR ROLE DO BANCO
-        console.log('[AUTH] Buscando role para ID:', session.user.id);
-        const { data: userProfile, error: roleError } = await supabase
+        const { data } = await supabase
           .from('users_pilates')
           .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!mounted) return;
-
-        if (roleError) {
-          console.warn('[AUTH] Erro ao buscar role:', roleError);
-          console.log('[AUTH] ⚠️  Usando role padrão: aluno');
-          setRole('aluno');
-          setLoading(false);
-          return;
-        }
-
-        if (!userProfile) {
-          console.log('[AUTH] ⚠️  Perfil vazio, usando aluno');
-          setRole('aluno');
-          setLoading(false);
-          return;
-        }
-
-        console.log('[AUTH] 👤 Role detectado:', userProfile.role);
-        setRole(userProfile.role as UserRole);
-        setLoading(false);
-
-        // REDIRECIONAR CONFORME ROLE
-        if (typeof window !== 'undefined') {
-          const currentPath = window.location.pathname;
-          const userRole = userProfile.role as UserRole;
-
-          if (userRole === 'admin' && !currentPath.startsWith('/admin')) {
-            console.log('[ROUTE] Redirecionando para /admin/dashboard');
-            router.push('/admin/dashboard');
-          } else if (userRole === 'professor' && !currentPath.startsWith('/professor')) {
-            console.log('[ROUTE] Redirecionando para /professor/dashboard');
-            router.push('/professor/dashboard');
-          } else if (userRole === 'aluno' && !currentPath.startsWith('/aluno')) {
-            console.log('[ROUTE] Redirecionando para /aluno/dashboard');
-            router.push('/aluno/dashboard');
-          } else if (userRole === 'fisioterapeuta' && !currentPath.startsWith('/fisioterapeuta')) {
-            console.log('[ROUTE] Redirecionando para /fisioterapeuta/dashboard');
-            router.push('/fisioterapeuta/dashboard');
-          }
-        }
-      } catch (err) {
-        console.error('[AUTH] 💥 Erro fatal:', err);
-        if (mounted) {
-          setLoading(false);
-          router.push('/login');
-        }
+          .eq('id', userId)
+          .maybeSingle();
+        return (data?.role as UserRole) || 'aluno';
+      } catch {
+        return 'aluno';
       }
     };
 
-    checkAuth();
+    // onAuthStateChange dispara INITIAL_SESSION com a sessão real do localStorage
+    // Isso resolve o problema de getSession() retornar null no primeiro render
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        console.log('[AUTH] Event:', event, '| User:', session?.user?.email ?? 'null');
+
+        if (session?.user) {
+          setUser(session.user);
+
+          const userRole = await fetchRole(session.user.id);
+          if (!mounted) return;
+
+          setRole(userRole);
+          setLoading(false);
+
+          console.log('[AUTH] Role detectado:', userRole);
+
+          // Redirecionar só se estiver na rota errada
+          const path = window.location.pathname;
+          if (userRole === 'admin' && !path.startsWith('/admin')) {
+            console.log('[ROUTE] → /admin/dashboard');
+            router.push('/admin/dashboard');
+          } else if (userRole === 'professor' && !path.startsWith('/professor')) {
+            console.log('[ROUTE] → /professor/dashboard');
+            router.push('/professor/dashboard');
+          } else if (userRole === 'aluno' && !path.startsWith('/aluno')) {
+            console.log('[ROUTE] → /aluno/dashboard');
+            router.push('/aluno/dashboard');
+          } else if (userRole === 'fisioterapeuta' && !path.startsWith('/fisioterapeuta')) {
+            console.log('[ROUTE] → /fisioterapeuta/dashboard');
+            router.push('/fisioterapeuta/dashboard');
+          }
+        } else {
+          // Sem sessão
+          setUser(null);
+          setLoading(false);
+
+          const path = window.location.pathname;
+          const isProtected =
+            path.startsWith('/admin') ||
+            path.startsWith('/aluno') ||
+            path.startsWith('/professor') ||
+            path.startsWith('/fisioterapeuta');
+
+          if (isProtected) {
+            console.log('[AUTH] Sem sessão em rota protegida → /login');
+            router.push('/login');
+          }
+        }
+      }
+    );
 
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
   }, [router, supabase]);
 
