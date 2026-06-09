@@ -125,6 +125,25 @@ export async function getClassesWithEnrollments() {
   return data;
 }
 
+export async function getClassesWithEnrolledCount(): Promise<PilatesClass[]> {
+  const db = getDb();
+  const [classesResult, enrollmentsResult] = await Promise.all([
+    db.from('classes_pilates').select('*').order('day_of_week', { ascending: true }),
+    db.from('enrollments_pilates').select('class_id').eq('is_active', true),
+  ]);
+  if (classesResult.error) throw classesResult.error;
+
+  const countByClass: Record<number, number> = {};
+  for (const e of enrollmentsResult.data ?? []) {
+    countByClass[e.class_id] = (countByClass[e.class_id] ?? 0) + 1;
+  }
+
+  return (classesResult.data ?? []).map((c) => ({
+    ...c,
+    enrolled_count: countByClass[c.id] ?? 0,
+  })) as PilatesClass[];
+}
+
 // ====================== PLANOS ======================
 
 export async function getPlans() {

@@ -4,6 +4,9 @@ export interface PilatesUser {
   plan_id?: number | null;
   status: 'ativo' | 'inativo' | 'inadimplente';
   phone?: string | null;
+  full_name?: string | null;
+  email?: string | null;
+  monthly_value?: number | null;
   emergency_contact?: string | null;
   emergency_phone?: string | null;
   created_at: string;

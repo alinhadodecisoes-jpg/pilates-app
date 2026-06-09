@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getClasses, createClass, updateClass, deleteClass } from '@/lib/pilates/pilates-db';
+import { getClassesWithEnrolledCount, createClass, updateClass, deleteClass } from '@/lib/pilates/pilates-db';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
 import type { PilatesClass } from '@/types/pilates';
 
+// day_of_week no banco: 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb, 7=Dom
 const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 export default function TurmasPage() {
@@ -22,7 +23,7 @@ export default function TurmasPage() {
 
   const [form, setForm] = useState({
     name: '',
-    day_of_week: 0,
+    day_of_week: 1,        // 1=Seg no banco
     time_start: '09:00',
     time_end: '10:00',
     capacity: 4,
@@ -31,7 +32,7 @@ export default function TurmasPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      getClasses()
+      getClassesWithEnrolledCount()
         .then(setClasses)
         .catch(console.error)
         .finally(() => setLoading(false));
@@ -39,7 +40,7 @@ export default function TurmasPage() {
   }, [authLoading]);
 
   const openCreate = () => {
-    setForm({ name: '', day_of_week: 0, time_start: '09:00', time_end: '10:00', capacity: 4, is_active: true });
+    setForm({ name: '', day_of_week: 1, time_start: '09:00', time_end: '10:00', capacity: 4, is_active: true });
     setEditMode('create');
   };
 
@@ -55,10 +56,14 @@ export default function TurmasPage() {
     try {
       if (editMode === 'create') {
         const nova = await createClass(user.id, form.name, form.day_of_week, form.time_start, form.time_end, form.capacity);
-        setClasses((prev) => [...prev, nova]);
+        setClasses((prev) => [...prev, { ...nova, enrolled_count: 0 }]);
       } else if (editMode === 'edit' && selectedClass) {
         const updated = await updateClass(selectedClass.id, form);
-        setClasses((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+        setClasses((prev) =>
+          prev.map((c) =>
+            c.id === updated.id ? { ...updated, enrolled_count: c.enrolled_count } : c
+          )
+        );
       }
       setEditMode(null);
     } catch (err) {
@@ -86,7 +91,7 @@ export default function TurmasPage() {
     return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
   }
 
-  // Group by day
+  // Agrupar por day_of_week (1–7 no banco)
   const byDay: Record<number, PilatesClass[]> = {};
   classes.forEach((c) => {
     if (!byDay[c.day_of_week]) byDay[c.day_of_week] = [];
@@ -100,34 +105,40 @@ export default function TurmasPage() {
         <Button variant="primary" size="md" onClick={openCreate}>+ Nova Turma</Button>
       </div>
 
-      {/* Grid Semanal */}
+      {/* Grid Semanal — idx 0-6 → day_of_week 1-7 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {DAYS.map((dayName, idx) => (
-          <div key={idx} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-            <div className="px-4 py-3 bg-slate-700/50 border-b border-slate-700">
-              <h3 className="font-semibold text-white">{dayName}</h3>
+        {DAYS.map((dayName, idx) => {
+          const dayClasses = byDay[idx + 1] ?? [];
+          return (
+            <div key={idx} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+              <div className="px-4 py-3 bg-slate-700/50 border-b border-slate-700 flex items-center justify-between">
+                <h3 className="font-semibold text-white">{dayName}</h3>
+                <span className="text-xs text-slate-400">{dayClasses.length} turma(s)</span>
+              </div>
+              <div className="p-3 space-y-2">
+                {dayClasses.length === 0 ? (
+                  <p className="text-xs text-slate-500 text-center py-4">Sem turmas</p>
+                ) : (
+                  dayClasses.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => openEdit(c)}
+                      className={`w-full text-left p-3 rounded-lg border transition-colors hover:border-green-600 ${
+                        c.is_active ? 'border-slate-600 bg-slate-700/50' : 'border-slate-700 bg-slate-800/50 opacity-50'
+                      }`}
+                    >
+                      <p className="font-medium text-white text-sm">{c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{c.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {c.enrolled_count ?? 0}/{c.capacity} alunos
+                      </p>
+                    </button>
+                  ))
+                )}
+              </div>
             </div>
-            <div className="p-3 space-y-2">
-              {(byDay[idx] ?? []).length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-4">Sem turmas</p>
-              ) : (
-                (byDay[idx] ?? []).map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => openEdit(c)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors hover:border-green-600 ${
-                      c.is_active ? 'border-slate-600 bg-slate-700/50' : 'border-slate-700 bg-slate-800/50 opacity-50'
-                    }`}
-                  >
-                    <p className="font-medium text-white text-sm">{c.time_start}–{c.time_end}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{c.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Cap: {c.capacity}</p>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Modal Criar/Editar */}
@@ -152,7 +163,7 @@ export default function TurmasPage() {
                 <label className="block text-sm text-slate-400 mb-1">Dia</label>
                 <select value={form.day_of_week} onChange={(e) => setForm({ ...form, day_of_week: Number(e.target.value) })}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                  {DAYS.map((d, i) => <option key={i + 1} value={i + 1}>{d}</option>)}
                 </select>
               </div>
               <div>
