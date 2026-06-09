@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { getAlunos, updateAluno, deleteAluno } from '@/lib/pilates/pilates-db';
 import { Modal } from '@/components/pilates/Modal';
@@ -159,7 +160,7 @@ export default function AlunosPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           variant="secondary"
                           size="sm"
@@ -167,6 +168,18 @@ export default function AlunosPage() {
                         >
                           Editar
                         </Button>
+                        <Link href={`/admin/ficha-saude/${aluno.id}`}>
+                          <Button variant="secondary" size="sm">Ficha</Button>
+                        </Link>
+                        {aluno.phone && (
+                          <a
+                            href={`https://wa.me/55${aluno.phone.replace(/\D/g, '')}?text=Olá ${encodeURIComponent(aluno.full_name || 'aluno')}, tudo bem?`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button variant="secondary" size="sm">WhatsApp</Button>
+                          </a>
+                        )}
                         <Button
                           variant="danger"
                           size="sm"
