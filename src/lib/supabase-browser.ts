@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import type { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -35,7 +35,7 @@ let sessionRestored = false
 
 export function getSupabaseBrowserClient(): SupabaseClient {
   if (!browserClient) {
-    browserClient = createBrowserClient(supabaseUrl, anonKey, {
+    browserClient = createClient(supabaseUrl, anonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,

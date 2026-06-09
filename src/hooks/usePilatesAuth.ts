@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import type { User } from '@supabase/supabase-js';
@@ -10,27 +10,27 @@ export function usePilatesAuth(_requiredRole?: string) {
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseBrowserClient();
   const router = useRouter();
-  const ran = useRef(false);
 
   useEffect(() => {
-    if (ran.current) return;
-    ran.current = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[DEBUG] Auth state change:', event, session?.user?.email ?? 'null');
+      try {
+        document.cookie = `_auth_debug=${encodeURIComponent(JSON.stringify({ event, email: session?.user?.email ?? null, t: Date.now() }))}; path=/`;
+      } catch {}
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('[DEBUG] Sessão verificada:', session?.user?.email);
-
-      if (!session) {
-        console.log('[DEBUG] Sem sessão, redirecionando para /login');
-        setLoading(false);
-        router.push('/login');
-        return;
-      }
-
-      console.log('[DEBUG] Usuário autenticado:', session.user.email);
-      setUser(session.user);
+      setUser(session?.user ?? null);
       setLoading(false);
+
+      if (!session && (event === 'INITIAL_SESSION' || event === 'SIGNED_OUT')) {
+        console.log('[DEBUG] Sem sessão, redirecionando para /login');
+        router.push('/login');
+      }
     });
-  }, [supabase, router]);
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return { user, loading };
 }
