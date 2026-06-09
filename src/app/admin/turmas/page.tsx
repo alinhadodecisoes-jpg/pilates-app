@@ -11,7 +11,7 @@ import type { PilatesClass } from '@/types/pilates';
 const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 export default function TurmasPage() {
-  const { user, loading: authLoading } = usePilatesAuth('professor');
+  const { user, loading: authLoading } = usePilatesAuth();
   const [classes, setClasses] = useState<PilatesClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState<PilatesClass | null>(null);

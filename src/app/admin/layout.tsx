@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
-  const { user, loading } = usePilatesAuth('admin');
+  const { user, loading } = usePilatesAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

@@ -3,7 +3,7 @@
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 
 export default function AlunoDashboard() {
-  const { user, loading } = usePilatesAuth('aluno');
+  const { user, loading } = usePilatesAuth();
 
   if (loading) {
     return (

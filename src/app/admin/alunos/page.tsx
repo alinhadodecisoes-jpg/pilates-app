@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
 import type { PilatesUser } from '@/types/pilates';
 
 export default function AlunosPage() {
-  const { loading: authLoading } = usePilatesAuth('professor');
+  const { loading: authLoading } = usePilatesAuth();
   const [alunos, setAlunos] = useState<PilatesUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

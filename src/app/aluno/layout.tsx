@@ -10,7 +10,7 @@ export default function AlunoLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
-  const { user, loading } = usePilatesAuth('aluno');
+  const { user, loading } = usePilatesAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

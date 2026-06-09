@@ -9,7 +9,7 @@ import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
 import type { PilatesPlan } from '@/types/pilates';
 
 export default function PlanosPage() {
-  const { loading: authLoading } = usePilatesAuth('professor');
+  const { loading: authLoading } = usePilatesAuth();
   const [plans, setPlans] = useState<PilatesPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [editPlan, setEditPlan] = useState<PilatesPlan | null>(null);
