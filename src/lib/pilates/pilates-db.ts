@@ -33,6 +33,18 @@ export async function getAlunoById(id: string) {
 }
 
 export async function updateAluno(id: string, updates: Partial<PilatesUser>) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch(`/api/pilates/users/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      throw new Error(j.error || 'Erro ao atualizar usuário');
+    }
+    return (await res.json()) as PilatesUser;
+  }
   const db = getDb();
   const { data, error } = await db
     .from('users_pilates')
@@ -45,6 +57,11 @@ export async function updateAluno(id: string, updates: Partial<PilatesUser>) {
 }
 
 export async function deleteAluno(id: string) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch(`/api/pilates/users/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao remover usuário');
+    return;
+  }
   const db = getDb();
   const { error } = await db
     .from('users_pilates')
@@ -221,6 +238,11 @@ export async function deletePlan(id: number) {
 // ====================== AULAS DO ALUNO ======================
 
 export async function getAlunoAulas(alunoId: string) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch(`/api/pilates/aluno/aulas?userId=${alunoId}`);
+    if (!res.ok) throw new Error('Erro ao buscar aulas do aluno');
+    return await res.json();
+  }
   const db = getDb();
   const { data, error } = await db
     .from('enrollments_pilates')

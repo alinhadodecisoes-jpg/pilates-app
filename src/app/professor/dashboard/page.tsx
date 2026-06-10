@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 
 const DAYS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
@@ -34,39 +33,18 @@ export default function ProfessorDashboard() {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState<number | null>(null);
-  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
       try {
-        // Minhas turmas
-        const { data: classesData } = await supabase
-          .from('classes_pilates')
-          .select('*')
-          .eq('professor_id', user.id)
-          .eq('is_active', true)
-          .order('day_of_week')
-          .order('time_start');
-        setClasses((classesData ?? []) as MyClass[]);
-
-        // Contagem de alunos matriculados nas minhas turmas
-        if (classesData && classesData.length > 0) {
-          const classIds = classesData.map((c) => c.id);
-          const { count } = await supabase
-            .from('enrollments_pilates')
-            .select('id', { count: 'exact', head: true })
-            .in('class_id', classIds);
-          setStudentCount(count ?? 0);
+        const res = await fetch(`/api/pilates/professor?professorId=${user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setClasses((data.classes ?? []) as MyClass[]);
+          setStudentCount(data.studentCount ?? 0);
+          setPendingRequests((data.pendingRequests ?? []) as unknown as PendingRequest[]);
         }
-
-        // Solicitações de reposição dos alunos das minhas turmas (pendentes)
-        const { data: reqs } = await supabase
-          .from('reposition_requests')
-          .select('id, user_id, slot_id, status, requested_at, users_pilates(full_name, email), reposition_slots(slot_date, time_start, time_end)')
-          .eq('status', 'pending')
-          .order('requested_at', { ascending: true });
-        setPendingRequests((reqs ?? []) as unknown as PendingRequest[]);
       } catch (err) {
         console.error('[ERROR]:', err);
       }
@@ -74,37 +52,39 @@ export default function ProfessorDashboard() {
     };
 
     if (!authLoading) fetchData();
-  }, [authLoading, user, supabase]);
+  }, [authLoading, user]);
 
   const handleApprove = async (req: PendingRequest) => {
     if (!user) return;
     setApproving(req.id);
-    await supabase
-      .from('reposition_requests')
-      .update({ status: 'approved', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
-      .eq('id', req.id);
-    // Criar presença
-    if (req.reposition_slots) {
-      await supabase
-        .from('attendances_pilates')
-        .upsert({
+    await fetch('/api/pilates/reposicoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'approve', request_id: req.id, reviewer_id: user.id }),
+    });
+    try {
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           user_id: req.user_id,
-          class_id: null,
-          attendance_date: req.reposition_slots.slot_date,
-          status: 'replacement',
-          notes: `Reposição aprovada — ${req.reposition_slots.time_start?.slice(0, 5)}`,
-        }, { onConflict: 'user_id,attendance_date' });
-    }
+          type: 'reposicao_aprovada',
+          title: 'Reposição Aprovada!',
+          body: `Sua reposição foi aprovada para ${req.reposition_slots?.slot_date} às ${req.reposition_slots?.time_start?.slice(0, 5)}.`,
+        }),
+      });
+    } catch { /* notificação não é crítica */ }
     setPendingRequests((prev) => prev.filter((r) => r.id !== req.id));
     setApproving(null);
   };
 
   const handleReject = async (reqId: number) => {
     if (!user) return;
-    await supabase
-      .from('reposition_requests')
-      .update({ status: 'rejected', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
-      .eq('id', reqId);
+    await fetch('/api/pilates/reposicoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject', request_id: reqId, reviewer_id: user.id }),
+    });
     setPendingRequests((prev) => prev.filter((r) => r.id !== reqId));
   };
 

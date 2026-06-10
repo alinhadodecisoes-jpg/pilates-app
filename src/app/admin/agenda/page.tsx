@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 interface Booking {
-  id: number;
+  booking_id: number | null;
   user_id: string;
   status: string;
-  aluno?: { full_name: string | null; email: string | null } | null;
+  full_name: string | null;
+  email: string | null;
 }
 
 interface ClassSession {
@@ -20,7 +20,9 @@ interface ClassSession {
   capacity: number;
   status: 'scheduled' | 'canceled' | 'done';
   turma?: { name: string } | null;
+  professor_name?: string | null;
   _booked_count?: number;
+  _enrolled_count?: number;
 }
 
 const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -46,40 +48,58 @@ export default function AdminAgendaPage() {
   const [presenceModal, setPresenceModal] = useState<ClassSession | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [markingPresence, setMarkingPresence] = useState<string | null>(null);
-  const supabase = getSupabaseBrowserClient();
+  const [exporting, setExporting] = useState(false);
 
   const weekDates = getWeekDates(weekRef);
   const weekStart = weekDates[0].toISOString().slice(0, 10);
   const weekEnd = weekDates[6].toISOString().slice(0, 10);
 
   const loadSessions = async () => {
-    const [sessionsRes, bookingsRes] = await Promise.all([
-      supabase
-        .from('class_sessions')
-        .select('*, turma:classes_pilates!class_id(name)')
-        .gte('session_date', weekStart)
-        .lte('session_date', weekEnd)
-        .order('session_date')
-        .order('time_start'),
-      supabase
-        .from('bookings')
-        .select('session_id')
-        .eq('status', 'booked'),
-    ]);
-
-    if (!sessionsRes.error && sessionsRes.data) {
-      const countBySession: Record<number, number> = {};
-      for (const b of bookingsRes.data ?? []) {
-        countBySession[b.session_id] = (countBySession[b.session_id] ?? 0) + 1;
+    try {
+      const res = await fetch(`/api/pilates/agenda?start=${weekStart}&end=${weekEnd}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSessions((data.sessions ?? []) as ClassSession[]);
       }
-      setSessions(
-        sessionsRes.data.map((s) => ({
-          ...s,
-          _booked_count: countBySession[s.id] ?? 0,
-        })) as ClassSession[]
-      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  // Exporta a agenda do MÊS inteiro em CSV (todas as aulas, professores, ocupação)
+  const handleExportMonth = async () => {
+    setExporting(true);
+    try {
+      const first = new Date(weekRef.getFullYear(), weekRef.getMonth(), 1).toISOString().slice(0, 10);
+      const last = new Date(weekRef.getFullYear(), weekRef.getMonth() + 1, 0).toISOString().slice(0, 10);
+      const res = await fetch(`/api/pilates/agenda?start=${first}&end=${last}`);
+      const data = await res.json();
+      const rows = (data.sessions ?? []) as ClassSession[];
+      const header = ['Data', 'Início', 'Fim', 'Turma', 'Professor', 'Reservas', 'Matriculados', 'Capacidade', 'Status'];
+      const lines = rows.map((s) => [
+        s.session_date,
+        s.time_start?.slice(0, 5),
+        s.time_end?.slice(0, 5),
+        (s.turma as any)?.name ?? `Turma ${s.class_id}`,
+        s.professor_name ?? '—',
+        s._booked_count ?? 0,
+        s._enrolled_count ?? 0,
+        s.capacity,
+        s.status,
+      ].join(';'));
+      const csv = '﻿' + [header.join(';'), ...lines].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agenda-${first.slice(0, 7)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
   };
 
   useEffect(() => {
@@ -103,18 +123,22 @@ export default function AdminAgendaPage() {
 
   const handleCancelSession = async (sessionId: number) => {
     if (!confirm('Cancelar esta sessão de aula?')) return;
-    await supabase.from('class_sessions').update({ status: 'canceled' }).eq('id', sessionId);
+    await fetch('/api/pilates/agenda', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel_session', sessionId }),
+    });
     await loadSessions();
   };
 
   const openPresenceModal = async (session: ClassSession) => {
     setPresenceModal(session);
-    const { data } = await supabase
-      .from('bookings')
-      .select('id, user_id, status, aluno:users_pilates!user_id(full_name, email)')
-      .eq('session_id', session.id)
-      .in('status', ['booked', 'attended', 'no_show']);
-    setBookings((data as any[]) || []);
+    setBookings([]);
+    const res = await fetch(`/api/pilates/agenda?sessionId=${session.id}&classId=${session.class_id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setBookings((data.presence ?? []) as Booking[]);
+    }
   };
 
   const handleMarkPresence = async (
@@ -171,13 +195,22 @@ export default function AdminAgendaPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Agenda de Aulas</h1>
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
-        >
-          {generating ? '⏳ Gerando...' : '📅 Gerar Agenda do Mês'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExportMonth}
+            disabled={exporting}
+            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          >
+            {exporting ? '⏳...' : '⬇️ Exportar Mês (CSV)'}
+          </button>
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          >
+            {generating ? '⏳ Gerando...' : '📅 Gerar Agenda do Mês'}
+          </button>
+        </div>
       </div>
 
       {generateResult && (
@@ -237,7 +270,10 @@ export default function AdminAgendaPage() {
                       <p className="text-slate-300 truncate">
                         {(s.turma as any)?.name || `Turma ${s.class_id}`}
                       </p>
-                      <p className="text-slate-400">{s._booked_count}/{s.capacity}</p>
+                      {s.professor_name && (
+                        <p className="text-slate-500 truncate text-[10px]">👤 {s.professor_name}</p>
+                      )}
+                      <p className="text-slate-400">{(s._booked_count || s._enrolled_count) ?? 0}/{s.capacity}</p>
                       <div className="flex flex-col gap-0.5 mt-0.5">
                         {!isCanceled && (
                           <button
@@ -297,12 +333,12 @@ export default function AdminAgendaPage() {
                 bookings.map((b) => {
                   const key = `${presenceModal.id}-${b.user_id}`;
                   return (
-                    <div key={b.id} className="flex items-center justify-between bg-slate-700/50 rounded-xl px-4 py-3">
+                    <div key={b.user_id} className="flex items-center justify-between bg-slate-700/50 rounded-xl px-4 py-3">
                       <div>
                         <p className="text-white text-sm font-medium">
-                          {(b.aluno as any)?.full_name || 'Aluno'}
+                          {b.full_name || 'Aluno'}
                         </p>
-                        <p className="text-slate-400 text-xs">{(b.aluno as any)?.email}</p>
+                        <p className="text-slate-400 text-xs">{b.email}</p>
                       </div>
                       <div className="flex gap-2 items-center">
                         {b.status === 'attended' && (

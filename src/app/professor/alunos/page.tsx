@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
+import { updateAluno } from '@/lib/pilates/pilates-db';
 import { Modal } from '@/components/pilates/Modal';
 
 interface Student {
@@ -32,48 +32,34 @@ export default function ProfessorAlunosPage() {
   const [editForm, setEditForm] = useState<EditForm>({ full_name: '', phone: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = getSupabaseBrowserClient();
 
   const loadStudents = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      // Buscar turmas do professor
-      const { data: myClasses } = await supabase
-        .from('classes_pilates')
-        .select('id, name')
-        .eq('professor_id', user.id)
-        .eq('is_active', true);
-
-      if (!myClasses || myClasses.length === 0) {
-        setStudents([]);
-        setLoading(false);
-        return;
-      }
-
-      const classIds = myClasses.map((c) => c.id);
-      const classMap = Object.fromEntries(myClasses.map((c) => [c.id, c.name]));
-
-      // Buscar matrículas
-      const { data: enrollments } = await supabase
-        .from('enrollments_pilates')
-        .select('user_id, class_id, users_pilates(full_name, email, phone, status, monthly_value)')
-        .in('class_id', classIds);
-
-      const mapped = (enrollments ?? []).map((e: any) => ({
+      const res = await fetch(`/api/pilates/professor?professorId=${user.id}`);
+      if (!res.ok) throw new Error('Falha ao carregar');
+      const data = await res.json();
+      const mapped = (data.students ?? []).map((e: any) => ({
         user_id: e.user_id,
         class_id: e.class_id,
-        class_name: classMap[e.class_id] ?? '—',
-        users_pilates: e.users_pilates,
+        class_name: e.class_name ?? '—',
+        users_pilates: {
+          full_name: e.full_name,
+          email: e.email,
+          phone: e.phone,
+          status: e.status,
+          monthly_value: e.monthly_value,
+        },
       }));
       setStudents(mapped as Student[]);
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar alunos. Verifique se o SQL B1 foi rodado (PENDENCIAS_WILLIAN.md).');
+      setError('Erro ao carregar alunos.');
     } finally {
       setLoading(false);
     }
-  }, [user, supabase]);
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading) loadStudents();
@@ -91,17 +77,18 @@ export default function ProfessorAlunosPage() {
   const handleSaveEdit = async () => {
     if (!editStudent) return;
     setSaving(true);
-    const { error: updateErr } = await supabase
-      .from('users_pilates')
-      .update({
-        full_name: editForm.full_name || null,
-        phone: editForm.phone || null,
-      })
-      .eq('id', editStudent.user_id);
-    setSaving(false);
-    if (updateErr) { setError(updateErr.message); return; }
-    setEditStudent(null);
-    loadStudents();
+    try {
+      await updateAluno(editStudent.user_id, {
+        full_name: editForm.full_name || undefined,
+        phone: editForm.phone || undefined,
+      });
+      setEditStudent(null);
+      loadStudents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const filtered = students.filter((s) => {

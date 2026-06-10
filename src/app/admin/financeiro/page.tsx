@@ -63,21 +63,12 @@ export default function FinanceiroAdmin() {
   const handleDarBaixa = async (userId: string, amount: number) => {
     if (!confirm(`Confirmar pagamento manual de R$ ${amount.toFixed(2)}?`)) return;
     setMarkingPaid(userId);
-    const refMonth = new Date().toISOString().slice(0, 7);
-    await supabase.from('payment_history').insert({
-      user_id: userId,
-      amount,
-      status: 'paid',
-      payment_date: new Date().toISOString().split('T')[0],
-      reference_month: refMonth,
-      payment_method: 'manual',
+    await fetch('/api/pilates/financeiro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, amount }),
     });
-    await supabase
-      .from('users_pilates')
-      .update({ status: 'ativo' })
-      .eq('id', userId);
     setMarkingPaid(null);
-    // Reload
     window.location.reload();
   };
 
@@ -98,9 +89,38 @@ export default function FinanceiroAdmin() {
     return matchSearch && matchStatus;
   });
 
+  const handleExportCSV = () => {
+    const header = ['Nome', 'Email', 'Telefone', 'Status', 'Mensalidade', 'Plano', 'Último Pagamento'];
+    const lines = alunos.map((a: any) => [
+      a.full_name ?? '',
+      a.email ?? '',
+      a.phone ?? '',
+      a.status ?? '',
+      a.subscription?.monthly_value ?? a.monthly_value ?? '',
+      a.subscription?.plan_name ?? '',
+      a.lastPayment?.payment_date ?? '',
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';'));
+    const csv = '﻿' + [header.join(';'), ...lines].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `financeiro-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-white">Gestão Financeira</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Gestão Financeira</h1>
+        <button
+          onClick={handleExportCSV}
+          className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
+        >
+          ⬇️ Exportar CSV
+        </button>
+      </div>
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

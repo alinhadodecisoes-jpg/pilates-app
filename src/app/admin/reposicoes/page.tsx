@@ -2,20 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 
+const DAYS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
 interface RepoSlot {
   id: number;
-  class_id: number;
+  class_id: number | null;
   slot_date: string;
   time_start: string;
   time_end: string;
   capacity: number;
   created_at: string;
   classes_pilates?: { name: string } | null;
-  requests_count?: number;
 }
 
 interface RepoRequest {
@@ -29,147 +29,124 @@ interface RepoRequest {
   reposition_slots?: { slot_date: string; time_start: string; time_end: string; classes_pilates?: { name: string } | null } | null;
 }
 
-interface PilatesClassBasic {
+interface ClassRow {
   id: number;
   name: string;
+  day_of_week: number;
+  time_start: string;
+  time_end: string;
+  capacity: number;
+  enrolled_count: number;
 }
 
 export default function AdminReposicoesPage() {
   const { user, loading: authLoading } = usePilatesAuth();
   const [slots, setSlots] = useState<RepoSlot[]>([]);
   const [requests, setRequests] = useState<RepoRequest[]>([]);
-  const [classes, setClasses] = useState<PilatesClassBasic[]>([]);
+  const [classes, setClasses] = useState<ClassRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'slots' | 'requests'>('requests');
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = getSupabaseBrowserClient();
 
-  const [form, setForm] = useState({
-    class_id: '',
-    slot_date: new Date().toISOString().slice(0, 10),
-    time_start: '09:00',
-    time_end: '10:00',
-    capacity: 4,
-  });
+  const [slotDate, setSlotDate] = useState(new Date().toISOString().slice(0, 10));
+  const [selected, setSelected] = useState<Record<number, boolean>>({});
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [slotsRes, requestsRes, classesRes] = await Promise.all([
-        supabase
-          .from('reposition_slots')
-          .select('*, classes_pilates(name)')
-          .order('slot_date', { ascending: true }),
-        supabase
-          .from('reposition_requests')
-          .select('*, users_pilates(full_name, email), reposition_slots(slot_date, time_start, time_end, classes_pilates(name))')
-          .order('requested_at', { ascending: false }),
-        supabase
-          .from('classes_pilates')
-          .select('id, name')
-          .eq('is_active', true)
-          .order('name'),
-      ]);
-      setSlots((slotsRes.data ?? []) as RepoSlot[]);
-      setRequests((requestsRes.data ?? []) as RepoRequest[]);
-      setClasses((classesRes.data ?? []) as PilatesClassBasic[]);
+      const res = await fetch('/api/pilates/reposicoes');
+      if (!res.ok) throw new Error('Falha ao carregar');
+      const data = await res.json();
+      setSlots(data.slots ?? []);
+      setRequests(data.requests ?? []);
+      setClasses(data.classes ?? []);
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar. Verifique se o SQL C1 foi rodado (PENDENCIAS_WILLIAN.md).');
+      setError('Erro ao carregar reposições.');
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     if (!authLoading) loadData();
   }, [authLoading, loadData]);
 
-  const handleCreateSlot = async () => {
-    if (!form.class_id) { setError('Selecione a turma.'); return; }
+  const toggleClass = (id: number) =>
+    setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleCreateSlots = async () => {
+    const chosen = classes.filter((c) => selected[c.id]);
+    if (chosen.length === 0) { setError('Selecione ao menos uma turma.'); return; }
     setSaving(true);
     setError(null);
-    const { error: err } = await supabase
-      .from('reposition_slots')
-      .insert({
-        class_id: Number(form.class_id),
-        slot_date: form.slot_date,
-        time_start: form.time_start,
-        time_end: form.time_end,
-        capacity: form.capacity,
-        created_by: user?.id,
-      });
-    setSaving(false);
-    if (err) { setError(err.message); return; }
-    setShowCreate(false);
-    loadData();
-  };
-
-  const handleApprove = async (req: RepoRequest) => {
-    if (!user) return;
-    setSaving(true);
-    // Aprovar esta solicitação
-    const { error: approveErr } = await supabase
-      .from('reposition_requests')
-      .update({ status: 'approved', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
-      .eq('id', req.id);
-
-    if (approveErr) { setError(approveErr.message); setSaving(false); return; }
-
-    // Rejeitar outras pendentes do mesmo aluno para o mesmo slot
-    await supabase
-      .from('reposition_requests')
-      .update({ status: 'rejected', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
-      .eq('user_id', req.user_id)
-      .eq('slot_id', req.slot_id)
-      .neq('id', req.id)
-      .eq('status', 'pending');
-
-    // Criar presença (attendances_pilates)
-    const slot = req.reposition_slots;
-    if (slot) {
-      await supabase
-        .from('attendances_pilates')
-        .upsert({
-          user_id: req.user_id,
-          class_id: null, // slot independente de class_id direto
-          attendance_date: slot.slot_date,
-          status: 'replacement',
-          notes: `Reposição aprovada via slot — ${slot.time_start?.slice(0, 5)}–${slot.time_end?.slice(0, 5)}`,
-        }, { onConflict: 'user_id,attendance_date' });
-    }
-
-    // Tentar notificar
     try {
-      await fetch('/api/notify', {
+      const res = await fetch('/api/pilates/reposicoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: req.user_id,
-          type: 'reposicao_aprovada',
-          title: 'Reposição Aprovada!',
-          body: `Sua reposição foi aprovada para ${slot?.slot_date} às ${slot?.time_start?.slice(0, 5)}.`,
+          action: 'create_slots_bulk',
+          slots: chosen.map((c) => ({
+            class_id: c.id,
+            slot_date: slotDate,
+            time_start: c.time_start,
+            time_end: c.time_end,
+            capacity: c.capacity,
+            created_by: user?.id,
+          })),
         }),
       });
-    } catch { /* notificação não é crítica */ }
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error || 'Erro'); }
+      setShowCreate(false);
+      setSelected({});
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar slots.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    setSaving(false);
-    loadData();
+  const handleApprove = async (req: RepoRequest) => {
+    setSaving(true);
+    try {
+      await fetch('/api/pilates/reposicoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', request_id: req.id, reviewer_id: user?.id }),
+      });
+      try {
+        const slot = req.reposition_slots;
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: req.user_id,
+            type: 'reposicao_aprovada',
+            title: 'Reposição Aprovada!',
+            body: `Sua reposição foi aprovada para ${slot?.slot_date} às ${slot?.time_start?.slice(0, 5)}.`,
+          }),
+        });
+      } catch { /* notificação não é crítica */ }
+      await loadData();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReject = async (reqId: number) => {
-    if (!user) return;
-    await supabase
-      .from('reposition_requests')
-      .update({ status: 'rejected', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
-      .eq('id', reqId);
+    await fetch('/api/pilates/reposicoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject', request_id: reqId, reviewer_id: user?.id }),
+    });
     loadData();
   };
 
   const handleDeleteSlot = async (slotId: number) => {
-    await supabase.from('reposition_slots').delete().eq('id', slotId);
+    await fetch(`/api/pilates/reposicoes?slotId=${slotId}`, { method: 'DELETE' });
     loadData();
   };
 
@@ -182,25 +159,23 @@ export default function AdminReposicoesPage() {
   }
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length;
+  const selectedCount = Object.values(selected).filter(Boolean).length;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Reposições</h1>
         {tab === 'slots' && (
-          <Button variant="primary" size="md" onClick={() => { setError(null); setShowCreate(true); }}>
-            + Novo Slot
+          <Button variant="primary" size="md" onClick={() => { setError(null); setSelected({}); setShowCreate(true); }}>
+            + Disponibilizar Horários
           </Button>
         )}
       </div>
 
       {error && (
-        <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded-lg px-4 py-3">
-          ⚠️ {error}
-        </p>
+        <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded-lg px-4 py-3">⚠️ {error}</p>
       )}
 
-      {/* Tabs */}
       <div className="flex gap-2">
         <button
           onClick={() => setTab('requests')}
@@ -282,7 +257,7 @@ export default function AdminReposicoesPage() {
       {tab === 'slots' && (
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
           {slots.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">Nenhum slot criado ainda. Clique em &ldquo;+ Novo Slot&rdquo;.</div>
+            <div className="p-8 text-center text-slate-500">Nenhum horário disponível ainda. Clique em &ldquo;+ Disponibilizar Horários&rdquo;.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -304,9 +279,7 @@ export default function AdminReposicoesPage() {
                       <td className="px-5 py-3 text-slate-300">
                         {slot.time_start?.slice(0, 5)}–{slot.time_end?.slice(0, 5)}
                       </td>
-                      <td className="px-5 py-3 text-slate-300">
-                        {slot.classes_pilates?.name || '—'}
-                      </td>
+                      <td className="px-5 py-3 text-slate-300">{slot.classes_pilates?.name || '—'}</td>
                       <td className="px-5 py-3">
                         <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">{slot.capacity}</span>
                       </td>
@@ -327,13 +300,13 @@ export default function AdminReposicoesPage() {
         </div>
       )}
 
-      {/* Modal Novo Slot */}
+      {/* Modal Disponibilizar Horários (multi-seleção de turmas) */}
       {showCreate && (
         <Modal
-          title="Novo Slot de Reposição"
+          title="Disponibilizar Horários de Reposição"
           onClose={() => setShowCreate(false)}
-          onConfirm={handleCreateSlot}
-          confirmText="Criar Slot"
+          onConfirm={handleCreateSlots}
+          confirmText={selectedCount > 0 ? `Disponibilizar ${selectedCount} horário(s)` : 'Disponibilizar'}
           loading={saving}
         >
           <div className="space-y-4">
@@ -341,56 +314,54 @@ export default function AdminReposicoesPage() {
               <p className="text-xs text-red-400 bg-red-900/20 border border-red-800 rounded-lg px-3 py-2">{error}</p>
             )}
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Turma *</label>
-              <select
-                value={form.class_id}
-                onChange={(e) => setForm({ ...form, class_id: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="">Selecione...</option>
-                {classes.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-slate-400 mb-1">Data</label>
+              <label className="block text-sm text-slate-400 mb-1">Data da reposição</label>
               <input
                 type="date"
-                value={form.slot_date}
-                onChange={(e) => setForm({ ...form, slot_date: e.target.value })}
+                value={slotDate}
+                onChange={(e) => setSlotDate(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Início</label>
-                <input
-                  type="time"
-                  value={form.time_start}
-                  onChange={(e) => setForm({ ...form, time_start: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Fim</label>
-                <input
-                  type="time"
-                  value={form.time_end}
-                  onChange={(e) => setForm({ ...form, time_end: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Vagas</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={form.capacity}
-                  onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
+            <div>
+              <p className="text-sm text-slate-400 mb-2">
+                Selecione as turmas que ficarão disponíveis nesta data (mesmo as cheias — alguém pode ter cancelado):
+              </p>
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {classes.length === 0 ? (
+                  <p className="text-slate-500 text-sm">Nenhuma turma cadastrada.</p>
+                ) : (
+                  classes.map((c) => {
+                    const cheia = c.enrolled_count >= c.capacity;
+                    return (
+                      <label
+                        key={c.id}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          selected[c.id] ? 'border-green-500 bg-green-900/15' : 'border-slate-700 bg-slate-900 hover:border-slate-600'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!selected[c.id]}
+                          onChange={() => toggleClass(c.id)}
+                          className="w-4 h-4 accent-green-500"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-medium">{c.name}</p>
+                          <p className="text-slate-400 text-xs">
+                            {DAYS[c.day_of_week]} · {c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
+                            cheia ? 'bg-red-600/20 text-red-400' : 'bg-green-600/20 text-green-400'
+                          }`}
+                        >
+                          {c.enrolled_count}/{c.capacity} {cheia ? 'cheia' : 'vaga'}
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>

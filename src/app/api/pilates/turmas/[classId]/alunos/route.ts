@@ -13,12 +13,13 @@ export async function GET(
         .from('users_pilates')
         .select('id, full_name, email, role, status, phone, monthly_value, emergency_contact, emergency_phone, plan_id, created_at')
         .eq('role', 'aluno')
-        .eq('status', 'ativo')
+        .neq('status', 'inativo')
         .order('full_name'),
       db
         .from('enrollments_pilates')
         .select('user_id, users_pilates!inner(full_name, email)')
-        .eq('class_id', Number(classId)),
+        .eq('class_id', Number(classId))
+        .eq('is_active', true),
     ]);
     return NextResponse.json({
       alunos: alunosRes.data ?? [],
@@ -37,9 +38,13 @@ export async function POST(
     const { classId } = await params;
     const { userId } = await req.json();
     const db = getSupabaseServerClient();
+    // upsert evita duplicar matrícula; is_active:true garante que aluno e professor enxerguem a aula
     const { error } = await db
       .from('enrollments_pilates')
-      .insert({ class_id: Number(classId), user_id: userId });
+      .upsert(
+        { class_id: Number(classId), user_id: userId, is_active: true },
+        { onConflict: 'class_id,user_id' }
+      );
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (e) {
