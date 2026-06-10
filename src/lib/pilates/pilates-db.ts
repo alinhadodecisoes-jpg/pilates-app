@@ -6,6 +6,11 @@ const getDb = () => getSupabaseBrowserClient();
 // ====================== ALUNOS ======================
 
 export async function getAlunos() {
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/pilates/alunos');
+    if (!res.ok) throw new Error('Erro ao buscar alunos');
+    return (await res.json()) as PilatesUser[];
+  }
   const db = getDb();
   const { data, error } = await db
     .from('users_pilates')
@@ -79,6 +84,15 @@ export async function createClass(
   timeEnd: string,
   capacity: number
 ) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/pilates/turmas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ professor_id: professorId, name: nome, day_of_week: dayOfWeek, time_start: timeStart, time_end: timeEnd, capacity }),
+    });
+    if (!res.ok) throw new Error('Erro ao criar turma');
+    return (await res.json()) as PilatesClass;
+  }
   const db = getDb();
   const { data, error } = await db
     .from('classes_pilates')
@@ -98,6 +112,15 @@ export async function createClass(
 }
 
 export async function updateClass(id: number, updates: Partial<PilatesClass>) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch(`/api/pilates/turmas/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error('Erro ao atualizar turma');
+    return (await res.json()) as PilatesClass;
+  }
   const db = getDb();
   const { data, error } = await db
     .from('classes_pilates')
@@ -110,6 +133,11 @@ export async function updateClass(id: number, updates: Partial<PilatesClass>) {
 }
 
 export async function deleteClass(id: number) {
+  if (typeof window !== 'undefined') {
+    const res = await fetch(`/api/pilates/turmas/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao deletar turma');
+    return;
+  }
   const db = getDb();
   const { error } = await db.from('classes_pilates').delete().eq('id', id);
   if (error) throw error;
@@ -126,6 +154,11 @@ export async function getClassesWithEnrollments() {
 }
 
 export async function getClassesWithEnrolledCount(): Promise<PilatesClass[]> {
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/pilates/turmas');
+    if (!res.ok) throw new Error('Erro ao buscar turmas');
+    return (await res.json()) as PilatesClass[];
+  }
   const db = getDb();
   const [classesResult, enrollmentsResult] = await Promise.all([
     db.from('classes_pilates').select('*').order('day_of_week', { ascending: true }),
@@ -259,6 +292,11 @@ export async function getUltimaAvaliacao(alunoId: string) {
 // ====================== DASHBOARD ======================
 
 export async function getDashboardStats() {
+  if (typeof window !== 'undefined') {
+    const res = await fetch('/api/pilates/stats');
+    if (!res.ok) throw new Error('Erro ao buscar stats');
+    return await res.json();
+  }
   const db = getDb();
   const [alunos, inadimplentes, turmas] = await Promise.all([
     db.from('users_pilates').select('id', { count: 'exact' }).eq('role', 'aluno'),
@@ -269,6 +307,6 @@ export async function getDashboardStats() {
     total_alunos: alunos.count ?? 0,
     inadimplentes: inadimplentes.count ?? 0,
     turmas_ativas: turmas.count ?? 0,
-    faturamento_mes: 12500, // placeholder — conectar ao Stripe futuramente
+    faturamento_mes: 12500,
   };
 }

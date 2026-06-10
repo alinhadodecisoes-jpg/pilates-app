@@ -1,0 +1,84 @@
+===============================================
+LISTA COMPLETA — 65 USUÁRIOS PARA BETA
+Criada: 2026-06-10
+Status: Pronto para reconstituir no Supabase
+===============================================
+
+ADMINS (2)
+==========
+alinhado.decisoes@gmail.com | Wimafasi29@ | admin | (11) 99000000
+arkomach.oficial@gmail.com | Wimafasi29@ | admin | (11) 99000000
+
+PROFESSORES (5)
+===============
+professor001@daimach.test | Prof001!Abc | professor | (11) 99000001
+professor002@daimach.test | Prof002!Abc | professor | (11) 99000002
+professor003@daimach.test | Prof003!Abc | professor | (11) 99000003
+professor004@daimach.test | Prof004!Abc | professor | (11) 99000004
+professor005@daimach.test | Prof005!Abc | professor | (11) 99000005
+
+ALUNOS (58)
+===========
+aluno001@daimach.test | Aluno001!Abc | aluno | (11) 99000006
+aluno002@daimach.test | Aluno002!Abc | aluno | (11) 99000007
+aluno003@daimach.test | Aluno003!Abc | aluno | (11) 99000008
+aluno004@daimach.test | Aluno004!Abc | aluno | (11) 99000009
+aluno005@daimach.test | Aluno005!Abc | aluno | (11) 99000010
+aluno006@daimach.test | Aluno006!Abc | aluno | (11) 99000011
+aluno007@daimach.test | Aluno007!Abc | aluno | (11) 99000012
+aluno008@daimach.test | Aluno008!Abc | aluno | (11) 99000013
+aluno009@daimach.test | Aluno009!Abc | aluno | (11) 99000014
+aluno010@daimach.test | Aluno010!Abc | aluno | (11) 99000015
+aluno011@daimach.test | Aluno011!Abc | aluno | (11) 99000016
+aluno012@daimach.test | Aluno012!Abc | aluno | (11) 99000017
+aluno013@daimach.test | Aluno013!Abc | aluno | (11) 99000018
+aluno014@daimach.test | Aluno014!Abc | aluno | (11) 99000019
+aluno015@daimach.test | Aluno015!Abc | aluno | (11) 99000020
+aluno016@daimach.test | Aluno016!Abc | aluno | (11) 99000021
+aluno017@daimach.test | Aluno017!Abc | aluno | (11) 99000022
+aluno018@daimach.test | Aluno018!Abc | aluno | (11) 99000023
+aluno019@daimach.test | Aluno019!Abc | aluno | (11) 99000024
+aluno020@daimach.test | Aluno020!Abc | aluno | (11) 99000025
+aluno021@daimach.test | Aluno021!Abc | aluno | (11) 99000026
+aluno022@daimach.test | Aluno022!Abc | aluno | (11) 99000027
+aluno023@daimach.test | Aluno023!Abc | aluno | (11) 99000028
+aluno024@daimach.test | Aluno024!Abc | aluno | (11) 99000029
+aluno025@daimach.test | Aluno025!Abc | aluno | (11) 99000030
+aluno026@daimach.test | Aluno026!Abc | aluno | (11) 99000031
+aluno027@daimach.test | Aluno027!Abc | aluno | (11) 99000032
+aluno028@daimach.test | Aluno028!Abc | aluno | (11) 99000033
+aluno029@daimach.test | Aluno029!Abc | aluno | (11) 99000034
+aluno030@daimach.test | Aluno030!Abc | aluno | (11) 99000035
+aluno031@daimach.test | Aluno031!Abc | aluno | (11) 99000036
+aluno032@daimach.test | Aluno032!Abc | aluno | (11) 99000037
+aluno033@daimach.test | Aluno033!Abc | aluno | (11) 99000038
+aluno034@daimach.test | Aluno034!Abc | aluno | (11) 99000039
+aluno035@daimach.test | Aluno035!Abc | aluno | (11) 99000040
+aluno036@daimach.test | Aluno036!Abc | aluno | (11) 99000041
+aluno037@daimach.test | Aluno037!Abc | aluno | (11) 99000042
+aluno038@daimach.test | Aluno038!Abc | aluno | (11) 99000043
+aluno039@daimach.test | Aluno039!Abc | aluno | (11) 99000044
+aluno040@daimach.test | Aluno040!Abc | aluno | (11) 99000045
+aluno041@daimach.test | Aluno041!Abc | aluno | (11) 99000046
+aluno042@daimach.test | Aluno042!Abc | aluno | (11) 99000047
+aluno043@daimach.test | Aluno043!Abc | aluno | (11) 99000048
+aluno044@daimach.test | Aluno044!Abc | aluno | (11) 99000049
+aluno045@daimach.test | Aluno045!Abc | aluno | (11) 99000050
+aluno046@daimach.test | Aluno046!Abc | aluno | (11) 99000051
+aluno047@daimach.test | Aluno047!Abc | aluno | (11) 99000052
+aluno048@daimach.test | Aluno048!Abc | aluno | (11) 99000053
+aluno049@daimach.test | Aluno049!Abc | aluno | (11) 99000054
+aluno050@daimach.test | Aluno050!Abc | aluno | (11) 99000055
+aluno051@daimach.test | Aluno051!Abc | aluno | (11) 99000056
+aluno052@daimach.test | Aluno052!Abc | aluno | (11) 99000057
+aluno053@daimach.test | Aluno053!Abc | aluno | (11) 99000058
+aluno054@daimach.test | Aluno054!Abc | aluno | (11) 99000059
+aluno055@daimach.test | Aluno055!Abc | aluno | (11) 99000060
+aluno056@daimach.test | Aluno056!Abc | aluno | (11) 99000061
+aluno057@daimach.test | Aluno057!Abc | aluno | (11) 99000062
+aluno058@daimach.test | Aluno058!Abc | aluno | (11) 99000063
+
+===============================================
+TOTAL: 65 usuários
+2 Admins + 5 Professores + 58 Alunos
+===============================================

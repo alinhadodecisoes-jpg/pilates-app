@@ -19,6 +19,13 @@ export function usePilatesAuth() {
 
     const fetchRole = async (userId: string): Promise<UserRole> => {
       try {
+        // Use API route to bypass RLS
+        const res = await fetch(`/api/pilates/role?userId=${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          return (data?.role as UserRole) || 'aluno';
+        }
+        // Fallback to direct query
         const { data } = await supabase
           .from('users_pilates')
           .select('role')

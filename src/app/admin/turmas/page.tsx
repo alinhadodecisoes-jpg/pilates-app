@@ -108,27 +108,18 @@ export default function TurmasPage() {
     setEnrollError(null);
     setEnrollLoading(true);
     try {
-      const [alunosRes, enrolledRes] = await Promise.all([
-        supabase
-          .from('users_pilates')
-          .select('id, full_name, email, role, status, phone, monthly_value, emergency_contact, emergency_phone, plan_id, created_at')
-          .eq('role', 'aluno')
-          .eq('status', 'ativo')
-          .order('full_name'),
-        supabase
-          .from('enrollments_pilates')
-          .select('user_id, users_pilates!inner(full_name, email)')
-          .eq('class_id', c.id),
-      ]);
-      setAllAlunos((alunosRes.data ?? []) as PilatesUser[]);
-      setEnrolled((enrolledRes.data ?? []) as unknown as EnrolledStudent[]);
+      const res = await fetch(`/api/pilates/turmas/${c.id}/alunos`);
+      if (!res.ok) throw new Error('Erro ao carregar alunos');
+      const data = await res.json();
+      setAllAlunos((data.alunos ?? []) as PilatesUser[]);
+      setEnrolled((data.enrolled ?? []) as unknown as EnrolledStudent[]);
     } catch (err) {
       console.error(err);
-      setEnrollError('Erro ao carregar. Verifique se a tabela enrollments_pilates existe (PENDENCIAS_WILLIAN.md — seção B1).');
+      setEnrollError('Erro ao carregar alunos da turma.');
     } finally {
       setEnrollLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   const handleEnroll = async (userId: string) => {
     if (!enrollClass) return;
@@ -137,11 +128,14 @@ export default function TurmasPage() {
       return;
     }
     setEnrollError(null);
-    const { error } = await supabase
-      .from('enrollments_pilates')
-      .insert({ class_id: enrollClass.id, user_id: userId });
-    if (error) {
-      setEnrollError(error.message);
+    const res = await fetch(`/api/pilates/turmas/${enrollClass.id}/alunos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setEnrollError(data.error || 'Erro ao matricular');
       return;
     }
     const aluno = allAlunos.find((a) => a.id === userId);
@@ -157,13 +151,14 @@ export default function TurmasPage() {
   const handleUnenroll = async (userId: string) => {
     if (!enrollClass) return;
     setEnrollError(null);
-    const { error } = await supabase
-      .from('enrollments_pilates')
-      .delete()
-      .eq('class_id', enrollClass.id)
-      .eq('user_id', userId);
-    if (error) {
-      setEnrollError(error.message);
+    const res = await fetch(`/api/pilates/turmas/${enrollClass.id}/alunos`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setEnrollError(data.error || 'Erro ao desmatricular');
       return;
     }
     setEnrolled((prev) => prev.filter((e) => e.user_id !== userId));

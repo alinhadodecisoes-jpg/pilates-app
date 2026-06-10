@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 
 interface AlunoFinanceiro {
@@ -43,79 +42,15 @@ export default function FinanceiroAdmin() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [markingPaid, setMarkingPaid] = useState<string | null>(null);
-  const supabase = getSupabaseBrowserClient();
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        const [paymentsRes, pendingRes, alunosRes, subscriptionsRes, lastPaymentsRes] =
-          await Promise.all([
-            supabase
-              .from('payment_history')
-              .select('amount')
-              .eq('status', 'paid')
-              .gte('payment_date', thirtyDaysAgo.toISOString().split('T')[0]),
-            supabase.from('payment_history').select('amount').eq('status', 'pending'),
-            supabase
-              .from('users_pilates')
-              .select('id, full_name, email, status, phone')
-              .neq('role', 'admin')
-              .order('full_name'),
-            supabase
-              .from('subscriptions_pilates')
-              .select('user_id, stripe_subscription_id, stripe_customer_id, current_period_end, plan:plan_id(name, monthly_value)')
-              .not('user_id', 'is', null),
-            supabase
-              .from('payment_history')
-              .select('user_id, amount, payment_date, status')
-              .order('payment_date', { ascending: false }),
-          ]);
-
-        const totalRevenue =
-          paymentsRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-        const totalPending =
-          pendingRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-
-        const usersData = alunosRes.data || [];
-        const subsData = subscriptionsRes.data || [];
-        const paymentsData = lastPaymentsRes.data || [];
-
-        // Index subscriptions by user_id
-        const subsByUser: Record<string, any> = {};
-        for (const sub of subsData) {
-          subsByUser[sub.user_id] = sub;
+        const res = await fetch('/api/pilates/financeiro');
+        if (res.ok) {
+          const data = await res.json();
+          setAlunos(data.alunos ?? []);
+          setSummary(data.summary ?? null);
         }
-
-        // Index last payment by user_id
-        const lastPayByUser: Record<string, any> = {};
-        for (const pay of paymentsData) {
-          if (!lastPayByUser[pay.user_id]) {
-            lastPayByUser[pay.user_id] = pay;
-          }
-        }
-
-        const enriched: AlunoFinanceiro[] = usersData.map((u) => ({
-          ...u,
-          subscription: subsByUser[u.id]
-            ? {
-                stripe_subscription_id: subsByUser[u.id].stripe_subscription_id,
-                stripe_customer_id: subsByUser[u.id].stripe_customer_id,
-                current_period_end: subsByUser[u.id].current_period_end,
-                plan_name: (subsByUser[u.id].plan as any)?.name ?? null,
-                monthly_value: (subsByUser[u.id].plan as any)?.monthly_value ?? null,
-              }
-            : null,
-          lastPayment: lastPayByUser[u.id] ?? null,
-        }));
-
-        const alunosAtivos = usersData.filter((u) => u.status === 'ativo').length;
-        const inadimplentes = usersData.filter((u) => u.status === 'inadimplente').length;
-
-        setAlunos(enriched);
-        setSummary({ totalRevenue, totalPending, alunosAtivos, inadimplentes });
       } catch (err) {
         console.error('[ERROR financeiro admin]:', err);
       }

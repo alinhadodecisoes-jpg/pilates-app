@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { updateAluno, deleteAluno } from '@/lib/pilates/pilates-db';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
@@ -38,16 +37,18 @@ export default function ProfessoresPage() {
     role: 'professor',
   });
 
-  const supabase = getSupabaseBrowserClient();
-
   const loadStaff = async () => {
-    const { data, error } = await supabase
-      .from('users_pilates')
-      .select('*')
-      .in('role', ['professor', 'fisioterapeuta', 'prof_fisio', 'prof_edfisica'])
-      .order('full_name', { ascending: true });
-    if (!error && data) setStaff(data as PilatesUser[]);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/pilates/professores');
+      if (res.ok) {
+        const data = await res.json();
+        setStaff(data as PilatesUser[]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
