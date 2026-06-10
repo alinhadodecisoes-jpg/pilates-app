@@ -1,15 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { getClassesWithEnrolledCount, createClass, updateClass, deleteClass } from '@/lib/pilates/pilates-db';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
-import type { PilatesClass } from '@/types/pilates';
+import type { PilatesClass, PilatesUser } from '@/types/pilates';
 
 // day_of_week no banco: 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb, 7=Dom
 const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+interface EnrolledStudent {
+  user_id: string;
+  users_pilates: { full_name: string | null; email: string | null } | null;
+}
 
 export default function TurmasPage() {
   const { user, loading: authLoading } = usePilatesAuth();
@@ -21,14 +27,23 @@ export default function TurmasPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Modal Gerenciar Alunos
+  const [enrollClass, setEnrollClass] = useState<PilatesClass | null>(null);
+  const [allAlunos, setAllAlunos] = useState<PilatesUser[]>([]);
+  const [enrolled, setEnrolled] = useState<EnrolledStudent[]>([]);
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [enrollError, setEnrollError] = useState<string | null>(null);
+
   const [form, setForm] = useState({
     name: '',
-    day_of_week: 1,        // 1=Seg no banco
+    day_of_week: 1,
     time_start: '09:00',
     time_end: '10:00',
     capacity: 4,
     is_active: true,
   });
+
+  const supabase = getSupabaseBrowserClient();
 
   useEffect(() => {
     if (!authLoading) {
@@ -87,16 +102,88 @@ export default function TurmasPage() {
     }
   };
 
+  // ===== GERENCIAR ALUNOS =====
+  const openEnrollModal = useCallback(async (c: PilatesClass) => {
+    setEnrollClass(c);
+    setEnrollError(null);
+    setEnrollLoading(true);
+    try {
+      const [alunosRes, enrolledRes] = await Promise.all([
+        supabase
+          .from('users_pilates')
+          .select('id, full_name, email, role, status, phone, monthly_value, emergency_contact, emergency_phone, plan_id, created_at')
+          .eq('role', 'aluno')
+          .eq('status', 'ativo')
+          .order('full_name'),
+        supabase
+          .from('enrollments_pilates')
+          .select('user_id, users_pilates!inner(full_name, email)')
+          .eq('class_id', c.id),
+      ]);
+      setAllAlunos((alunosRes.data ?? []) as PilatesUser[]);
+      setEnrolled((enrolledRes.data ?? []) as unknown as EnrolledStudent[]);
+    } catch (err) {
+      console.error(err);
+      setEnrollError('Erro ao carregar. Verifique se a tabela enrollments_pilates existe (PENDENCIAS_WILLIAN.md — seção B1).');
+    } finally {
+      setEnrollLoading(false);
+    }
+  }, [supabase]);
+
+  const handleEnroll = async (userId: string) => {
+    if (!enrollClass) return;
+    if (enrolled.length >= enrollClass.capacity) {
+      setEnrollError(`Turma lotada (capacidade: ${enrollClass.capacity}).`);
+      return;
+    }
+    setEnrollError(null);
+    const { error } = await supabase
+      .from('enrollments_pilates')
+      .insert({ class_id: enrollClass.id, user_id: userId });
+    if (error) {
+      setEnrollError(error.message);
+      return;
+    }
+    const aluno = allAlunos.find((a) => a.id === userId);
+    setEnrolled((prev) => [
+      ...prev,
+      { user_id: userId, users_pilates: { full_name: aluno?.full_name ?? null, email: aluno?.email ?? null } },
+    ]);
+    setClasses((prev) =>
+      prev.map((c) => c.id === enrollClass.id ? { ...c, enrolled_count: (c.enrolled_count ?? 0) + 1 } : c)
+    );
+  };
+
+  const handleUnenroll = async (userId: string) => {
+    if (!enrollClass) return;
+    setEnrollError(null);
+    const { error } = await supabase
+      .from('enrollments_pilates')
+      .delete()
+      .eq('class_id', enrollClass.id)
+      .eq('user_id', userId);
+    if (error) {
+      setEnrollError(error.message);
+      return;
+    }
+    setEnrolled((prev) => prev.filter((e) => e.user_id !== userId));
+    setClasses((prev) =>
+      prev.map((c) => c.id === enrollClass.id ? { ...c, enrolled_count: Math.max(0, (c.enrolled_count ?? 1) - 1) } : c)
+    );
+  };
+
   if (authLoading || loading) {
     return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
   }
 
-  // Agrupar por day_of_week (1–7 no banco)
   const byDay: Record<number, PilatesClass[]> = {};
   classes.forEach((c) => {
     if (!byDay[c.day_of_week]) byDay[c.day_of_week] = [];
     byDay[c.day_of_week].push(c);
   });
+
+  const enrolledIds = new Set(enrolled.map((e) => e.user_id));
+  const availableAlunos = allAlunos.filter((a) => !enrolledIds.has(a.id));
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -105,7 +192,7 @@ export default function TurmasPage() {
         <Button variant="primary" size="md" onClick={openCreate}>+ Nova Turma</Button>
       </div>
 
-      {/* Grid Semanal — idx 0-6 → day_of_week 1-7 */}
+      {/* Grid Semanal */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {DAYS.map((dayName, idx) => {
           const dayClasses = byDay[idx + 1] ?? [];
@@ -120,19 +207,30 @@ export default function TurmasPage() {
                   <p className="text-xs text-slate-500 text-center py-4">Sem turmas</p>
                 ) : (
                   dayClasses.map((c) => (
-                    <button
+                    <div
                       key={c.id}
-                      onClick={() => openEdit(c)}
-                      className={`w-full text-left p-3 rounded-lg border transition-colors hover:border-green-600 ${
+                      className={`p-3 rounded-lg border ${
                         c.is_active ? 'border-slate-600 bg-slate-700/50' : 'border-slate-700 bg-slate-800/50 opacity-50'
                       }`}
                     >
                       <p className="font-medium text-white text-sm">{c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{c.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {c.enrolled_count ?? 0}/{c.capacity} alunos
-                      </p>
-                    </button>
+                      <p className="text-xs text-slate-500 mt-0.5">{c.enrolled_count ?? 0}/{c.capacity} alunos</p>
+                      <div className="flex gap-1 mt-2">
+                        <button
+                          onClick={() => openEdit(c)}
+                          className="text-xs text-slate-400 hover:text-white bg-slate-600/50 hover:bg-slate-600 px-2 py-1 rounded transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => openEnrollModal(c)}
+                          className="text-xs text-green-400 hover:text-white bg-green-900/30 hover:bg-green-600 px-2 py-1 rounded transition-colors"
+                        >
+                          👥 Alunos
+                        </button>
+                      </div>
+                    </div>
                   ))
                 )}
               </div>
@@ -188,14 +286,12 @@ export default function TurmasPage() {
               </div>
             </div>
             {editMode === 'edit' && (
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
-                    className="w-4 h-4 accent-green-500"
-                  />
-                  <span className="text-sm text-slate-300">Turma ativa</span>
-                </label>
-              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                  className="w-4 h-4 accent-green-500"
+                />
+                <span className="text-sm text-slate-300">Turma ativa</span>
+              </label>
             )}
             {editMode === 'edit' && selectedClass && (
               <div className="pt-2 border-t border-slate-700">
@@ -203,6 +299,88 @@ export default function TurmasPage() {
               </div>
             )}
           </div>
+        </Modal>
+      )}
+
+      {/* Modal Gerenciar Alunos */}
+      {enrollClass && (
+        <Modal
+          title={`👥 Alunos — ${enrollClass.name}`}
+          onClose={() => setEnrollClass(null)}
+          onConfirm={() => setEnrollClass(null)}
+          confirmText="Fechar"
+          loading={false}
+        >
+          {enrollLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="w-6 h-6 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {enrollError && (
+                <p className="text-xs text-red-400 bg-red-900/20 border border-red-800 rounded-lg px-3 py-2">
+                  ⚠️ {enrollError}
+                </p>
+              )}
+
+              {/* Matriculados */}
+              <div>
+                <h3 className="text-sm font-semibold text-green-400 mb-2">
+                  Matriculados ({enrolled.length}/{enrollClass.capacity})
+                </h3>
+                {enrolled.length === 0 ? (
+                  <p className="text-xs text-slate-500 py-2">Nenhum aluno matriculado.</p>
+                ) : (
+                  <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
+                    {enrolled.map((e) => (
+                      <div key={e.user_id} className="flex items-center justify-between bg-slate-700/50 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-white text-sm">{e.users_pilates?.full_name || '—'}</p>
+                          <p className="text-slate-400 text-xs">{e.users_pilates?.email || ''}</p>
+                        </div>
+                        <button
+                          onClick={() => handleUnenroll(e.user_id)}
+                          className="text-red-400 hover:text-white text-xs bg-red-900/20 hover:bg-red-600 px-2 py-1 rounded transition-colors"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Disponíveis */}
+              <div>
+                <h3 className="text-sm font-semibold text-slate-300 mb-2">Adicionar Aluno</h3>
+                {availableAlunos.length === 0 ? (
+                  <p className="text-xs text-slate-500">
+                    {allAlunos.length === 0
+                      ? 'Nenhum aluno ativo. Crie alunos em /admin/alunos.'
+                      : 'Todos os alunos ativos já estão matriculados.'}
+                  </p>
+                ) : (
+                  <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
+                    {availableAlunos.map((a) => (
+                      <div key={a.id} className="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-white text-sm">{a.full_name || '—'}</p>
+                          <p className="text-slate-400 text-xs">{a.email || ''}</p>
+                        </div>
+                        <button
+                          onClick={() => handleEnroll(a.id)}
+                          disabled={enrolled.length >= enrollClass.capacity}
+                          className="text-green-400 hover:text-white text-xs bg-green-900/20 hover:bg-green-600 px-2 py-1 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          + Matricular
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </Modal>
       )}
 

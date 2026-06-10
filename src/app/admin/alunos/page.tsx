@@ -9,6 +9,25 @@ import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
 import type { PilatesUser } from '@/types/pilates';
 
+// Gera senha forte aleatória
+function generateStrongPassword(): string {
+  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+interface NewStudentForm {
+  full_name: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+interface CreatedCredentials {
+  email: string;
+  password: string;
+  full_name: string;
+}
+
 export default function AlunosPage() {
   const { loading: authLoading } = usePilatesAuth();
   const [alunos, setAlunos] = useState<PilatesUser[]>([]);
@@ -19,6 +38,12 @@ export default function AlunosPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Novo aluno
+  const [showNewAluno, setShowNewAluno] = useState(false);
+  const [newForm, setNewForm] = useState<NewStudentForm>({ full_name: '', email: '', phone: '', password: generateStrongPassword() });
+  const [newError, setNewError] = useState<string | null>(null);
+  const [createdCredentials, setCreatedCredentials] = useState<CreatedCredentials | null>(null);
 
   useEffect(() => {
     if (!authLoading) {
@@ -72,6 +97,76 @@ export default function AlunosPage() {
     }
   };
 
+  const handleCreateAluno = async () => {
+    if (!newForm.email || !newForm.password) {
+      setNewError('Email e senha são obrigatórios.');
+      return;
+    }
+    setSaving(true);
+    setNewError(null);
+    try {
+      const res = await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newForm.email,
+          password: newForm.password,
+          full_name: newForm.full_name || null,
+          phone: newForm.phone || null,
+          role: 'aluno',
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setNewError(json.error ?? 'Erro ao criar aluno.');
+      } else {
+        setShowNewAluno(false);
+        setCreatedCredentials({ email: newForm.email, password: newForm.password, full_name: newForm.full_name });
+        // Recarregar lista
+        getAlunos().then(setAlunos).catch(console.error);
+        setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword() });
+      }
+    } catch {
+      setNewError('Erro de conexão.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const copyCredentials = () => {
+    if (!createdCredentials) return;
+    const text = `Login: ${createdCredentials.email}\nSenha: ${createdCredentials.password}`;
+    navigator.clipboard.writeText(text).catch(() => {});
+  };
+
+  const sendWhatsApp = () => {
+    if (!createdCredentials) return;
+    const text = encodeURIComponent(
+      `Olá ${createdCredentials.full_name || ''}! Seu acesso ao Daimach.Movement foi criado.\n\nLogin: ${createdCredentials.email}\nSenha: ${createdCredentials.password}\n\nAcesse: https://daimach.com.br`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const sendEmail = async () => {
+    if (!createdCredentials) return;
+    // Chama /api/notify para enviar email de boas-vindas
+    try {
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'welcome',
+          email: createdCredentials.email,
+          title: 'Bem-vindo ao Daimach.Movement!',
+          body: `Olá ${createdCredentials.full_name || ''}! Seu acesso foi criado.\n\nEmail: ${createdCredentials.email}\nSenha: ${createdCredentials.password}`,
+        }),
+      });
+      alert('Email enviado via Resend!');
+    } catch {
+      alert('Erro ao enviar email. Verifique RESEND_API_KEY no .env.local');
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -84,8 +179,38 @@ export default function AlunosPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-white">Gestão de Alunos</h1>
-        <span className="text-sm text-slate-400">{filteredAlunos.length} aluno(s)</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-400">{filteredAlunos.length} aluno(s)</span>
+          <Button variant="primary" size="md" onClick={() => { setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword() }); setNewError(null); setShowNewAluno(true); }}>
+            + Novo Aluno
+          </Button>
+        </div>
       </div>
+
+      {/* Credenciais criadas */}
+      {createdCredentials && (
+        <div className="bg-green-600/10 border border-green-500/30 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-green-400 font-semibold">✅ Aluno criado! Guarde as credenciais:</h3>
+            <button onClick={() => setCreatedCredentials(null)} className="text-slate-400 hover:text-white text-sm">✕</button>
+          </div>
+          <div className="bg-slate-900 rounded-lg p-3 font-mono text-sm space-y-1">
+            <p className="text-white">Login: <span className="text-green-400">{createdCredentials.email}</span></p>
+            <p className="text-white">Senha: <span className="text-green-400">{createdCredentials.password}</span></p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={sendWhatsApp} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors">
+              📱 Enviar por WhatsApp
+            </button>
+            <button onClick={sendEmail} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors">
+              📧 Enviar por Email
+            </button>
+            <button onClick={copyCredentials} className="text-xs bg-slate-600 hover:bg-slate-500 text-white px-3 py-2 rounded-lg transition-colors">
+              📋 Copiar Credenciais
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -260,6 +385,69 @@ export default function AlunosPage() {
                 <option value="inativo">Inativo</option>
                 <option value="inadimplente">Inadimplente</option>
               </select>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal Novo Aluno */}
+      {showNewAluno && (
+        <Modal
+          title="Novo Aluno"
+          onClose={() => setShowNewAluno(false)}
+          onConfirm={handleCreateAluno}
+          confirmText="Criar Aluno"
+          loading={saving}
+        >
+          <div className="space-y-4">
+            {newError && (
+              <p className="text-sm text-red-400 bg-red-900/20 border border-red-800 rounded-lg px-4 py-2">{newError}</p>
+            )}
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">Nome Completo</label>
+              <input
+                value={newForm.full_name}
+                onChange={(e) => setNewForm({ ...newForm, full_name: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Nome do aluno"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">E-mail *</label>
+              <input
+                type="email"
+                value={newForm.email}
+                onChange={(e) => setNewForm({ ...newForm, email: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">Telefone (WhatsApp)</label>
+              <input
+                value={newForm.phone}
+                onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="11999999999"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">Senha gerada automaticamente</label>
+              <div className="flex gap-2">
+                <input
+                  value={newForm.password}
+                  onChange={(e) => setNewForm({ ...newForm, password: e.target.value })}
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-green-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setNewForm({ ...newForm, password: generateStrongPassword() })}
+                  className="text-xs text-slate-400 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg transition-colors"
+                >
+                  🔄 Nova
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">O aluno usará esse email + senha para fazer login.</p>
             </div>
           </div>
         </Modal>
