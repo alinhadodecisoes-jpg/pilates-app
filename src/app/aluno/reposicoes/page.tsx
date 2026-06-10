@@ -1,126 +1,254 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { Modal } from '@/components/pilates/Modal';
-import { Button } from '@/components/pilates/Button';
 
-const DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+interface RepoSlot {
+  id: number;
+  class_id: number;
+  slot_date: string;
+  time_start: string;
+  time_end: string;
+  capacity: number;
+  classes_pilates?: { name: string } | null;
+  // contagem de aprovados
+  approved_count?: number;
+}
 
-const MOCK_VAGAS = [
-  { id: 1, dia: 1, horario: '09:00–10:00', professor: 'Ana Clara', vagas: 2, capacidade: 4 },
-  { id: 2, dia: 1, horario: '18:00–19:00', professor: 'Daiana',    vagas: 0, capacidade: 4 },
-  { id: 3, dia: 3, horario: '08:00–09:00', professor: 'Ana Clara', vagas: 1, capacidade: 4 },
-  { id: 4, dia: 4, horario: '19:00–20:00', professor: 'Daiana',    vagas: 3, capacidade: 4 },
-  { id: 5, dia: 5, horario: '07:00–08:00', professor: 'Ana Clara', vagas: 4, capacidade: 4 },
-];
+interface MyRequest {
+  id: number;
+  slot_id: number;
+  status: 'pending' | 'approved' | 'rejected' | 'canceled';
+  requested_at: string;
+  reposition_slots?: { slot_date: string; time_start: string; time_end: string; classes_pilates?: { name: string } | null } | null;
+}
 
-export default function ReposicoesPage() {
+export default function AlunoReposicoesPage() {
+  const { user, loading: authLoading } = usePilatesAuth();
+  const [slots, setSlots] = useState<RepoSlot[]>([]);
+  const [myRequests, setMyRequests] = useState<MyRequest[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [selectedVaga, setSelectedVaga] = useState<typeof MOCK_VAGAS[0] | null>(null);
-  const [confirming, setConfirming] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
   const supabase = getSupabaseBrowserClient();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.push('/login');
-      else setLoading(false);
-    });
-  }, [router, supabase]);
+  const loadData = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const [slotsRes, myReqRes] = await Promise.all([
+        supabase
+          .from('reposition_slots')
+          .select('*, classes_pilates(name)')
+          .gte('slot_date', new Date().toISOString().slice(0, 10))
+          .order('slot_date', { ascending: true }),
+        supabase
+          .from('reposition_requests')
+          .select('id, slot_id, status, requested_at, reposition_slots(slot_date, time_start, time_end, classes_pilates(name))')
+          .eq('user_id', user.id)
+          .order('requested_at', { ascending: false }),
+      ]);
+      setSlots((slotsRes.data ?? []) as unknown as RepoSlot[]);
+      setMyRequests((myReqRes.data ?? []) as unknown as MyRequest[]);
+    } catch (err) {
+      console.error(err);
+      setError('Erro ao carregar. Verifique se o SQL C1 foi executado (PENDENCIAS_WILLIAN.md).');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, supabase]);
 
-  const handleConfirm = async () => {
-    setConfirming(true);
-    // TODO: Chamar marcarReposicao() da pilates-db
-    await new Promise(r => setTimeout(r, 800));
-    setConfirming(false);
-    setSuccess(`Aula de ${selectedVaga?.horario} com ${selectedVaga?.professor} marcada com sucesso!`);
-    setSelectedVaga(null);
-    setTimeout(() => setSuccess(null), 4000);
+  useEffect(() => {
+    if (!authLoading && user) loadData();
+  }, [authLoading, user, loadData]);
+
+  const toggleSlot = (slotId: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(slotId)) next.delete(slotId);
+      else next.add(slotId);
+      return next;
+    });
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  const handleSolicitar = async () => {
+    if (!user || selected.size === 0) { setError('Selecione pelo menos um horário.'); return; }
+    setSubmitting(true);
+    setError(null);
+    const inserts = Array.from(selected).map((slotId) => ({
+      user_id: user.id,
+      slot_id: slotId,
+      status: 'pending',
+    }));
+    const { error: err } = await supabase
+      .from('reposition_requests')
+      .upsert(inserts, { onConflict: 'user_id,slot_id' });
+    setSubmitting(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setSelected(new Set());
+    setSuccess(`${inserts.length} solicitação(ões) enviada(s)! Aguarde aprovação.`);
+    loadData();
+    setTimeout(() => setSuccess(null), 5000);
+  };
+
+  const handleCancelar = async (reqId: number) => {
+    if (!user) return;
+    await supabase
+      .from('reposition_requests')
+      .update({ status: 'canceled' })
+      .eq('id', reqId)
+      .eq('user_id', user.id);
+    loadData();
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Slots onde o aluno já tem solicitação
+  const alreadyRequestedSlots = new Set(myRequests.map((r) => r.slot_id));
+
+  const statusMap = {
+    pending: { label: 'Aguardando', color: 'bg-yellow-600/20 text-yellow-400' },
+    approved: { label: '✅ Aprovada', color: 'bg-green-600/20 text-green-400' },
+    rejected: { label: '✕ Recusada', color: 'bg-red-600/20 text-red-400' },
+    canceled: { label: 'Cancelada', color: 'bg-slate-600/20 text-slate-400' },
+  };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-white">Reposições Disponíveis</h1>
+    <div className="max-w-3xl mx-auto space-y-6 pb-10">
+      <h1 className="text-2xl font-bold text-white">Reposições</h1>
 
       {success && (
         <div className="bg-green-600/20 border border-green-600/50 text-green-400 p-4 rounded-xl text-sm">
           ✅ {success}
         </div>
       )}
-
-      <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-700 text-left">
-                <th className="px-4 py-3 text-slate-400 font-medium">Dia</th>
-                <th className="px-4 py-3 text-slate-400 font-medium">Horário</th>
-                <th className="px-4 py-3 text-slate-400 font-medium hidden sm:table-cell">Professor</th>
-                <th className="px-4 py-3 text-slate-400 font-medium">Vagas</th>
-                <th className="px-4 py-3 text-slate-400 font-medium">Ação</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-700">
-              {MOCK_VAGAS.map((vaga) => (
-                <tr key={vaga.id} className="hover:bg-slate-750 transition-colors">
-                  <td className="px-4 py-3 text-white font-medium">{DAYS[vaga.dia - 1]}</td>
-                  <td className="px-4 py-3 text-slate-300">{vaga.horario}</td>
-                  <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">{vaga.professor}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        vaga.vagas > 0
-                          ? 'bg-green-600/20 text-green-400'
-                          : 'bg-slate-600/20 text-slate-500'
-                      }`}
-                    >
-                      {vaga.vagas}/{vaga.capacidade}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Button
-                      variant={vaga.vagas > 0 ? 'primary' : 'ghost'}
-                      size="sm"
-                      disabled={vaga.vagas === 0}
-                      onClick={() => vaga.vagas > 0 && setSelectedVaga(vaga)}
-                    >
-                      {vaga.vagas > 0 ? 'Marcar' : 'Lotado'}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {error && (
+        <div className="bg-red-600/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm">
+          ⚠️ {error}
         </div>
+      )}
+
+      {/* Horários Disponíveis */}
+      <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+          <h2 className="text-green-400 font-semibold">Horários Disponíveis</h2>
+          {selected.size > 0 && (
+            <button
+              onClick={handleSolicitar}
+              disabled={submitting}
+              className="text-sm bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              {submitting ? 'Enviando...' : `Solicitar ${selected.size} horário(s)`}
+            </button>
+          )}
+        </div>
+
+        {slots.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-sm">
+            Nenhum horário de reposição disponível no momento.<br />
+            <span className="text-xs text-slate-600">O professor disponibilizará novos slots em breve.</span>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-700">
+            {slots.map((slot) => {
+              const alreadyRequested = alreadyRequestedSlots.has(slot.id);
+              const isSelected = selected.has(slot.id);
+              return (
+                <div
+                  key={slot.id}
+                  className={`flex items-center justify-between px-5 py-4 cursor-pointer transition-colors ${
+                    alreadyRequested ? 'opacity-50 cursor-not-allowed' : isSelected ? 'bg-green-900/20' : 'hover:bg-slate-700/50'
+                  }`}
+                  onClick={() => !alreadyRequested && toggleSlot(slot.id)}
+                >
+                  <div>
+                    <p className="text-white font-medium text-sm">
+                      {new Date(slot.slot_date + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
+                      {' · '}
+                      {slot.time_start?.slice(0, 5)}–{slot.time_end?.slice(0, 5)}
+                    </p>
+                    {slot.classes_pilates?.name && (
+                      <p className="text-slate-400 text-xs mt-0.5">{slot.classes_pilates.name}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400">{slot.capacity} vagas</span>
+                    {alreadyRequested ? (
+                      <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded-full">Solicitado</span>
+                    ) : (
+                      <div className={`w-5 h-5 rounded border-2 transition-colors ${isSelected ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
+                        {isSelected && <svg className="w-full h-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {selectedVaga && (
-        <Modal
-          title="Confirmar Reposição"
-          onClose={() => setSelectedVaga(null)}
-          onConfirm={handleConfirm}
-          confirmText="Marcar Reposição"
-          loading={confirming}
-        >
-          <p className="text-slate-300">
-            Deseja marcar uma reposição na aula de{' '}
-            <strong className="text-white">{selectedVaga.horario}</strong> com{' '}
-            <strong className="text-white">{selectedVaga.professor}</strong>?
-          </p>
-          <p className="text-xs text-slate-500 mt-2">
-            Vagas disponíveis: {selectedVaga.vagas}/{selectedVaga.capacidade}
-          </p>
-        </Modal>
-      )}
+      {/* Minhas Solicitações */}
+      <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-700">
+          <h2 className="text-green-400 font-semibold">Minhas Solicitações</h2>
+        </div>
+        {myRequests.length === 0 ? (
+          <div className="p-6 text-center text-slate-500 text-sm">Nenhuma solicitação ainda.</div>
+        ) : (
+          <div className="divide-y divide-slate-700">
+            {myRequests.map((req) => {
+              const slot = req.reposition_slots;
+              const cfg = statusMap[req.status] ?? statusMap.pending;
+              return (
+                <div key={req.id} className="flex items-center justify-between px-5 py-4">
+                  <div>
+                    {slot ? (
+                      <>
+                        <p className="text-white text-sm font-medium">
+                          {new Date(slot.slot_date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                          {' · '}{slot.time_start?.slice(0, 5)}–{slot.time_end?.slice(0, 5)}
+                        </p>
+                        {slot.classes_pilates?.name && (
+                          <p className="text-slate-400 text-xs">{slot.classes_pilates.name}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-slate-400 text-sm">Slot removido</p>
+                    )}
+                    <p className="text-slate-500 text-xs mt-0.5">
+                      Solicitado em {new Date(req.requested_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full ${cfg.color}`}>{cfg.label}</span>
+                    {req.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancelar(req.id)}
+                        className="text-xs text-slate-400 hover:text-red-400 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
