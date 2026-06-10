@@ -5,6 +5,72 @@
 
 ---
 
+## ⚠️ A1 — BLOQUEANTE: Corrigir constraint de role (rodar ANTES de criar professor/fisio)
+
+```sql
+-- Sem isso, criar/editar usuários com role prof_fisio / prof_edfisica / fisioterapeuta vai falhar
+ALTER TABLE users_pilates DROP CONSTRAINT IF EXISTS users_pilates_role_check;
+ALTER TABLE users_pilates ADD CONSTRAINT users_pilates_role_check
+  CHECK (role IN ('admin','aluno','professor','fisioterapeuta','prof_fisio','prof_edfisica'));
+```
+
+---
+
+## ⚠️ B1 — BLOQUEANTE: Tabela de matrículas em turmas
+
+```sql
+-- Necessário para o modal "Gerenciar Alunos" em /admin/turmas
+CREATE TABLE IF NOT EXISTS enrollments_pilates (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  class_id BIGINT NOT NULL REFERENCES classes_pilates(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users_pilates(id) ON DELETE CASCADE,
+  enrolled_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(class_id, user_id)
+);
+
+ALTER TABLE enrollments_pilates DISABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_enrollments_class ON enrollments_pilates(class_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_user ON enrollments_pilates(user_id);
+```
+
+---
+
+## ⚠️ C1 — BLOQUEANTE: Tabela de slots de reposição
+
+```sql
+-- Necessário para o sistema real de reposições
+CREATE TABLE IF NOT EXISTS reposition_slots (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  class_id BIGINT NOT NULL REFERENCES classes_pilates(id) ON DELETE CASCADE,
+  slot_date DATE NOT NULL,
+  time_start TIME NOT NULL,
+  time_end TIME NOT NULL,
+  capacity INT DEFAULT 4,
+  created_by UUID REFERENCES users_pilates(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(class_id, slot_date)
+);
+
+CREATE TABLE IF NOT EXISTS reposition_requests (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  user_id UUID NOT NULL REFERENCES users_pilates(id) ON DELETE CASCADE,
+  slot_id BIGINT NOT NULL REFERENCES reposition_slots(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','canceled')),
+  requested_at TIMESTAMP DEFAULT NOW(),
+  reviewed_by UUID REFERENCES users_pilates(id),
+  reviewed_at TIMESTAMP,
+  notes TEXT,
+  UNIQUE(user_id, slot_id)
+);
+
+ALTER TABLE reposition_slots DISABLE ROW LEVEL SECURITY;
+ALTER TABLE reposition_requests DISABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_repo_slots_date ON reposition_slots(slot_date);
+CREATE INDEX IF NOT EXISTS idx_repo_requests_user ON reposition_requests(user_id, status);
+```
+
+---
+
 ## MD 05 — ANAMNESE / FICHA DE SAÚDE
 
 ### SQL no Supabase (cole e RUN)
