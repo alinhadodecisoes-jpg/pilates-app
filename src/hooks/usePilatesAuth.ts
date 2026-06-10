@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import type { User } from '@supabase/supabase-js';
 
-type UserRole = 'admin' | 'professor' | 'aluno' | 'fisioterapeuta';
+type UserRole = 'admin' | 'professor' | 'aluno' | 'fisioterapeuta' | 'prof_fisio' | 'prof_edfisica';
 
 export function usePilatesAuth() {
   const router = useRouter();
@@ -56,6 +56,14 @@ export function usePilatesAuth() {
             router.push('/admin/dashboard');
           } else if (userRole === 'professor' && !path.startsWith('/professor')) {
             console.log('[ROUTE] → /professor/dashboard');
+            router.push('/professor/dashboard');
+          } else if (userRole === 'prof_edfisica' && !path.startsWith('/professor')) {
+            // Prof. Ed. Física acessa módulo professor
+            console.log('[ROUTE] → /professor/dashboard (prof_edfisica)');
+            router.push('/professor/dashboard');
+          } else if (userRole === 'prof_fisio' && !path.startsWith('/professor') && !path.startsWith('/fisioterapeuta')) {
+            // Prof+Fisio acessa tanto professor quanto fisioterapeuta
+            console.log('[ROUTE] → /professor/dashboard (prof_fisio)');
             router.push('/professor/dashboard');
           } else if (userRole === 'aluno' && !path.startsWith('/aluno')) {
             console.log('[ROUTE] → /aluno/dashboard');

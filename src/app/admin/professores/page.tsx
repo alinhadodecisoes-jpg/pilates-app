@@ -9,7 +9,7 @@ import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
 import type { PilatesUser } from '@/types/pilates';
 
-type StaffRole = 'professor' | 'fisioterapeuta';
+type StaffRole = 'professor' | 'fisioterapeuta' | 'prof_fisio' | 'prof_edfisica';
 
 interface StaffForm {
   full_name: string;
@@ -44,7 +44,7 @@ export default function ProfessoresPage() {
     const { data, error } = await supabase
       .from('users_pilates')
       .select('*')
-      .in('role', ['professor', 'fisioterapeuta'])
+      .in('role', ['professor', 'fisioterapeuta', 'prof_fisio', 'prof_edfisica'])
       .order('full_name', { ascending: true });
     if (!error && data) setStaff(data as PilatesUser[]);
     setLoading(false);
@@ -166,9 +166,16 @@ export default function ProfessoresPage() {
                       <span className={`text-xs px-2 py-1 rounded-full ${
                         s.role === 'professor'
                           ? 'bg-blue-600/20 text-blue-400'
-                          : 'bg-purple-600/20 text-purple-400'
+                          : s.role === 'fisioterapeuta'
+                          ? 'bg-purple-600/20 text-purple-400'
+                          : s.role === 'prof_fisio'
+                          ? 'bg-teal-600/20 text-teal-400'
+                          : 'bg-orange-600/20 text-orange-400'
                       }`}>
-                        {s.role === 'professor' ? 'Professor(a)' : 'Fisioterapeuta'}
+                        {s.role === 'professor' ? 'Professor(a)'
+                          : s.role === 'fisioterapeuta' ? 'Fisioterapeuta'
+                          : s.role === 'prof_fisio' ? 'Prof+Fisio'
+                          : 'Prof. Ed. Física'}
                       </span>
                     </td>
                     <td className="px-5 py-4">
@@ -250,6 +257,8 @@ export default function ProfessoresPage() {
                 >
                   <option value="professor">Professor(a)</option>
                   <option value="fisioterapeuta">Fisioterapeuta</option>
+                  <option value="prof_fisio">Professor + Fisioterapeuta</option>
+                  <option value="prof_edfisica">Prof. Ed. Física</option>
                 </select>
               </div>
             </div>
@@ -292,6 +301,8 @@ export default function ProfessoresPage() {
               >
                 <option value="professor">Professor(a)</option>
                 <option value="fisioterapeuta">Fisioterapeuta</option>
+                <option value="prof_fisio">Professor + Fisioterapeuta</option>
+                <option value="prof_edfisica">Prof. Ed. Física</option>
               </select>
             </div>
           </div>

@@ -162,7 +162,15 @@ export default function NovaAvaliacaoPage() {
 
       router.push('/admin/alunos');
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Erro ao salvar avaliação.');
+      // Exibir erro detalhado do Supabase (PostgrestError tem message + details + hint)
+      const dbErr = e as { message?: string; details?: string; hint?: string; code?: string };
+      const msg = dbErr?.message || 'Erro desconhecido';
+      const details = dbErr?.details ? ` — ${dbErr.details}` : '';
+      const hint = dbErr?.hint ? ` (${dbErr.hint})` : '';
+      const sqlNote = msg.includes('column') || msg.includes('relation') || msg.includes('constraint')
+        ? ' ⚠️ Verifique se o SQL foi executado no Supabase (ver PENDENCIAS_WILLIAN.md).'
+        : '';
+      setError(`${msg}${details}${hint}${sqlNote}`);
     } finally {
       setSaving(false);
     }

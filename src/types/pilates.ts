@@ -1,6 +1,6 @@
 export interface PilatesUser {
   id: string;
-  role: 'admin' | 'professor' | 'aluno';
+  role: 'admin' | 'professor' | 'aluno' | 'fisioterapeuta' | 'prof_fisio' | 'prof_edfisica';
   plan_id?: number | null;
   status: 'ativo' | 'inativo' | 'inadimplente';
   phone?: string | null;
@@ -20,6 +20,7 @@ export interface PilatesPlan {
   price: number;
   classes_per_week: number;
   is_active: boolean;
+  stripe_price_id?: string | null;
   created_at?: string;
 }
 
