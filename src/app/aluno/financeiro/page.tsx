@@ -34,8 +34,9 @@ interface UserInfo {
   status: 'ativo' | 'inativo' | 'inadimplente';
 }
 
-const STRIPE_CONFIGURED = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY &&
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY !== 'pk_live_...';
+const STRIPE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const STRIPE_CONFIGURED = STRIPE_KEY && !STRIPE_KEY.startsWith('pk_live_...') && STRIPE_KEY.length > 10;
+const STRIPE_TEST_MODE = STRIPE_KEY.startsWith('pk_test_');
 
 export default function AlunoFinanceiroPage() {
   const { user, loading: authLoading } = usePilatesAuth();
@@ -188,6 +189,18 @@ export default function AlunoFinanceiroPage() {
       {/* Ações Stripe */}
       <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-3">
         <h2 className="text-green-400 font-semibold">💳 Pagamento Online</h2>
+
+        {STRIPE_TEST_MODE && (
+          <div className="bg-yellow-600/10 border border-yellow-500/30 rounded-lg p-3 flex items-start gap-2">
+            <span className="text-yellow-400 text-lg shrink-0">🧪</span>
+            <div>
+              <p className="text-yellow-400 text-xs font-semibold">MODO TESTE</p>
+              <p className="text-yellow-400/70 text-xs mt-1">
+                Use cartão de teste: <code className="bg-yellow-900/30 px-1 rounded">4242 4242 4242 4242</code> · vencimento: qualquer data futura · CVV: qualquer 3 dígitos.
+              </p>
+            </div>
+          </div>
+        )}
 
         {!STRIPE_CONFIGURED ? (
           <div className="bg-yellow-600/10 border border-yellow-500/20 rounded-lg p-3">

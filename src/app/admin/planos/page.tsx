@@ -18,7 +18,8 @@ export default function PlanosPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [form, setForm] = useState({ name: '', price: 0, classes_per_week: 2, description: '' });
+  const [form, setForm] = useState({ name: '', price: 0, classes_per_week: 2, description: '', stripe_price_id: '' });
+  const [savingPriceId, setSavingPriceId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!authLoading) {
@@ -30,13 +31,13 @@ export default function PlanosPage() {
   }, [authLoading]);
 
   const openCreate = () => {
-    setForm({ name: '', price: 0, classes_per_week: 2, description: '' });
+    setForm({ name: '', price: 0, classes_per_week: 2, description: '', stripe_price_id: '' });
     setShowCreate(true);
   };
 
   const openEdit = (p: PilatesPlan) => {
     setEditPlan(p);
-    setForm({ name: p.name, price: p.price, classes_per_week: p.classes_per_week, description: p.description ?? '' });
+    setForm({ name: p.name, price: p.price, classes_per_week: p.classes_per_week, description: p.description ?? '', stripe_price_id: p.stripe_price_id ?? '' });
   };
 
   const handleCreate = async () => {
@@ -52,10 +53,24 @@ export default function PlanosPage() {
     if (!editPlan) return;
     setSaving(true);
     try {
-      const updated = await updatePlan(editPlan.id, { name: form.name, price: form.price, classes_per_week: form.classes_per_week, description: form.description });
+      const updated = await updatePlan(editPlan.id, {
+        name: form.name,
+        price: form.price,
+        classes_per_week: form.classes_per_week,
+        description: form.description,
+        stripe_price_id: form.stripe_price_id || null,
+      });
       setPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       setEditPlan(null);
     } catch (err) { console.error(err); } finally { setSaving(false); }
+  };
+
+  const handleSavePriceId = async (planId: number, priceId: string) => {
+    setSavingPriceId(planId);
+    try {
+      const updated = await updatePlan(planId, { stripe_price_id: priceId || null });
+      setPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    } catch (err) { console.error(err); } finally { setSavingPriceId(null); }
   };
 
   const handleDelete = async () => {
@@ -70,6 +85,44 @@ export default function PlanosPage() {
 
   if (authLoading || loading) {
     return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
+  }
+
+  const isTestMode = !!(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_'));
+
+  // Componente inline para editar stripe_price_id sem abrir modal
+  function PriceIdInlineEditor({ plan, saving, onSave }: { plan: PilatesPlan; saving: boolean; onSave: (id: string) => void }) {
+    const [editing, setEditing] = useState(false);
+    const [val, setVal] = useState(plan.stripe_price_id ?? '');
+    return editing ? (
+      <div className="flex gap-1 items-center">
+        <input
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          className="flex-1 bg-slate-900 border border-slate-600 rounded px-2 py-1 text-green-400 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+          placeholder="price_..."
+          autoFocus
+        />
+        <button
+          onClick={() => { onSave(val); setEditing(false); }}
+          disabled={saving}
+          className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+        >
+          {saving ? '…' : '✓'}
+        </button>
+        <button onClick={() => { setVal(plan.stripe_price_id ?? ''); setEditing(false); }} className="text-xs text-slate-400 hover:text-white px-1">✕</button>
+      </div>
+    ) : (
+      <button
+        onClick={() => setEditing(true)}
+        className="w-full text-left text-xs px-2 py-1 rounded border border-dashed border-slate-600 hover:border-green-500 transition-colors"
+      >
+        {plan.stripe_price_id ? (
+          <span className="text-green-400 font-mono">{plan.stripe_price_id}</span>
+        ) : (
+          <span className="text-slate-500">+ Clique para colar Stripe Price ID</span>
+        )}
+      </button>
+    );
   }
 
   const PlanForm = () => (
@@ -102,6 +155,25 @@ export default function PlanosPage() {
           placeholder="Breve descrição do plano..."
         />
       </div>
+      <div>
+        <label className="block text-sm text-slate-400 mb-1">
+          Stripe Price ID
+          {isTestMode && <span className="ml-2 text-xs bg-yellow-600/20 text-yellow-400 px-1.5 py-0.5 rounded">MODO TESTE</span>}
+        </label>
+        <input
+          value={form.stripe_price_id}
+          onChange={(e) => setForm({ ...form, stripe_price_id: e.target.value })}
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
+          placeholder={isTestMode ? 'price_1abc...' : 'price_1abc... (do Stripe Dashboard)'}
+        />
+        <p className="text-xs text-slate-500 mt-1">
+          Cole aqui o Price ID do produto no{' '}
+          <a href="https://dashboard.stripe.com/products" target="_blank" rel="noopener noreferrer" className="text-green-400 underline">
+            Stripe Dashboard
+          </a>
+          .
+        </p>
+      </div>
     </div>
   );
 
@@ -111,6 +183,19 @@ export default function PlanosPage() {
         <h1 className="text-2xl font-bold text-white">Gestão de Planos</h1>
         <Button variant="primary" size="md" onClick={openCreate}>+ Novo Plano</Button>
       </div>
+
+      {isTestMode && (
+        <div className="bg-yellow-600/10 border border-yellow-500/30 rounded-xl p-3 flex items-start gap-3">
+          <span className="text-yellow-400 text-lg shrink-0">⚠️</span>
+          <div>
+            <p className="text-yellow-400 text-sm font-semibold">MODO TESTE do Stripe ativo</p>
+            <p className="text-yellow-400/70 text-xs mt-0.5">
+              Use cartão de teste: <code className="bg-yellow-900/30 px-1 rounded">4242 4242 4242 4242</code> · venc. qualquer data futura · CVV qualquer.
+              Os Price IDs devem ser criados no dashboard de teste do Stripe.
+            </p>
+          </div>
+        </div>
+      )}
 
       {plans.length === 0 ? (
         <div className="bg-slate-800 rounded-xl p-10 border border-slate-700 text-center">
@@ -130,6 +215,14 @@ export default function PlanosPage() {
                 <p className="text-3xl font-bold text-green-400">R$ {plan.price.toFixed(2).replace('.', ',')}</p>
                 <p className="text-sm text-slate-400 mt-1">{plan.classes_per_week}x por semana</p>
                 {plan.description && <p className="text-sm text-slate-300 mt-2">{plan.description}</p>}
+                {/* Stripe Price ID inline */}
+                <div className="mt-3">
+                  <PriceIdInlineEditor
+                    plan={plan}
+                    saving={savingPriceId === plan.id}
+                    onSave={(pid) => handleSavePriceId(plan.id, pid)}
+                  />
+                </div>
               </div>
               <div className="px-5 py-3 border-t border-slate-700 flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => openEdit(plan)}>Editar</Button>
