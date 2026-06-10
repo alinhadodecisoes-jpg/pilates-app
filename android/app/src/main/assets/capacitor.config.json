@@ -1,14 +1,20 @@
 {
-	"appId": "br.com.pilates.app",
-	"appName": "Pilates Studio",
-	"webDir": "out",
+	"appId": "br.com.daimach.movement",
+	"appName": "Daimach.Movement",
 	"server": {
+		"url": "https://daimach.com.br/pilates",
 		"androidScheme": "https",
-		"cleartext": true
+		"cleartext": false,
+		"allowNavigation": [
+			"*.supabase.co",
+			"*.vercel.app",
+			"daimach.com.br"
+		]
 	},
 	"android": {
-		"allowMixedContent": true,
-		"useLegacyBridge": false
+		"allowMixedContent": false,
+		"useLegacyBridge": false,
+		"backgroundColor": "#0f172a"
 	},
 	"plugins": {
 		"PushNotifications": {
@@ -20,7 +26,10 @@
 		},
 		"SplashScreen": {
 			"launchAutoHide": true,
-			"backgroundColor": "#7c3aed"
+			"backgroundColor": "#0f172a",
+			"androidSplashResourceName": "splash",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": false
 		},
 		"FirebaseMessaging": {
 			"senderId": "YOUR_SENDER_ID"

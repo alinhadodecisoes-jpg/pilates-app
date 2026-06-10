@@ -357,15 +357,84 @@ Ver `PENDENCIAS_WILLIAN.md`:
 
 ---
 
+## TESTES REALIZADOS (2026-06-10)
+
+### ✅ BLOCO A — ROLE SYSTEM
+- ✅ Professor "Ana Silva" criado com role `prof_fisio`
+- ✅ Dropdown "Novo Professor" com 4 opções funcionando
+- ✅ Badge de role exibindo corretamente (Prof+Fisio em teal)
+- ✅ Roteamento funcionando (prof_fisio acessa /professor/dashboard)
+
+### ✅ BLOCO E — STRIPE EDITÁVEL
+- ✅ Inline editor de stripe_price_id funcionando
+- ✅ Price ID "price_test_2x_semana" salvo com sucesso
+- ✅ Modal de edição abrindo corretamente com stripe_price_id preenchido
+- ✅ TEST MODE banner exibindo ("🧪 MODO TESTE" com instruções cartão 4242)
+- ✅ Página /admin/planos carregando sem erros
+
+### ⚠️ BLOCO B1 — MATRICULAR ALUNO
+- ✅ Modal de enrollment abriu corretamente
+- ✅ UI mostrando "Matriculados (0/4)" e lista de alunos disponíveis
+- ❌ **Erro esperado ao clicar "+ Matricular":**
+  ```
+  "new row violates row-level security policy for table 'enrollments_pilates'"
+  ```
+  - **Causa:** SQL B1 (CREATE TABLE enrollments_pilates) não foi executado no Supabase
+  - **Solução:** Executar SQL em PENDENCIAS_WILLIAN.md seção B1
+
+### 🔄 BLOCOS RESTANTES
+- **B2 (Novo Aluno):** Não testado (depende de login específico)
+- **C (Reposições):** Não testado (depende de SQL C1)
+- **D (Professor Dashboard):** Não testado (requer login como professor, que depende de senha)
+
+---
+
 ## PRÓXIMOS PASSOS
 
-1. ✅ **Build:** Passou (zero errors)
-2. ⏳ **SQL:** Rodar 3 statements em PENDENCIAS_WILLIAN.md
-3. ⏳ **Test:** Login + validar cada bloco no navegador
-4. ⏳ **Commits:** 5 commits (A, B, C, D, E)
+### 1️⃣ EXECUTAR SQLÃ NO SUPABASE (Crítico para testes)
+Em PENDENCIAS_WILLIAN.md, executar os 3 scripts SQL:
+
+1. **A1** — Role constraint (se ainda não foi executado)
+   ```sql
+   ALTER TABLE users_pilates DROP CONSTRAINT IF EXISTS users_pilates_role_check;
+   ALTER TABLE users_pilates ADD CONSTRAINT users_pilates_role_check
+     CHECK (role IN ('admin','aluno','professor','fisioterapeuta','prof_fisio','prof_edfisica'));
+   ```
+
+2. **B1** — enrollments_pilates table
+   ```sql
+   CREATE TABLE IF NOT EXISTS enrollments_pilates (
+     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+     class_id BIGINT NOT NULL REFERENCES classes_pilates(id) ON DELETE CASCADE,
+     user_id UUID NOT NULL REFERENCES users_pilates(id) ON DELETE CASCADE,
+     enrolled_at TIMESTAMP DEFAULT NOW(),
+     UNIQUE(class_id, user_id)
+   );
+   ALTER TABLE enrollments_pilates DISABLE ROW LEVEL SECURITY;
+   ...
+   ```
+
+3. **C1** — reposition_slots + reposition_requests tables
+   ```sql
+   CREATE TABLE IF NOT EXISTS reposition_slots (...)
+   CREATE TABLE IF NOT EXISTS reposition_requests (...)
+   ...
+   ```
+
+### 2️⃣ APÓS EXECUTAR SQLÃ
+- Testar BLOCO B1 novamente (enrollment deve funcionar)
+- Testar BLOCO C (aluno solicitando reposições)
+- Testar BLOCO D (professor vendo apenas suas turmas/alunos)
+
+### 3️⃣ COMMITS
+Após testes passarem, fazer:
+- `git add -A`
+- `git commit -m "BLOCO A-E: implementação e testes live"`
 
 ---
 
 > **Data:** 2026-06-10  
-> **Status:** Implementação completa. Build ✅. Aguardando SQL + testes em live.  
-> **Tempo total:** ~2.5 horas (exploração + implementation + debugging + build)
+> **Status:** ✅ Implementação 100% completa | ✅ Build zero errors | ⏳ Testes parciais (A, E OK)  
+> **Bloqueador:** SQL A1, B1, C1 não foram executados no Supabase  
+> **Ação necessária:** Executar SQLs em PENDENCIAS_WILLIAN.md para continuar testes  
+> **Tempo total:** ~3 horas (exploração + implementation + debugging + build + testes)
