@@ -34,6 +34,8 @@ export default function TurmasPage() {
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollError, setEnrollError] = useState<string | null>(null);
 
+  const [professors, setProfessors] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
+
   const [form, setForm] = useState({
     name: '',
     day_of_week: 1,
@@ -41,6 +43,7 @@ export default function TurmasPage() {
     time_end: '10:00',
     capacity: 4,
     is_active: true,
+    professor_id: '' as string,
   });
 
   const supabase = getSupabaseBrowserClient();
@@ -51,17 +54,21 @@ export default function TurmasPage() {
         .then(setClasses)
         .catch(console.error)
         .finally(() => setLoading(false));
+      fetch('/api/pilates/professores')
+        .then((r) => (r.ok ? r.json() : []))
+        .then(setProfessors)
+        .catch(console.error);
     }
   }, [authLoading]);
 
   const openCreate = () => {
-    setForm({ name: '', day_of_week: 1, time_start: '09:00', time_end: '10:00', capacity: 4, is_active: true });
+    setForm({ name: '', day_of_week: 1, time_start: '09:00', time_end: '10:00', capacity: 4, is_active: true, professor_id: '' });
     setEditMode('create');
   };
 
   const openEdit = (c: PilatesClass) => {
     setSelectedClass(c);
-    setForm({ name: c.name, day_of_week: c.day_of_week, time_start: c.time_start, time_end: c.time_end, capacity: c.capacity, is_active: c.is_active });
+    setForm({ name: c.name, day_of_week: c.day_of_week, time_start: c.time_start, time_end: c.time_end, capacity: c.capacity, is_active: c.is_active, professor_id: (c as { professor_id?: string }).professor_id ?? '' });
     setEditMode('edit');
   };
 
@@ -70,10 +77,10 @@ export default function TurmasPage() {
     setSaving(true);
     try {
       if (editMode === 'create') {
-        const nova = await createClass(user.id, form.name, form.day_of_week, form.time_start, form.time_end, form.capacity);
+        const nova = await createClass(form.professor_id || user.id, form.name, form.day_of_week, form.time_start, form.time_end, form.capacity);
         setClasses((prev) => [...prev, { ...nova, enrolled_count: 0 }]);
       } else if (editMode === 'edit' && selectedClass) {
-        const updated = await updateClass(selectedClass.id, form);
+        const updated = await updateClass(selectedClass.id, { ...form, professor_id: form.professor_id || null } as Partial<PilatesClass>);
         setClasses((prev) =>
           prev.map((c) =>
             c.id === updated.id ? { ...updated, enrolled_count: c.enrolled_count } : c
@@ -250,6 +257,16 @@ export default function TurmasPage() {
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Ex: Pilates Solo"
               />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">Professor</label>
+              <select value={form.professor_id} onChange={(e) => setForm({ ...form, professor_id: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">Sem professor</option>
+                {professors.map((p) => (
+                  <option key={p.id} value={p.id}>{p.full_name || p.email}</option>
+                ))}
+              </select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
