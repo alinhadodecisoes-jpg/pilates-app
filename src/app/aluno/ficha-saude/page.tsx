@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 interface InjuryItem { local: string; descricao: string; data: string }
 interface SurgeryItem { tipo: string; data: string }
@@ -93,7 +92,6 @@ export default function FichaSaudePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
-  const supabase = getSupabaseBrowserClient();
 
   // Injuries CRUD
   const [newInjury, setNewInjury] = useState<InjuryItem>({ local: '', descricao: '', data: '' });
@@ -104,12 +102,9 @@ export default function FichaSaudePage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      supabase
-        .from('health_records')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle()
-        .then(({ data }) => {
+      fetch(`/api/pilates/ficha-saude?userId=${user.id}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
           if (data) {
             setForm({
               birth_date: data.birth_date ?? '',
@@ -168,10 +163,12 @@ export default function FichaSaudePage() {
         filled_by: user.id,
         updated_at: new Date().toISOString(),
       };
-      const { error: err } = await supabase
-        .from('health_records')
-        .upsert(payload, { onConflict: 'user_id' });
-      if (err) throw err;
+      const res = await fetch('/api/pilates/ficha-saude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || 'Erro ao salvar'); }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: unknown) {

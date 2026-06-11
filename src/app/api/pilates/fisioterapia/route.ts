@@ -43,7 +43,8 @@ export async function GET(_req: NextRequest) {
       therapists: therapistsRes.data ?? [],
     });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    const msg = (e as { message?: string })?.message ?? String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -106,12 +107,12 @@ export async function POST(req: NextRequest) {
 
     // --- Sessões ---
     if (action === 'create_session' || action === 'update_session') {
-      const { id, user_id, therapist_id, session_date, therapy_type, duration_minutes, cost, status, notes } = body;
+      const { id, user_id, therapist_id, session_date, therapy_type, cost, status } = body;
+      // physical_therapy_sessions só tem: user_id, therapist_id, session_date, therapy_type, cost, status
       const payload = {
         user_id, therapist_id: therapist_id || null, session_date,
         therapy_type: therapy_type || null,
-        duration_minutes: duration_minutes ? Number(duration_minutes) : null,
-        cost: cost ? Number(cost) : null, status, notes: notes || null,
+        cost: cost ? Number(cost) : null, status,
       };
       if (action === 'update_session') {
         const { error } = await db.from('physical_therapy_sessions').update(payload).eq('id', id);
@@ -125,7 +126,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: 'ação desconhecida' }, { status: 400 });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    const msg = (e as { message?: string })?.message ?? String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -139,6 +141,7 @@ export async function DELETE(req: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    const msg = (e as { message?: string })?.message ?? String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
