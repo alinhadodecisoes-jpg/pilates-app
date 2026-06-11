@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from 'next';
 import './globals.css';
+import { AntiCopy } from '@/components/pilates/AntiCopy';
 
 export const metadata: Metadata = {
   title: 'Daimach.Movement - Pilates & Fisioterapia',
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
+        <AntiCopy />
         {children}
       </body>
     </html>

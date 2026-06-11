@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { updateAluno, deleteAluno } from '@/lib/pilates/pilates-db';
+import { apiFetch } from '@/lib/pilates/api-client';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
@@ -63,9 +64,8 @@ export default function ProfessoresPage() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/create-user', {
+      const res = await apiFetch('/api/admin/create-user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: form.email,
           password: form.password,

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole } from '@/lib/pilates/api-auth';
 
 // Usa service role key para criar usuários sem afetar a sessão do admin
 const supabaseAdmin = createClient(
@@ -10,6 +11,10 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // 🔒 Só admin pode criar contas
+    const auth = await requireRole(request, ['admin']);
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
     const { email, password, full_name, phone, role } = await request.json();
 
     if (!email || !password || !role) {
