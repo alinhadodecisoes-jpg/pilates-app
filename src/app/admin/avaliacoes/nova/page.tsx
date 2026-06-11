@@ -91,14 +91,10 @@ export default function NovaAvaliacaoPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      supabase
-        .from('users_pilates')
-        .select('id, full_name, email, role')
-        .eq('role', 'aluno')
-        .order('full_name')
-        .then(({ data }) => {
-          if (data) setAlunos(data as PilatesUser[]);
-        });
+      fetch('/api/pilates/alunos')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => setAlunos(data as PilatesUser[]))
+        .catch(console.error);
     }
   }, [authLoading]);
 

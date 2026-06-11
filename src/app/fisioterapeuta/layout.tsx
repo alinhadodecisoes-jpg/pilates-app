@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
@@ -10,6 +11,7 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
   const { user, loading } = usePilatesAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -39,7 +41,10 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-50 flex">
-      <aside className="flex flex-col w-64 bg-slate-800 border-r border-slate-700 shrink-0">
+      {menuOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMenuOpen(false)} />
+      )}
+      <aside className={`flex flex-col w-64 bg-slate-800 border-r border-slate-700 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-5 border-b border-slate-700 space-x-3">
           <img src="/images/logo-oficial.jpeg" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
@@ -52,6 +57,7 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
             <Link
               key={item.path}
               href={item.path}
+              onClick={() => setMenuOpen(false)}
               className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
                 pathname.startsWith(item.path)
                   ? 'bg-green-600 text-white'
@@ -79,6 +85,16 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <header className="md:hidden h-16 bg-slate-800/50 border-b border-slate-700 flex items-center px-4 shrink-0">
+          <button
+            className="p-2 -ml-1 text-slate-200 hover:bg-slate-700 rounded-lg"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Abrir menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <span className="ml-2 font-semibold text-white">Fisioterapia</span>
+        </header>
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>
     </div>

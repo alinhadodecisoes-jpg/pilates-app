@@ -21,6 +21,7 @@ export function AntiCopy() {
       if (el?.tagName === 'IMG') e.preventDefault();
     };
     const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.key) return; // e.key pode ser undefined (autofill, IME, eventos sintéticos)
       const k = e.key.toUpperCase();
       if (e.key === 'F12') { e.preventDefault(); return; }
       if (e.ctrlKey && e.shiftKey && (k === 'I' || k === 'J' || k === 'C')) { e.preventDefault(); return; }
