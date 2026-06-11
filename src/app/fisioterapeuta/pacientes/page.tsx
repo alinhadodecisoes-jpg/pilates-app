@@ -3,8 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import type { PilatesUser } from '@/types/pilates';
+
+interface Patient {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone?: string | null;
+  tipo?: 'pilates' | 'fisio' | 'ambos';
+}
 
 interface PhysioCase {
   id: number;
@@ -46,47 +52,33 @@ const EMPTY_FORM: CaseForm = {
 export default function FisioPacientesPage() {
   const { user, loading: authLoading } = usePilatesAuth();
   const [cases, setCases] = useState<PhysioCase[]>([]);
-  const [alunos, setAlunos] = useState<PilatesUser[]>([]);
+  const [alunos, setAlunos] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('active');
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<CaseForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const supabase = getSupabaseBrowserClient();
+
+  // Cadastro de novo paciente (só-fisio / ambos)
+  const [showPatient, setShowPatient] = useState(false);
+  const [patientForm, setPatientForm] = useState({ full_name: '', phone: '', email: '', tambem_pilates: false, criar_login: false, password: '' });
+  const [savingPatient, setSavingPatient] = useState(false);
+  const [patientError, setPatientError] = useState('');
 
   const loadData = async () => {
-    const [casesRes, alunosRes, evosRes] = await Promise.all([
-      supabase
-        .from('physio_cases')
-        .select('*, aluno:users_pilates!user_id(full_name, email)')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('users_pilates')
-        .select('id, full_name, email')
-        .eq('role', 'aluno')
-        .order('full_name'),
-      supabase
-        .from('physio_evolutions')
-        .select('case_id'),
-    ]);
-
-    if (!casesRes.error && casesRes.data) {
-      // Count evolutions per case
-      const countByCaseId: Record<number, number> = {};
-      for (const evo of evosRes.data ?? []) {
-        countByCaseId[evo.case_id] = (countByCaseId[evo.case_id] ?? 0) + 1;
+    try {
+      const res = await fetch('/api/pilates/fisioterapia');
+      if (res.ok) {
+        const data = await res.json();
+        setCases((data.cases ?? []) as PhysioCase[]);
+        setAlunos((data.patients ?? []) as Patient[]);
       }
-      const casesMapped = casesRes.data.map((c) => ({
-        ...c,
-        _evo_count: countByCaseId[c.id] ?? 0,
-      }));
-      setCases(casesMapped as PhysioCase[]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    if (!alunosRes.error && alunosRes.data) {
-      setAlunos(alunosRes.data as PilatesUser[]);
-    }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -95,23 +87,26 @@ export default function FisioPacientesPage() {
 
   const handleCreate = async () => {
     if (!form.user_id || !form.chief_complaint) {
-      setError('Aluno e queixa principal são obrigatórios.');
+      setError('Paciente e queixa principal são obrigatórios.');
       return;
     }
     setSaving(true);
     setError('');
     try {
-      const payload = {
-        user_id: form.user_id,
-        therapist_id: user?.id ?? null,
-        chief_complaint: form.chief_complaint,
-        diagnosis: form.diagnosis || null,
-        treatment_plan: form.treatment_plan || null,
-        start_date: form.start_date,
-        status: 'active',
-      };
-      const { error: err } = await supabase.from('physio_cases').insert(payload);
-      if (err) throw err;
+      const res = await fetch('/api/pilates/fisioterapia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_case',
+          user_id: form.user_id,
+          therapist_id: user?.id ?? null,
+          chief_complaint: form.chief_complaint,
+          diagnosis: form.diagnosis || null,
+          treatment_plan: form.treatment_plan || null,
+          start_date: form.start_date,
+        }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error || 'Erro'); }
       setShowModal(false);
       setForm(EMPTY_FORM);
       await loadData();
@@ -119,6 +114,42 @@ export default function FisioPacientesPage() {
       setError(e instanceof Error ? e.message : 'Erro ao criar caso.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreatePatient = async () => {
+    if (!patientForm.full_name) { setPatientError('Nome é obrigatório.'); return; }
+    if (patientForm.criar_login && (!patientForm.email || !patientForm.password)) {
+      setPatientError('Para criar login, informe email e senha.'); return;
+    }
+    setSavingPatient(true);
+    setPatientError('');
+    try {
+      const res = await fetch('/api/pilates/fisioterapia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_patient',
+          full_name: patientForm.full_name,
+          phone: patientForm.phone || null,
+          email: patientForm.email || null,
+          password: patientForm.password || null,
+          create_login: patientForm.criar_login,
+          is_physio_patient: true,
+          is_pilates_student: patientForm.tambem_pilates,
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'Erro ao cadastrar paciente');
+      setShowPatient(false);
+      setPatientForm({ full_name: '', phone: '', email: '', tambem_pilates: false, criar_login: false, password: '' });
+      await loadData();
+      // Já seleciona o paciente recém-criado no formulário de caso
+      if (j.patient?.id) { setForm((f) => ({ ...f, user_id: j.patient.id })); setShowModal(true); }
+    } catch (e: unknown) {
+      setPatientError(e instanceof Error ? e.message : 'Erro');
+    } finally {
+      setSavingPatient(false);
     }
   };
 
@@ -136,12 +167,20 @@ export default function FisioPacientesPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Prontuários / Pacientes</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium"
-        >
-          + Novo Caso
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setPatientError(''); setShowPatient(true); }}
+            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          >
+            + Novo Paciente
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          >
+            + Novo Caso
+          </button>
+        </div>
       </div>
 
       {/* Filtro */}
@@ -212,9 +251,11 @@ export default function FisioPacientesPage() {
                 onChange={(e) => setForm({ ...form, user_id: e.target.value })}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
               >
-                <option value="">Selecione o aluno...</option>
+                <option value="">Selecione o paciente...</option>
                 {alunos.map((a) => (
-                  <option key={a.id} value={a.id}>{a.full_name || a.email}</option>
+                  <option key={a.id} value={a.id}>
+                    {(a.full_name || a.email)}{a.tipo === 'fisio' ? ' (só fisio)' : a.tipo === 'ambos' ? ' (pilates+fisio)' : ''}
+                  </option>
                 ))}
               </select>
             </div>
@@ -277,6 +318,92 @@ export default function FisioPacientesPage() {
                 className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
               >
                 {saving ? 'Criando...' : 'Criar Caso'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Novo Paciente (só-fisio ou pilates+fisio) */}
+      {showPatient && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-lg p-6 space-y-4">
+            <h2 className="text-xl font-bold text-white">Novo Paciente de Fisioterapia</h2>
+            <p className="text-xs text-slate-400">
+              Para quem ainda não é aluno de pilates. Se a pessoa já é aluno, use o &ldquo;Novo Caso&rdquo; e selecione-a direto.
+            </p>
+
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Nome completo *</label>
+              <input
+                value={patientForm.full_name}
+                onChange={(e) => setPatientForm({ ...patientForm, full_name: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                placeholder="Nome do paciente"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Telefone</label>
+                <input
+                  value={patientForm.phone}
+                  onChange={(e) => setPatientForm({ ...patientForm, phone: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                  placeholder="(21) 99999-9999"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Email {patientForm.criar_login && '*'}</label>
+                <input
+                  type="email"
+                  value={patientForm.email}
+                  onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                  placeholder="email@exemplo.com"
+                />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-slate-300">
+              <input type="checkbox" checked={patientForm.tambem_pilates}
+                onChange={(e) => setPatientForm({ ...patientForm, tambem_pilates: e.target.checked })}
+                className="w-4 h-4 accent-green-500" />
+              Também é aluno de pilates (faz os dois)
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-300">
+              <input type="checkbox" checked={patientForm.criar_login}
+                onChange={(e) => setPatientForm({ ...patientForm, criar_login: e.target.checked })}
+                className="w-4 h-4 accent-green-500" />
+              Criar login para o paciente acessar o app
+            </label>
+            {patientForm.criar_login && (
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Senha *</label>
+                <input
+                  type="text"
+                  value={patientForm.password}
+                  onChange={(e) => setPatientForm({ ...patientForm, password: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                  placeholder="Mínimo 6 caracteres"
+                />
+              </div>
+            )}
+
+            {patientError && <p className="text-red-400 text-sm">{patientError}</p>}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => { setShowPatient(false); setPatientError(''); }}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-xl text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreatePatient}
+                disabled={savingPatient}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
+              >
+                {savingPatient ? 'Cadastrando...' : 'Cadastrar Paciente'}
               </button>
             </div>
           </div>

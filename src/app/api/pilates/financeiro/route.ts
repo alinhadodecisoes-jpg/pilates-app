@@ -36,7 +36,7 @@ export async function GET() {
     const [paymentsRes, pendingRes, alunosRes, subsRes, lastPayRes] = await Promise.all([
       db.from('payment_history').select('amount').eq('status', 'paid').gte('payment_date', thirtyDaysAgo.toISOString().split('T')[0]),
       db.from('payment_history').select('amount').eq('status', 'pending'),
-      db.from('users_pilates').select('id, full_name, email, status, phone, monthly_value').eq('role', 'aluno').order('full_name'),
+      db.from('users_pilates').select('id, full_name, email, status, phone, monthly_value').eq('role', 'aluno').neq('is_pilates_student', false).order('full_name'),
       db.from('subscriptions_pilates').select('user_id, stripe_subscription_id, stripe_customer_id, current_period_end, plan:plan_id(name, monthly_value)').not('user_id', 'is', null),
       db.from('payment_history').select('user_id, amount, payment_date, status').order('payment_date', { ascending: false }),
     ]);

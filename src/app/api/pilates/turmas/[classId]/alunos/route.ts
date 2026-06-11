@@ -14,6 +14,7 @@ export async function GET(
         .select('id, full_name, email, role, status, phone, monthly_value, emergency_contact, emergency_phone, plan_id, created_at')
         .eq('role', 'aluno')
         .neq('status', 'inativo')
+        .neq('is_pilates_student', false) // só alunos de pilates podem ser matriculados em turma
         .order('full_name'),
       db
         .from('enrollments_pilates')
