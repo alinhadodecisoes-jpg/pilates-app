@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
 interface Plan {
   id: number;
@@ -48,32 +47,22 @@ export default function AlunoFinanceiroPage() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
-  const supabase = getSupabaseBrowserClient();
-
   const checkoutResult = searchParams.get('checkout');
 
   useEffect(() => {
     if (!authLoading && user) {
-      Promise.all([
-        supabase.from('users_pilates').select('plan_id, monthly_value, status').eq('id', user.id).maybeSingle(),
-        supabase.from('subscriptions_pilates').select('status, stripe_subscription_id, current_period_end').eq('user_id', user.id).maybeSingle(),
-        supabase.from('payment_history').select('*').eq('user_id', user.id).order('payment_date', { ascending: false }).limit(12),
-      ]).then(async ([userRes, subRes, paymentsRes]) => {
-        if (userRes.data) {
-          setUserInfo(userRes.data as UserInfo);
-          if (userRes.data.plan_id) {
-            const { data: planData } = await supabase
-              .from('plans_pilates')
-              .select('*')
-              .eq('id', userRes.data.plan_id)
-              .maybeSingle();
-            if (planData) setPlan(planData as Plan);
+      fetch(`/api/pilates/aluno/financeiro?userId=${user.id}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            if (data.userInfo) setUserInfo(data.userInfo as UserInfo);
+            if (data.plan) setPlan(data.plan as Plan);
+            if (data.subscription) setSubscription(data.subscription as Subscription);
+            if (data.payments) setPayments(data.payments as PaymentHistory[]);
           }
-        }
-        if (subRes.data) setSubscription(subRes.data as Subscription);
-        if (paymentsRes.data) setPayments(paymentsRes.data as PaymentHistory[]);
-        setLoading(false);
-      });
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
     } else if (!authLoading && !user) {
       setLoading(false);
     }
