@@ -2,7 +2,7 @@
 	"appId": "br.com.daimach.movement",
 	"appName": "Daimach.Movement",
 	"server": {
-		"url": "https://daimach.com.br/pilates",
+		"url": "https://daimach-pilates.vercel.app",
 		"androidScheme": "https",
 		"cleartext": false,
 		"allowNavigation": [
