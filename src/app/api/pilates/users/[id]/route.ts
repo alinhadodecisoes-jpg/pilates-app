@@ -2,11 +2,12 @@ import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Campos que podem ser atualizados via painel (admin/professor)
-// Apenas colunas que existem hoje em users_pilates.
-// (payment_status/next_due_date dependem da migração SQL — ver SQL_MIGRACOES_PENDENTES.sql)
+// Colunas editáveis em users_pilates (migração de pagamento já executada).
 const ALLOWED = new Set([
   'full_name', 'phone', 'role', 'status', 'monthly_value', 'plan_id',
   'emergency_contact', 'emergency_phone',
+  'payment_status', 'due_day', 'next_due_date',
+  'is_physio_patient', 'is_pilates_student',
 ]);
 
 export async function PUT(
