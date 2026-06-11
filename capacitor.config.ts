@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   // webDir: 'out',  // para export estático
   // server.url: carregar a versão hospedada (mais simples, atualiza sozinha com deploy)
   server: {
-    url: 'https://daimach.com.br/pilates', // TODO: atualizar para a URL de produção real
+    url: 'https://daimach-pilates.vercel.app', // URL de produção (Vercel)
     androidScheme: 'https',
     cleartext: false,
     allowNavigation: [

@@ -54,3 +54,18 @@ google-services.json
 tests/fixtures/credentials.local.json
 
 .vercel
+
+# Scripts temporarios de dev/teste (contem chaves) - NUNCA commitar
+check-*.js
+test-db*.js
+test-rls.js
+verify-data.js
+create-rls-function.js
+disable-rls*.js
+disable-rls-sql.sql
+execute-sql.js
+fix-rls.js
+run-sql-api.js
+dev-server.log
+
+.vercel
