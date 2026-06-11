@@ -1,50 +1,47 @@
-# RELATÓRIO — MEGA FIX + REDESIGN (parcial verificado)
-**Data:** 2026-06-11
+# RELATÓRIO — MEGA FIX + REDESIGN
+**Atualizado:** 2026-06-11
 
-## ✅ Feito e VERIFICADO neste ciclo (no ar)
+## ✅ Feito e VERIFICADO (no ar)
 
-### App (pilates-app) — deploy em https://daimach-pilates.vercel.app
-- **BUG 1 (crítico) — AntiCopy crash:** `e.key` podia ser `undefined` → crash `toUpperCase`. Corrigido com guard. **Estava em produção quebrando; agora corrigido e deployado.** Smoke test: admin/dashboard 200, /api/pilates/stats 200.
-- **BUG 4 — Avaliações dropdown vazio:** `admin/avaliacoes/nova` agora carrega alunos via `/api/pilates/alunos` (em vez do cliente browser bloqueado por RLS).
-- **Menu mobile:** sidebar vira **drawer com hambúrguer** em admin, professor e fisioterapeuta (overlay, fecha ao navegar). Aluno já tinha bottom-nav mobile.
-- **Logo:** confirmado nas sidebars (todos os painéis) e no login (logo oficial).
-- Build de produção: **0 erros**. Typecheck: limpo.
+### App (https://daimach-pilates.vercel.app)
+**Bugs (BLOCO 1):**
+- **BUG 1 — AntiCopy crash** (`e.key` undefined): corrigido + deployado. Era crash em produção.
+- **BUG 2 — Reposições "[object Object]":** já resolvido (modal reescrito com checkboxes de turma).
+- **BUG 3 — Ficha de saúde do aluno:** carregava/salvava via cliente bloqueado por RLS → criada API `/api/pilates/ficha-saude` (GET/POST). Testado: salva e carrega.
+- **BUG 4 — Avaliações dropdown vazio:** agora via `/api/pilates/alunos`.
+- **BUG 5 — Sessão de fisio não salvava:** a tabela `physical_therapy_sessions` não tinha `duration_minutes`/`notes`; corrigido o insert. Testado: salva e aparece.
+- **BUG 6 — Agenda Seg↔Dom:** o código está consistente (1=Seg em todo lugar; agenda usa data real). Não reproduzido.
 
-### Site (companion-os) — preview no ar
-- **`https://www.daimach.com.br/teste/site`** — **redesign novo** (identidade verde floresta + dourado, estilo premium): nav + menu mobile, hero "precisão clínica", benefícios, diferenciais, **contador de inauguração**, seção App, franquia, rodapé com **marca d'água DAIMACH + CREFITO + email**, **WhatsApp flutuante**, banner de cookies, imagens do banco-visual.
-- A **landing antiga em `/` continua intacta** (não tirei do ar). Confirmado: `/` = 200, `/teste/site` = 200.
-- Páginas `/estudio/{sobre,planos,faq,localizacao}` + CREFITO no rodapé da home também foram publicadas.
+**Features novas:**
+- **Menu mobile** (drawer + hambúrguer) em admin/professor/fisioterapeuta (aluno já tinha bottom-nav).
+- **Logo oficial** no login e em todas as sidebars.
+- **Atribuir professor à turma** no modal (raiz do "professor não vê turma"). Testado: professor passa a ver a turma.
+- **/admin/pacientes** (separado de Alunos): lista só-fisio/ambos, cadastro, conversão de tipo. + item na sidebar.
+- **Colunas de pagamento editáveis** (payment_status, due_day, next_due_date) via API.
+- **Relatórios** (BLOCO 4): `/api/pilates/relatorios` + página com 4 abas (Alunos, Financeiro, Presença, Turmas) + **Exportar CSV**. Testado: 74/74/12/11 linhas reais. + item na sidebar.
+- **Financeiro do aluno** com dados reais (plano, status, pagamento, histórico) via API.
 
-## ⏳ BACKLOG GRANDE (não feito — honestamente, são +10h)
-Os 2 docs pedem MUITO além do acima. Pendências por bloco:
+### Site (https://www.daimach.com.br/teste/site)
+- **Redesign premium** (verde floresta + dourado): nav + menu mobile, hero, benefícios, diferenciais, contador de inauguração, App, franquia, rodapé com marca d'água DAIMACH + CREFITO + email, WhatsApp flutuante, cookies, banco-visual.
+- A landing antiga em `/` continua intacta (não tirei do ar).
 
-**App — bugs restantes a verificar/corrigir:**
-- BUG 2 (reposições "[object Object]"), BUG 3 (ficha-saúde erro ao fechar), BUG 5 (sessão fisio salvar — endpoint `create_session` já existe, falta validar UI), BUG 6 (agenda Seg↔Dom day_of_week).
+## 📄 SQL para você rodar no Supabase (habilita os próximos blocos)
+Arquivo **`SQL_BLOCOS_PENDENTES.sql`** (na raiz) cria:
+- `studio_config` (BLOCO 8 — dados do estúdio + chave PIX)
+- `payment_confirmations` (BLOCO 7 — aluno marca "já paguei", admin confirma)
+- `teacher_payments` (BLOCO 2.2 — financeiro do professor)
+- gera a **grade de 90 turmas** (Seg–Sáb, 07h–21h)
 
-**App — features novas (não iniciadas):**
-- BLOCO 2: professor financeiro, ver ficha/avaliação do aluno, editar turmas, notificar cancelamento.
-- BLOCO 3: atribuir professor à turma (UI no modal), gerar grade 90 turmas, alerta de limite de plano.
-- BLOCO 4: relatórios com dados reais + CSV (alunos/financeiro/presença/turmas).
-- BLOCO 5: página `/admin/pacientes` separada + conversão aluno↔paciente↔ambos.
-- BLOCO 6: cadastro de aluno com plano/valor/vencimento/status; perfil completo `/admin/alunos/[id]`; cron de inadimplência.
-- BLOCO 7: **sistema PIX** (painel aluno, confirmação admin, `studio_config`) — grande.
-- BLOCO 8: `/admin/configuracoes` (dados do estúdio, chave PIX).
-
-**Site — redesign completo (só a home preview foi feita):**
-- Subpáginas: `/o-pilates`, `/quem-somos`, `/franquia`, `/trabalhe-conosco`, `/indique`, `/app`.
-- Formulários enviando email via Resend para `daimach.movement@gmail.com`.
-- Substituir a landing antiga pela nova (quando aprovado).
-
-## SQL para você rodar no Supabase (quando for fazer os blocos)
-- BLOCO 3.2: gerar 90 turmas (script no doc).
-- BLOCO 7.2: criar tabela `studio_config`.
-- `companion-os/sql/vip_leads.sql` (captação de leads em banco).
+## ⏳ Ainda pendente (depende do SQL acima OU mais tempo)
+- **BLOCO 7 — PIX completo:** painel do aluno (chave PIX + "já paguei") e confirmação pelo admin → depende de `studio_config` + `payment_confirmations`.
+- **BLOCO 8 — /admin/configuracoes:** depende de `studio_config`.
+- **BLOCO 2.2 — financeiro do professor:** depende de `teacher_payments`.
+- **BLOCO 6.3 — cron de inadimplência** (muda status no vencimento).
+- **BLOCO 2.3/2.4 — professor ver ficha/avaliação do aluno; editar turma.**
+- **Site — subpáginas** completas (/o-pilates, /quem-somos, /franquia, /trabalhe-conosco, /indique, /app) + formulários enviando email (Resend) + substituir a landing.
 
 ## Pendências suas
-- `git push` em ambos os repos (credencial GitHub interativa).
-- Olhar o preview em `/teste/site` e decidir: seguir o redesign completo + substituir a landing?
+- Rodar `SQL_BLOCOS_PENDENTES.sql` no Supabase → me avisa que eu construo PIX + configurações + financeiro do professor.
+- `git push` nos 2 repos (credencial GitHub interativa).
+- Olhar `/teste/site` e dizer se aprova o visual para eu construir as subpáginas.
 - Instalar o APK nos celulares.
-
-## Status
-✅ Crash crítico corrigido + menu mobile + redesign previewável no ar.
-⏳ Backlog grande dos 2 docs documentado acima para os próximos ciclos.
