@@ -47,6 +47,9 @@ export default function AlunoFinanceiroPage() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [pixCfg, setPixCfg] = useState<{ pix_key?: string; pix_name?: string }>({});
+  const [informed, setInformed] = useState(false);
+  const [informing, setInforming] = useState(false);
   const checkoutResult = searchParams.get('checkout');
 
   useEffect(() => {
@@ -67,6 +70,28 @@ export default function AlunoFinanceiroPage() {
       setLoading(false);
     }
   }, [authLoading, user]);
+
+  useEffect(() => {
+    fetch('/api/pilates/config')
+      .then((r) => r.json())
+      .then((d) => setPixCfg({ pix_key: d.config?.pix_key, pix_name: d.config?.pix_name }))
+      .catch(() => {});
+  }, []);
+
+  const handleInform = async () => {
+    if (!user) return;
+    setInforming(true);
+    try {
+      const res = await fetch('/api/pilates/financeiro/confirmacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'inform', user_id: user.id, amount: userInfo?.monthly_value ?? plan?.price ?? null }),
+      });
+      if (res.ok) setInformed(true);
+    } finally {
+      setInforming(false);
+    }
+  };
 
   const handleCheckout = async () => {
     if (!user || !plan?.stripe_price_id) return;
@@ -174,6 +199,37 @@ export default function AlunoFinanceiroPage() {
           </div>
         )}
       </div>
+
+      {/* Pagamento via PIX */}
+      {pixCfg.pix_key ? (
+        <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-3">
+          <h2 className="text-green-400 font-semibold">📱 Pagar via PIX</h2>
+          <div className="bg-slate-900 rounded-lg p-4">
+            <p className="text-xs text-slate-400 mb-1">Chave PIX{pixCfg.pix_name ? ` (${pixCfg.pix_name})` : ''}</p>
+            <p className="text-white font-mono text-sm break-all select-text" data-allow-copy>{pixCfg.pix_key}</p>
+            <button
+              onClick={() => navigator.clipboard?.writeText(pixCfg.pix_key || '')}
+              className="mt-2 text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg"
+            >
+              Copiar chave PIX
+            </button>
+          </div>
+          {informed ? (
+            <p className="text-sm text-green-400 bg-green-900/20 border border-green-800 rounded-lg px-4 py-3">
+              ✅ Recebemos seu aviso de pagamento. O estúdio confirma em breve.
+            </p>
+          ) : (
+            <button
+              onClick={handleInform}
+              disabled={informing}
+              className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
+            >
+              {informing ? 'Enviando...' : '✅ Já fiz o pagamento'}
+            </button>
+          )}
+          <p className="text-xs text-slate-500">Você também pode pagar diretamente no estúdio.</p>
+        </div>
+      ) : null}
 
       {/* Ações Stripe */}
       <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-3">

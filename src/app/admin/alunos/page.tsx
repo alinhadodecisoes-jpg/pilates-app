@@ -293,8 +293,8 @@ export default function AlunosPage() {
                         >
                           Editar
                         </Button>
-                        <Link href={`/admin/ficha-saude/${aluno.id}`}>
-                          <Button variant="secondary" size="sm">Ficha</Button>
+                        <Link href={`/admin/alunos/${aluno.id}`}>
+                          <Button variant="secondary" size="sm">Ver Perfil</Button>
                         </Link>
                         {aluno.phone && (
                           <a

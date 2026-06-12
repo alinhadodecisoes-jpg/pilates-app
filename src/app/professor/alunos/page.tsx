@@ -23,6 +23,221 @@ interface EditForm {
   phone: string;
 }
 
+interface FichaData {
+  user: Record<string, unknown> | null;
+  ficha: Record<string, unknown> | null;
+  avaliacoes: Record<string, unknown>[];
+  presencas: Record<string, unknown>[];
+  turmas: Record<string, unknown>[];
+}
+
+const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+function FichaModal({ student, professorId, onClose }: {
+  student: Student;
+  professorId: string;
+  onClose: () => void;
+}) {
+  const [tab, setTab] = useState<'dados' | 'saude' | 'avaliacoes' | 'presencas'>('dados');
+  const [data, setData] = useState<FichaData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/pilates/professor/alunos/${student.user_id}/ficha?professorId=${professorId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) setError(d.error);
+        else setData(d);
+      })
+      .catch(() => setError('Erro ao carregar ficha.'))
+      .finally(() => setLoading(false));
+  }, [student.user_id, professorId]);
+
+  const tabs = [
+    { key: 'dados', label: 'Dados' },
+    { key: 'saude', label: 'Saúde' },
+    { key: 'avaliacoes', label: 'Avaliações' },
+    { key: 'presencas', label: 'Presenças' },
+  ] as const;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+          <div>
+            <h2 className="text-lg font-bold text-white">{student.users_pilates?.full_name || '—'}</h2>
+            <p className="text-xs text-slate-400">{student.class_name}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-slate-700 px-6">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`px-4 py-3 text-sm font-medium transition-colors ${
+                tab === t.key
+                  ? 'text-green-400 border-b-2 border-green-400'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {!loading && !error && data && (
+            <>
+              {tab === 'dados' && (
+                <div className="space-y-4">
+                  <Row label="Nome" value={String(data.user?.full_name ?? '—')} />
+                  <Row label="E-mail" value={String(data.user?.email ?? '—')} />
+                  <Row label="Telefone" value={String(data.user?.phone ?? '—')} />
+                  <Row label="Status" value={String(data.user?.status ?? '—')} highlight />
+                  <Row label="Plano mensal" value={data.user?.monthly_value != null ? `R$ ${Number(data.user.monthly_value).toFixed(2)}` : '—'} />
+                  <div className="pt-2">
+                    <p className="text-xs text-slate-500 font-medium mb-2">Turmas matriculadas</p>
+                    {data.turmas.length === 0 ? (
+                      <p className="text-slate-400 text-sm">—</p>
+                    ) : (
+                      <div className="space-y-1">
+                        {data.turmas.map((t: any, i) => (
+                          <p key={i} className="text-sm text-slate-300">
+                            {t.classes_pilates?.name} — {DAYS[t.classes_pilates?.day_of_week ?? 0]} {String(t.classes_pilates?.time_start ?? '').slice(0, 5)}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {tab === 'saude' && (
+                <div className="space-y-4">
+                  {!data.ficha ? (
+                    <p className="text-slate-400 text-sm">Ficha de saúde não preenchida.</p>
+                  ) : (
+                    <>
+                      <SaudeSection title="Condições de Saúde">
+                        <Row label="Hipertensão" value={data.ficha.hypertension ? 'Sim' : 'Não'} />
+                        <Row label="Diabetes" value={data.ficha.diabetes ? 'Sim' : 'Não'} />
+                        <Row label="Cardiopatia" value={data.ficha.heart_disease ? 'Sim' : 'Não'} />
+                        <Row label="Osteoporose" value={data.ficha.osteoporosis ? 'Sim' : 'Não'} />
+                        <Row label="Gestante" value={data.ficha.pregnant ? 'Sim' : 'Não'} />
+                        <Row label="Problema na coluna" value={data.ficha.spine_problems ? 'Sim' : 'Não'} />
+                      </SaudeSection>
+                      {data.ficha.medications && (
+                        <Row label="Medicamentos" value={String(data.ficha.medications)} />
+                      )}
+                      {data.ficha.injuries && (
+                        <Row label="Lesões/Cirurgias" value={String(data.ficha.injuries)} />
+                      )}
+                      {data.ficha.health_observations && (
+                        <Row label="Observações" value={String(data.ficha.health_observations)} />
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {tab === 'avaliacoes' && (
+                <div className="space-y-4">
+                  {data.avaliacoes.length === 0 ? (
+                    <p className="text-slate-400 text-sm">Nenhuma avaliação registrada.</p>
+                  ) : (
+                    data.avaliacoes.map((av: any, i) => (
+                      <div key={i} className="bg-slate-900 rounded-xl p-4 space-y-3">
+                        <p className="text-green-400 font-medium text-sm">
+                          {av.evaluation_date ? new Date(av.evaluation_date + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          {av.weight && <Row label="Peso" value={`${av.weight} kg`} />}
+                          {av.height && <Row label="Altura" value={`${av.height} cm`} />}
+                          {av.body_fat && <Row label="% Gordura" value={`${av.body_fat}%`} />}
+                          {av.muscle_mass && <Row label="Massa Muscular" value={`${av.muscle_mass} kg`} />}
+                        </div>
+                        {av.posture_assessment && <Row label="Postura" value={String(av.posture_assessment)} />}
+                        {av.goals && <Row label="Objetivos" value={String(av.goals)} />}
+                        {av.notes && <Row label="Observações" value={String(av.notes)} />}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {tab === 'presencas' && (
+                <div className="space-y-2">
+                  {data.presencas.length === 0 ? (
+                    <p className="text-slate-400 text-sm">Nenhum registro de presença.</p>
+                  ) : (
+                    data.presencas.map((p: any, i) => {
+                      const session = p.class_sessions;
+                      const date = session?.session_date
+                        ? new Date(session.session_date + 'T00:00:00').toLocaleDateString('pt-BR')
+                        : '—';
+                      const turma = session?.classes_pilates?.name ?? '—';
+                      return (
+                        <div key={i} className="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2.5">
+                          <div>
+                            <p className="text-sm text-white">{turma}</p>
+                            <p className="text-xs text-slate-400">{date}</p>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            p.status === 'confirmed' || p.status === 'present'
+                              ? 'bg-green-600/20 text-green-400'
+                              : p.status === 'absent'
+                              ? 'bg-red-600/20 text-red-400'
+                              : 'bg-slate-600/20 text-slate-400'
+                          }`}>
+                            {p.status === 'confirmed' ? 'Confirmado'
+                              : p.status === 'present' ? 'Presente'
+                              : p.status === 'absent' ? 'Faltou'
+                              : p.status ?? '—'}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="flex justify-between items-start gap-4">
+      <span className="text-xs text-slate-500 shrink-0">{label}</span>
+      <span className={`text-sm text-right ${highlight ? 'text-green-400 font-medium' : 'text-slate-200'}`}>{value}</span>
+    </div>
+  );
+}
+
+function SaudeSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-xs text-slate-500 font-medium mb-2">{title}</p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
 export default function ProfessorAlunosPage() {
   const { user, loading: authLoading } = usePilatesAuth();
   const [students, setStudents] = useState<Student[]>([]);
@@ -30,6 +245,7 @@ export default function ProfessorAlunosPage() {
   const [search, setSearch] = useState('');
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [editForm, setEditForm] = useState<EditForm>({ full_name: '', phone: '' });
+  const [fichaStudent, setFichaStudent] = useState<Student | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -164,7 +380,7 @@ export default function ProfessorAlunosPage() {
                           target="_blank" rel="noopener noreferrer"
                           className="text-green-400 hover:text-green-300 text-xs"
                         >
-                          📱 {s.users_pilates.phone}
+                          {s.users_pilates.phone}
                         </a>
                       ) : '—'}
                     </td>
@@ -178,12 +394,20 @@ export default function ProfessorAlunosPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <button
-                        onClick={() => openEdit(s)}
-                        className="text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        Editar
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setFichaStudent(s)}
+                          className="text-xs text-green-400 hover:text-green-300 bg-green-600/10 hover:bg-green-600/20 px-3 py-1.5 rounded-lg transition-colors border border-green-600/20"
+                        >
+                          Ver Ficha
+                        </button>
+                        <button
+                          onClick={() => openEdit(s)}
+                          className="text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          Editar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -193,6 +417,16 @@ export default function ProfessorAlunosPage() {
         </div>
       </div>
 
+      {/* Modal Ver Ficha */}
+      {fichaStudent && user && (
+        <FichaModal
+          student={fichaStudent}
+          professorId={user.id}
+          onClose={() => setFichaStudent(null)}
+        />
+      )}
+
+      {/* Modal Editar */}
       {editStudent && (
         <Modal
           title="Editar Dados do Aluno"
@@ -223,7 +457,7 @@ export default function ProfessorAlunosPage() {
               />
             </div>
             <p className="text-xs text-slate-500">
-              ⚠️ Professor pode editar nome e telefone. Dados financeiros e status são gerenciados pelo admin.
+              Professor pode editar nome e telefone. Dados financeiros são gerenciados pelo admin.
             </p>
           </div>
         </Modal>

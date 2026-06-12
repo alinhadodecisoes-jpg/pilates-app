@@ -42,6 +42,26 @@ export default function FinanceiroAdmin() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [markingPaid, setMarkingPaid] = useState<string | null>(null);
+  const [pendentes, setPendentes] = useState<Array<{ id: number; amount: number | null; reference_month: string | null; users_pilates?: { full_name: string | null; email: string | null } | null }>>([]);
+
+  const loadPendentes = async () => {
+    try {
+      const res = await fetch('/api/pilates/financeiro/confirmacoes');
+      if (res.ok) { const d = await res.json(); setPendentes(d.pendentes ?? []); }
+    } catch { /* tabela pode não existir ainda */ }
+  };
+  useEffect(() => { loadPendentes(); }, []);
+
+  const handleConfirmar = async (id: number, acao: 'confirm' | 'reject') => {
+    await fetch('/api/pilates/financeiro/confirmacoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: acao, id }),
+    });
+    await loadPendentes();
+    if (acao === 'confirm') window.location.reload();
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -141,6 +161,32 @@ export default function FinanceiroAdmin() {
           <p className="text-2xl font-bold">{summary?.inadimplentes || 0}</p>
         </div>
       </div>
+
+      {/* Pagamentos informados (aguardando confirmação) */}
+      {pendentes.length > 0 && (
+        <div className="bg-yellow-900/10 border border-yellow-700/40 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-yellow-700/30">
+            <h2 className="text-yellow-400 font-semibold">⏳ Pagamentos a confirmar ({pendentes.length})</h2>
+          </div>
+          <div className="divide-y divide-slate-700/50">
+            {pendentes.map((p) => (
+              <div key={p.id} className="flex items-center justify-between px-5 py-3 gap-4">
+                <div>
+                  <p className="text-white text-sm font-medium">{p.users_pilates?.full_name || p.users_pilates?.email || '—'}</p>
+                  <p className="text-slate-400 text-xs">
+                    {p.amount != null ? `R$ ${Number(p.amount).toFixed(2)}` : 'valor não informado'}
+                    {p.reference_month ? ` · ${p.reference_month}` : ''}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={() => handleConfirmar(p.id, 'confirm')} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg">✅ Confirmar</button>
+                  <button onClick={() => handleConfirmar(p.id, 'reject')} className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg">✕ Rejeitar</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="flex flex-wrap gap-3">
