@@ -163,11 +163,13 @@ export default function FinanceiroAdmin() {
       </div>
 
       {/* Pagamentos informados (aguardando confirmação) */}
-      {pendentes.length > 0 && (
-        <div className="bg-yellow-900/10 border border-yellow-700/40 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-yellow-700/30">
-            <h2 className="text-yellow-400 font-semibold">⏳ Pagamentos a confirmar ({pendentes.length})</h2>
-          </div>
+      <div className="bg-yellow-900/10 border border-yellow-700/40 rounded-xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-yellow-700/30">
+          <h2 className="text-yellow-400 font-semibold">⏳ Confirmações Pendentes ({pendentes.length})</h2>
+        </div>
+        {pendentes.length === 0 ? (
+          <div className="px-5 py-4 text-slate-500 text-sm">Nenhum pagamento aguardando confirmação.</div>
+        ) : (
           <div className="divide-y divide-slate-700/50">
             {pendentes.map((p) => (
               <div key={p.id} className="flex items-center justify-between px-5 py-3 gap-4">
@@ -185,8 +187,8 @@ export default function FinanceiroAdmin() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Filtros */}
       <div className="flex flex-wrap gap-3">

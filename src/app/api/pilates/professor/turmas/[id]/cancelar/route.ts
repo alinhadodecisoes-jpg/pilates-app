@@ -4,9 +4,10 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/pilates/professor/turmas/[id]/cancelar
 // Body: { professorId, date: "YYYY-MM-DD", reason?: string }
 // Cancela uma sessão específica da turma e cancela os bookings dos alunos
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const classId = Number(params.id);
+    const { id } = await params;
+    const classId = Number(id);
     const { professorId, date, reason } = await req.json();
 
     if (!professorId || !date) {

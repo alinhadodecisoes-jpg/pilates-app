@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/pilates/alunos/[id]
 // Retorna perfil completo do aluno para o admin
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const alunoId = params.id;
+    const { id: alunoId } = await params;
     const db = getSupabaseServerClient();
 
     const [userRes, fichaRes, evalsRes, attendRes, enrollRes, payRes] = await Promise.all([

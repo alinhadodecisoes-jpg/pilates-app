@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getAlunos, updateAluno, deleteAluno } from '@/lib/pilates/pilates-db';
+import { getAlunos, updateAluno, deleteAluno, getPlans } from '@/lib/pilates/pilates-db';
 import { apiFetch } from '@/lib/pilates/api-client';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
-import type { PilatesUser } from '@/types/pilates';
+import type { PilatesUser, PilatesPlan } from '@/types/pilates';
 
 // Gera senha forte aleatória
 function generateStrongPassword(): string {
@@ -21,6 +21,10 @@ interface NewStudentForm {
   email: string;
   phone: string;
   password: string;
+  plan_id: number | '';
+  monthly_value: string;
+  due_day: string;
+  status: string;
 }
 
 interface CreatedCredentials {
@@ -42,9 +46,10 @@ export default function AlunosPage() {
 
   // Novo aluno
   const [showNewAluno, setShowNewAluno] = useState(false);
-  const [newForm, setNewForm] = useState<NewStudentForm>({ full_name: '', email: '', phone: '', password: generateStrongPassword() });
+  const [newForm, setNewForm] = useState<NewStudentForm>({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' });
   const [newError, setNewError] = useState<string | null>(null);
   const [createdCredentials, setCreatedCredentials] = useState<CreatedCredentials | null>(null);
+  const [plans, setPlans] = useState<PilatesPlan[]>([]);
 
   useEffect(() => {
     if (!authLoading) {
@@ -52,6 +57,7 @@ export default function AlunosPage() {
         .then(setAlunos)
         .catch(console.error)
         .finally(() => setLoading(false));
+      getPlans().then(setPlans).catch(console.error);
     }
   }, [authLoading]);
 
@@ -114,6 +120,10 @@ export default function AlunosPage() {
           full_name: newForm.full_name || null,
           phone: newForm.phone || null,
           role: 'aluno',
+          plan_id: newForm.plan_id || null,
+          monthly_value: newForm.monthly_value ? Number(newForm.monthly_value) : null,
+          due_day: newForm.due_day ? Number(newForm.due_day) : 10,
+          status: newForm.status || 'ativo',
         }),
       });
       const json = await res.json();
@@ -122,9 +132,8 @@ export default function AlunosPage() {
       } else {
         setShowNewAluno(false);
         setCreatedCredentials({ email: newForm.email, password: newForm.password, full_name: newForm.full_name });
-        // Recarregar lista
         getAlunos().then(setAlunos).catch(console.error);
-        setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword() });
+        setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' });
       }
     } catch {
       setNewError('Erro de conexão.');
@@ -181,7 +190,7 @@ export default function AlunosPage() {
         <h1 className="text-2xl font-bold text-white">Gestão de Alunos</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400">{filteredAlunos.length} aluno(s)</span>
-          <Button variant="primary" size="md" onClick={() => { setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword() }); setNewError(null); setShowNewAluno(true); }}>
+          <Button variant="primary" size="md" onClick={() => { setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' }); setNewError(null); setShowNewAluno(true); }}>
             + Novo Aluno
           </Button>
         </div>
@@ -448,6 +457,60 @@ export default function AlunosPage() {
                 </button>
               </div>
               <p className="text-xs text-slate-500 mt-1">O aluno usará esse email + senha para fazer login.</p>
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">Plano</label>
+              <select
+                value={newForm.plan_id}
+                onChange={(e) => {
+                  const plan = plans.find((p) => p.id === Number(e.target.value));
+                  setNewForm({ ...newForm, plan_id: e.target.value ? Number(e.target.value) : '', monthly_value: plan ? String(plan.price) : newForm.monthly_value });
+                }}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Sem plano definido</option>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} — R$ {Number(p.price).toFixed(2)}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Valor mensal (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newForm.monthly_value}
+                  onChange={(e) => setNewForm({ ...newForm, monthly_value: e.target.value })}
+                  placeholder="0.00"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Dia de vencimento</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={newForm.due_day}
+                  onChange={(e) => setNewForm({ ...newForm, due_day: e.target.value })}
+                  placeholder="10"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">Status inicial</label>
+              <select
+                value={newForm.status}
+                onChange={(e) => setNewForm({ ...newForm, status: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+                <option value="inadimplente">Inadimplente</option>
+              </select>
             </div>
           </div>
         </Modal>

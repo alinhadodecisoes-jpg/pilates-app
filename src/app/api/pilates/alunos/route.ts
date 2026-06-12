@@ -8,7 +8,6 @@ export async function GET() {
       .from('users_pilates')
       .select('*')
       .eq('role', 'aluno')
-      .neq('is_pilates_student', false) // exclui pacientes só-fisioterapia
       .order('created_at', { ascending: false });
     if (error) throw error;
     return NextResponse.json(data ?? []);

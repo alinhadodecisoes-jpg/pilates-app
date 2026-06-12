@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const auth = await requireRole(request, ['admin']);
     if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-    const { email, password, full_name, phone, role } = await request.json();
+    const { email, password, full_name, phone, role, plan_id, monthly_value, due_day, status } = await request.json();
 
     if (!email || !password || !role) {
       return NextResponse.json({ error: 'Email, senha e função são obrigatórios.' }, { status: 400 });
@@ -44,7 +44,10 @@ export async function POST(request: NextRequest) {
         email,
         phone: phone ?? null,
         role,
-        status: 'ativo',
+        status: status ?? 'ativo',
+        plan_id: plan_id ?? null,
+        monthly_value: monthly_value ?? null,
+        due_day: due_day ?? 10,
       });
 
     if (profileError) {

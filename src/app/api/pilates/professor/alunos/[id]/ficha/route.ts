@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/pilates/professor/alunos/[id]/ficha?professorId=xxx
 // Retorna ficha completa do aluno — só se ele for da turma do professor
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const alunoId = params.id;
+    const { id: alunoId } = await params;
     const professorId = req.nextUrl.searchParams.get('professorId');
     if (!professorId) return NextResponse.json({ error: 'professorId obrigatório' }, { status: 400 });
 

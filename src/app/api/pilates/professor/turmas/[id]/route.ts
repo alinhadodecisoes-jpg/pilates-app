@@ -3,9 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // PUT /api/pilates/professor/turmas/[id]
 // Atualiza notas da turma — valida que o professor é dono
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const classId = Number(params.id);
+    const { id } = await params;
+    const classId = Number(id);
     const { professorId, notes } = await req.json();
     if (!professorId) return NextResponse.json({ error: 'professorId obrigatório' }, { status: 400 });
 
