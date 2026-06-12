@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/pilates/cron/check-payments",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}

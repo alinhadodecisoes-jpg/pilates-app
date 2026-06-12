@@ -6,7 +6,7 @@ export async function GET() {
     const db = getSupabaseServerClient();
     const [alunos, inadimplentes, turmas] = await Promise.all([
       db.from('users_pilates').select('id', { count: 'exact', head: true }).eq('role', 'aluno').neq('is_pilates_student', false),
-      db.from('users_pilates').select('id', { count: 'exact', head: true }).eq('role', 'aluno').eq('status', 'inadimplente').neq('is_pilates_student', false),
+      db.from('users_pilates').select('id', { count: 'exact', head: true }).eq('role', 'aluno').neq('is_pilates_student', false).or('status.eq.inadimplente,payment_status.eq.atrasado'),
       db.from('classes_pilates').select('id', { count: 'exact', head: true }).eq('is_active', true),
     ]);
     return NextResponse.json({
