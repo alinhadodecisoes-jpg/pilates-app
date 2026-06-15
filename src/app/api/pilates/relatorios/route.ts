@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     if (tipo === 'turmas') {
       const [classesRes, enrollRes, profsRes] = await Promise.all([
-        db.from('classes_pilates').select('id, name, day_of_week, time_start, capacity, professor_id, is_active').eq('is_active', true).order('day_of_week'),
+        db.from('classes_pilates').select('id, name, day_of_week, time_start, capacity, professor_id, is_active').eq('is_active', true).order('day_of_week').order('time_start'),
         db.from('enrollments_pilates').select('class_id').eq('is_active', true),
         db.from('users_pilates').select('id, full_name'),
       ]);

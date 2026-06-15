@@ -50,7 +50,8 @@ export function usePilatesDB() {
       const { data, error } = await supabase
         .from('classes_pilates')
         .select('*')
-        .order('day_of_week', { ascending: true });
+        .order('day_of_week', { ascending: true })
+        .order('time_start', { ascending: true });
       if (error) throw error;
       return data as PilatesClass[];
     }), [run, supabase]);

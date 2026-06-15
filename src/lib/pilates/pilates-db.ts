@@ -77,7 +77,8 @@ export async function getClasses() {
   const { data, error } = await db
     .from('classes_pilates')
     .select('*')
-    .order('day_of_week', { ascending: true });
+    .order('day_of_week', { ascending: true })
+    .order('time_start', { ascending: true });
   if (error) throw error;
   return data as PilatesClass[];
 }
@@ -165,7 +166,8 @@ export async function getClassesWithEnrollments() {
   const { data, error } = await db
     .from('classes_pilates')
     .select('*, enrollments_pilates(count)')
-    .order('day_of_week', { ascending: true });
+    .order('day_of_week', { ascending: true })
+    .order('time_start', { ascending: true });
   if (error) throw error;
   return data;
 }
@@ -178,7 +180,7 @@ export async function getClassesWithEnrolledCount(): Promise<PilatesClass[]> {
   }
   const db = getDb();
   const [classesResult, enrollmentsResult] = await Promise.all([
-    db.from('classes_pilates').select('*').order('day_of_week', { ascending: true }),
+    db.from('classes_pilates').select('*').order('day_of_week', { ascending: true }).order('time_start', { ascending: true }),
     db.from('enrollments_pilates').select('class_id').eq('is_active', true),
   ]);
   if (classesResult.error) throw classesResult.error;

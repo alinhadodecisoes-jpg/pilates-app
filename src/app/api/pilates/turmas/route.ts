@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const db = getSupabaseServerClient();
     const [classesResult, enrollmentsResult] = await Promise.all([
-      db.from('classes_pilates').select('*').order('day_of_week', { ascending: true }),
+      db.from('classes_pilates').select('*').order('day_of_week', { ascending: true }).order('time_start', { ascending: true }),
       db.from('enrollments_pilates').select('class_id').eq('is_active', true),
     ]);
     if (classesResult.error) throw classesResult.error;

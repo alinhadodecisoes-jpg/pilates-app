@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
     const { data: classes, error: classesErr } = await supabase
       .from('classes_pilates')
       .select('id, name, day_of_week, time_start, time_end, capacity')
-      .order('day_of_week');
+      .order('day_of_week')
+      .order('time_start');
 
     if (classesErr) throw classesErr;
     if (!classes || classes.length === 0) {
