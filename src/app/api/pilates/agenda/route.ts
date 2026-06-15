@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ sessions: result });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ error: (e as any)?.message ?? String(e) }, { status: 500 });
   }
 }
 
@@ -106,6 +106,6 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: 'ação desconhecida' }, { status: 400 });
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ error: (e as any)?.message ?? String(e) }, { status: 500 });
   }
 }

@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
         .from('users_pilates')
         .select('full_name, email, phone, status, payment_status, monthly_value, plan_id')
         .eq('role', 'aluno')
-        .neq('is_pilates_student', false)
         .order('full_name');
       const rows = data ?? [];
       const resumo = {
@@ -50,7 +49,7 @@ export async function GET(req: NextRequest) {
       const [paidRes, pendRes, alunosRes] = await Promise.all([
         db.from('payment_history').select('amount, payment_date, user_id, status').eq('status', 'paid').gte('payment_date', since.toISOString().split('T')[0]),
         db.from('payment_history').select('amount').eq('status', 'pending'),
-        db.from('users_pilates').select('full_name, status, payment_status, monthly_value').eq('role', 'aluno').neq('is_pilates_student', false).order('full_name'),
+        db.from('users_pilates').select('full_name, status, payment_status, monthly_value').eq('role', 'aluno').order('full_name'),
       ]);
       const recebido = (paidRes.data ?? []).reduce((s, p) => s + (p.amount || 0), 0);
       const pendente = (pendRes.data ?? []).reduce((s, p) => s + (p.amount || 0), 0);

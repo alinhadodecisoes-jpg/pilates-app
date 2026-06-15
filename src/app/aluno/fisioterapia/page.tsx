@@ -90,10 +90,10 @@ function SessionCard({ session: s }: { session: PhysicalTherapySession }) {
       {/* Data */}
       <div className="bg-slate-700 rounded-lg p-3 text-center min-w-[60px]">
         <p className="text-[10px] text-slate-400 font-medium uppercase">
-          {new Date(s.session_date + 'T00:00:00').toLocaleDateString('pt-BR', { month: 'short' })}
+          {new Date(s.session_date.slice(0, 10) + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' })}
         </p>
         <p className="text-xl font-bold text-white">
-          {new Date(s.session_date + 'T00:00:00').getDate()}
+          {new Date(s.session_date.slice(0, 10) + 'T12:00:00').getDate()}
         </p>
       </div>
 

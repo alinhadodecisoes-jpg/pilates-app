@@ -250,7 +250,7 @@ export default function FisioterapiaAdminPage() {
                         {(s.therapist as any)?.full_name || (s.therapist as any)?.email || '—'}
                       </td>
                       <td className="px-5 py-4 text-slate-300">
-                        {new Date(s.session_date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                        {new Date(s.session_date.slice(0, 10) + 'T12:00:00').toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-5 py-4 text-slate-300">{s.therapy_type ?? '—'}</td>
                       <td className="px-5 py-4 text-slate-300">

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getPlans, createPlan, updatePlan, deletePlan } from '@/lib/pilates/pilates-db';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
@@ -23,8 +22,9 @@ export default function PlanosPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      getPlans()
-        .then(setPlans)
+      fetch('/api/pilates/planos')
+        .then((r) => r.json())
+        .then((d) => setPlans(Array.isArray(d) ? d : []))
         .catch(console.error)
         .finally(() => setLoading(false));
     }
@@ -43,7 +43,13 @@ export default function PlanosPage() {
   const handleCreate = async () => {
     setSaving(true);
     try {
-      const novo = await createPlan(form.name, form.price, form.classes_per_week, form.description);
+      const res = await fetch('/api/pilates/planos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', ...form }),
+      });
+      const novo = await res.json();
+      if (!res.ok) throw new Error(novo.error || 'Erro');
       setPlans((prev) => [...prev, novo]);
       setShowCreate(false);
     } catch (err) { console.error(err); } finally { setSaving(false); }
@@ -53,13 +59,13 @@ export default function PlanosPage() {
     if (!editPlan) return;
     setSaving(true);
     try {
-      const updated = await updatePlan(editPlan.id, {
-        name: form.name,
-        price: form.price,
-        classes_per_week: form.classes_per_week,
-        description: form.description,
-        stripe_price_id: form.stripe_price_id || null,
+      const res = await fetch('/api/pilates/planos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', id: editPlan.id, ...form }),
       });
+      const updated = await res.json();
+      if (!res.ok) throw new Error(updated.error || 'Erro');
       setPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       setEditPlan(null);
     } catch (err) { console.error(err); } finally { setSaving(false); }
@@ -68,7 +74,13 @@ export default function PlanosPage() {
   const handleSavePriceId = async (planId: number, priceId: string) => {
     setSavingPriceId(planId);
     try {
-      const updated = await updatePlan(planId, { stripe_price_id: priceId || null });
+      const res = await fetch('/api/pilates/planos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', id: planId, stripe_price_id: priceId }),
+      });
+      const updated = await res.json();
+      if (!res.ok) throw new Error(updated.error || 'Erro');
       setPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     } catch (err) { console.error(err); } finally { setSavingPriceId(null); }
   };
@@ -77,7 +89,12 @@ export default function PlanosPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await deletePlan(deleteTarget);
+      const res = await fetch('/api/pilates/planos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id: deleteTarget }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error || 'Erro'); }
       setPlans((prev) => prev.filter((p) => p.id !== deleteTarget));
       setDeleteTarget(null);
     } catch (err) { console.error(err); } finally { setDeleting(false); }

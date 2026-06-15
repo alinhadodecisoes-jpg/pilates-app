@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <p className="text-xs text-slate-400">Admin</p>
           </div>
         </div>
-        <nav className="flex-1 px-4 py-6 space-y-1">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <Link
               key={item.path}
