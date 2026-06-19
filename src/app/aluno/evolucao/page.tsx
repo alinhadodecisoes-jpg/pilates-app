@@ -63,7 +63,12 @@ export default function EvolucaoPage() {
         .order('evaluation_date', { ascending: true })
         .then(async ({ data }) => {
           if (data && data.length > 0) {
-            setEvaluations(data as Evaluation[]);
+            // A tabela não armazena bmi — calculamos a partir de weight/height.
+            const withBmi = (data as Evaluation[]).map((ev) => ({
+              ...ev,
+              bmi: ev.bmi ?? (ev.weight && ev.height ? Number((Number(ev.weight) / Math.pow(Number(ev.height) / 100, 2)).toFixed(1)) : null),
+            }));
+            setEvaluations(withBmi);
             // Set compare: first vs last
             setCompareIdx([0, data.length - 1]);
             // Generate signed URLs for photos

@@ -82,9 +82,7 @@ export async function POST(req: NextRequest) {
             amount: (session.amount_total ?? 0) / 100,
             status: 'paid',
             payment_date: new Date().toISOString().slice(0, 10),
-            reference_month: new Date().toISOString().slice(0, 7),
             payment_method: 'stripe',
-            notes: `Checkout session: ${session.id}`,
           });
         }
         break;
@@ -104,23 +102,24 @@ export async function POST(req: NextRequest) {
           // Update user status to active
           await supabase.from('users_pilates').update({ status: 'ativo' }).eq('id', sub.user_id);
 
-          // Record payment
+          // Record payment — idempotência por user + data + valor (payment_history não tem coluna notes)
+          const amountPaid = (invoice.amount_paid ?? 0) / 100;
+          const today = new Date().toISOString().slice(0, 10);
           const alreadyExists = await supabase
             .from('payment_history')
             .select('id')
             .eq('user_id', sub.user_id)
-            .eq('notes', `Invoice: ${invoice.id}`)
+            .eq('payment_date', today)
+            .eq('amount', amountPaid)
             .maybeSingle();
 
           if (!alreadyExists.data) {
             await supabase.from('payment_history').insert({
               user_id: sub.user_id,
-              amount: (invoice.amount_paid ?? 0) / 100,
+              amount: amountPaid,
               status: 'paid',
-              payment_date: new Date().toISOString().slice(0, 10),
-              reference_month: new Date().toISOString().slice(0, 7),
+              payment_date: today,
               payment_method: 'stripe',
-              notes: `Invoice: ${invoice.id}`,
             });
           }
         }

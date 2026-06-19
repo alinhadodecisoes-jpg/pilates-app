@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const scope = body.scope || 'full';
     const adminUserId = body.admin_user_id;
+    const includeContent = body.include_content === true;
 
     // Collect data
     const tables: Record<string, unknown[]> = {};
@@ -194,6 +195,8 @@ export async function POST(req: NextRequest) {
       rows_count: rowsCount,
       drive_url: driveUrl,
       status: driveFileId ? 'uploaded_to_drive' : 'local_only',
+      // Conteúdo do backup para download direto no PC (quando solicitado)
+      content: includeContent ? content : undefined,
       note: !driveFileId
         ? 'Conecte o Google Drive do admin para enviar automaticamente. Ver PENDENCIAS_WILLIAN.md'
         : undefined,

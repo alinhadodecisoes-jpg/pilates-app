@@ -16,10 +16,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const db = getSupabaseServerClient();
 
-    // Verifica ownership
+    // Verifica ownership (e pega horários para preencher a sessão se ela ainda não existir)
     const { data: cls } = await db
       .from('classes_pilates')
-      .select('id, professor_id, name')
+      .select('id, professor_id, name, time_start, time_end, capacity')
       .eq('id', classId)
       .single();
 
@@ -27,13 +27,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
     }
 
-    // Upsert class_session como cancelada
+    // Upsert class_session como cancelada — inclui time_start/time_end (NOT NULL na tabela)
     const { data: session, error: sessionErr } = await db
       .from('class_sessions')
       .upsert(
         {
           class_id: classId,
           session_date: date,
+          time_start: cls.time_start,
+          time_end: cls.time_end,
+          capacity: cls.capacity ?? 4,
           is_cancelled: true,
           cancel_reason: reason ?? null,
           updated_at: new Date().toISOString(),

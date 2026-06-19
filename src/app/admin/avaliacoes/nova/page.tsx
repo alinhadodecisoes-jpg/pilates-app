@@ -131,15 +131,14 @@ export default function NovaAvaliacaoPage() {
         measurements[key] = val ? Number(val) : null;
       }
 
-      const imc = calcIMC(form.weight, form.height);
-
+      // Observação: a tabela não tem colunas bmi/notes. O IMC é calculado on-the-fly
+      // a partir de weight/height na exibição; as notas gerais vão para goals.
       const payload = {
         user_id: form.user_id,
         evaluator_id: adminUser?.id ?? null,
         evaluation_date: form.evaluation_date,
         weight: Number(form.weight),
         height: Number(form.height),
-        bmi: imc ? Number(imc) : null,
         body_fat: form.body_fat ? Number(form.body_fat) : null,
         muscle_mass: form.muscle_mass ? Number(form.muscle_mass) : null,
         measurements,
@@ -147,8 +146,7 @@ export default function NovaAvaliacaoPage() {
         posture_assessment: form.posture_assessment || null,
         flexibility_notes: form.flexibility_notes || null,
         strength_notes: form.strength_notes || null,
-        goals: form.goals || null,
-        notes: form.notes || null,
+        goals: [form.goals, form.notes].filter(Boolean).join(' | ') || null,
       };
 
       const { error: dbErr } = await supabase

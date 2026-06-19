@@ -6,7 +6,21 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(req: NextRequest) {
   try {
     const professorId = req.nextUrl.searchParams.get('professorId');
+    const userId = req.nextUrl.searchParams.get('userId');
     const db = getSupabaseServerClient();
+
+    // --- Visão do ALUNO: slots futuros + as próprias solicitações ---
+    if (userId) {
+      const today = new Date().toISOString().slice(0, 10);
+      const [slotsRes, myReqRes] = await Promise.all([
+        db.from('reposition_slots').select('*, classes_pilates(name)').gte('slot_date', today).order('slot_date', { ascending: true }),
+        db.from('reposition_requests')
+          .select('id, slot_id, status, requested_at, reposition_slots(slot_date, time_start, time_end, classes_pilates(name))')
+          .eq('user_id', userId)
+          .order('requested_at', { ascending: false }),
+      ]);
+      return NextResponse.json({ slots: slotsRes.data ?? [], requests: myReqRes.data ?? [] });
+    }
 
     // Se professorId for passado, restringe turmas/slots às turmas do professor
     let classQuery = db
@@ -21,11 +35,22 @@ export async function GET(req: NextRequest) {
       db.from('reposition_slots').select('*, classes_pilates(name)').order('slot_date', { ascending: true }),
       db
         .from('reposition_requests')
-        .select('*, users_pilates(full_name, email), reposition_slots(slot_date, time_start, time_end, classes_pilates(name))')
+        .select('*, reposition_slots(slot_date, time_start, time_end, classes_pilates(name))')
         .order('requested_at', { ascending: false }),
       classQuery,
       db.from('enrollments_pilates').select('class_id').eq('is_active', true),
     ]);
+
+    // Nomes dos alunos (sem depender de FK no PostgREST)
+    const reqUserIds = [...new Set((requestsRes.data ?? []).map((r: any) => r.user_id).filter(Boolean))];
+    const namesById: Record<string, { full_name: string | null; email: string | null }> = {};
+    if (reqUserIds.length > 0) {
+      const { data: us } = await db.from('users_pilates').select('id, full_name, email').in('id', reqUserIds);
+      for (const u of us ?? []) namesById[u.id] = { full_name: u.full_name, email: u.email };
+    }
+    if (requestsRes.data) {
+      for (const r of requestsRes.data as any[]) r.users_pilates = namesById[r.user_id] ?? null;
+    }
 
     // Conta matriculados por turma para mostrar lotação (vazias x cheias)
     const enrolledByClass: Record<number, number> = {};
@@ -55,14 +80,13 @@ export async function POST(req: NextRequest) {
     const db = getSupabaseServerClient();
 
     if (action === 'create_slot') {
-      const { class_id, slot_date, time_start, time_end, capacity, created_by } = body;
+      const { class_id, slot_date, time_start, time_end, capacity } = body;
       const { error } = await db.from('reposition_slots').insert({
         class_id: class_id ? Number(class_id) : null,
         slot_date,
         time_start,
         time_end,
         capacity: Number(capacity ?? 4),
-        created_by: created_by ?? null,
       });
       if (error) throw error;
       return NextResponse.json({ success: true });
@@ -80,7 +104,6 @@ export async function POST(req: NextRequest) {
         time_start: s.time_start,
         time_end: s.time_end,
         capacity: Number(s.capacity ?? 4),
-        created_by: s.created_by ?? null,
       }));
       const { error } = await db.from('reposition_slots').insert(rows);
       if (error) throw error;
@@ -92,7 +115,7 @@ export async function POST(req: NextRequest) {
       // Carrega a solicitação p/ pegar slot e aluno
       const { data: reqRow } = await db
         .from('reposition_requests')
-        .select('*, reposition_slots(slot_date, time_start, time_end)')
+        .select('*, reposition_slots(slot_date, time_start, time_end, class_id)')
         .eq('id', request_id)
         .single();
 
@@ -113,17 +136,28 @@ export async function POST(req: NextRequest) {
           .eq('status', 'pending');
 
         const slot = reqRow.reposition_slots as any;
-        if (slot) {
-          await db.from('attendances_pilates').upsert(
-            {
+        // class_id é NOT NULL e a tabela não tem constraint (user_id,attendance_date),
+        // então gravamos a presença de reposição com check-then-insert e o class_id do slot.
+        if (slot && slot.class_id) {
+          const notes = `Reposição aprovada — ${slot.time_start?.slice(0, 5)}–${slot.time_end?.slice(0, 5)}`;
+          const { data: existingAtt } = await db
+            .from('attendances_pilates')
+            .select('id')
+            .eq('user_id', reqRow.user_id)
+            .eq('class_id', slot.class_id)
+            .eq('attendance_date', slot.slot_date)
+            .maybeSingle();
+          if (existingAtt) {
+            await db.from('attendances_pilates').update({ status: 'replacement', notes }).eq('id', existingAtt.id);
+          } else {
+            await db.from('attendances_pilates').insert({
               user_id: reqRow.user_id,
-              class_id: null,
+              class_id: slot.class_id,
               attendance_date: slot.slot_date,
               status: 'replacement',
-              notes: `Reposição aprovada — ${slot.time_start?.slice(0, 5)}–${slot.time_end?.slice(0, 5)}`,
-            },
-            { onConflict: 'user_id,attendance_date' }
-          );
+              notes,
+            });
+          }
         }
       }
       return NextResponse.json({ success: true });
@@ -139,15 +173,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Aluno solicita reposição num slot
+    // Aluno solicita reposição num slot.
+    // reposition_requests não tem constraint única (user_id, slot_id), então
+    // fazemos check-then-insert/update em vez de upsert por onConflict.
     if (action === 'request') {
       const { user_id, slot_id, notes } = body;
-      const { error } = await db.from('reposition_requests').insert({
-        user_id,
-        slot_id: Number(slot_id),
-        status: 'pending',
-        notes: notes ?? null,
-      });
+      const sid = Number(slot_id);
+      const { data: existing } = await db
+        .from('reposition_requests')
+        .select('id')
+        .eq('user_id', user_id)
+        .eq('slot_id', sid)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await db
+          .from('reposition_requests')
+          .update({ status: 'pending', notes: notes ?? null })
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await db
+          .from('reposition_requests')
+          .insert({ user_id, slot_id: sid, status: 'pending', notes: notes ?? null });
+        if (error) throw error;
+      }
+      return NextResponse.json({ success: true });
+    }
+
+    // Aluno cancela a própria solicitação
+    if (action === 'cancel_request') {
+      const { request_id, user_id } = body;
+      const { error } = await db
+        .from('reposition_requests')
+        .update({ status: 'canceled' })
+        .eq('id', Number(request_id))
+        .eq('user_id', user_id);
       if (error) throw error;
       return NextResponse.json({ success: true });
     }

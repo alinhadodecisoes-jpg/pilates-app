@@ -7,6 +7,10 @@ interface AlunoFinanceiro {
   full_name: string | null;
   email: string | null;
   status: string | null;
+  payment_status?: string | null;
+  is_overdue?: boolean;
+  plan_name?: string | null;
+  monthly_value?: number | null;
   phone: string | null;
   subscription?: {
     stripe_subscription_id: string | null;
@@ -243,21 +247,26 @@ export default function FinanceiroAdmin() {
                       <p className="text-slate-400 text-xs">{aluno.email}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-                          STATUS_BADGE[aluno.status || 'inativo'] || STATUS_BADGE.inativo
-                        }`}
-                      >
-                        {aluno.status || 'inativo'}
-                      </span>
+                      {(() => {
+                        const efetivo = aluno.is_overdue ? 'inadimplente' : (aluno.status || 'inativo');
+                        return (
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                              STATUS_BADGE[efetivo] || STATUS_BADGE.inativo
+                            }`}
+                          >
+                            {efetivo}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-slate-300">
-                      {aluno.subscription?.plan_name ? (
+                      {aluno.plan_name || aluno.monthly_value != null ? (
                         <>
-                          <p>{aluno.subscription.plan_name}</p>
-                          {aluno.subscription.monthly_value && (
+                          <p>{aluno.plan_name || 'Plano avulso'}</p>
+                          {aluno.monthly_value != null && (
                             <p className="text-xs text-slate-400">
-                              R$ {Number(aluno.subscription.monthly_value).toFixed(2)}/mês
+                              R$ {Number(aluno.monthly_value).toFixed(2)}/mês
                             </p>
                           )}
                         </>
@@ -296,7 +305,7 @@ export default function FinanceiroAdmin() {
                             {Number(aluno.lastPayment.amount).toFixed(2)}
                           </p>
                           <p className="text-slate-500 text-xs">
-                            {new Date(aluno.lastPayment.payment_date).toLocaleDateString('pt-BR')}
+                            {new Date(aluno.lastPayment.payment_date.slice(0, 10) + 'T12:00:00').toLocaleDateString('pt-BR')}
                           </p>
                         </div>
                       ) : (
@@ -306,12 +315,12 @@ export default function FinanceiroAdmin() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         {/* Dar baixa manual */}
-                        {(aluno.status === 'inadimplente' || aluno.status === 'pendente') && (
+                        {(aluno.is_overdue || aluno.status === 'inadimplente' || aluno.status === 'pendente' || aluno.payment_status === 'pendente') && (
                           <button
                             onClick={() =>
                               handleDarBaixa(
                                 aluno.id,
-                                aluno.subscription?.monthly_value || 0
+                                aluno.monthly_value || aluno.subscription?.monthly_value || 0
                               )
                             }
                             disabled={markingPaid === aluno.id}

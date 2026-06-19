@@ -6,19 +6,17 @@ export async function POST(req: NextRequest) {
   try {
     const { userId, amount } = await req.json();
     const db = getSupabaseServerClient();
-    const refMonth = new Date().toISOString().slice(0, 7);
     const { error: payErr } = await db.from('payment_history').insert({
       user_id: userId,
       amount,
       status: 'paid',
       payment_date: new Date().toISOString().split('T')[0],
-      reference_month: refMonth,
       payment_method: 'manual',
     });
     if (payErr) throw payErr;
     const { error: upErr } = await db
       .from('users_pilates')
-      .update({ status: 'ativo' })
+      .update({ status: 'ativo', payment_status: 'em_dia' })
       .eq('id', userId);
     if (upErr) throw upErr;
     return NextResponse.json({ success: true });
@@ -33,12 +31,13 @@ export async function GET() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const [paymentsRes, pendingRes, alunosRes, subsRes, lastPayRes] = await Promise.all([
+    const [paymentsRes, pendingRes, alunosRes, subsRes, lastPayRes, plansRes] = await Promise.all([
       db.from('payment_history').select('amount').eq('status', 'paid').gte('payment_date', thirtyDaysAgo.toISOString().split('T')[0]),
       db.from('payment_history').select('amount').eq('status', 'pending'),
-      db.from('users_pilates').select('id, full_name, email, status, phone, monthly_value').eq('role', 'aluno').neq('is_pilates_student', false).order('full_name'),
+      db.from('users_pilates').select('id, full_name, email, status, payment_status, phone, monthly_value, plan_id').eq('role', 'aluno').neq('is_pilates_student', false).order('full_name'),
       db.from('subscriptions_pilates').select('user_id, stripe_subscription_id, stripe_customer_id, current_period_end, plan:plan_id(name, monthly_value)').not('user_id', 'is', null),
       db.from('payment_history').select('user_id, amount, payment_date, status').order('payment_date', { ascending: false }),
+      db.from('plans_pilates').select('id, name, price'),
     ]);
 
     const totalRevenue = paymentsRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
@@ -48,6 +47,10 @@ export async function GET() {
     const subs = subsRes.data ?? [];
     const pays = lastPayRes.data ?? [];
 
+    // Mapa de planos (id → nome/preço) para resolver plano do aluno matriculado manualmente
+    const planById: Record<number, { name: string; price: number }> = {};
+    for (const p of plansRes.data ?? []) planById[p.id] = { name: p.name, price: p.price };
+
     const subsByUser: Record<string, any> = {};
     for (const s of subs) subsByUser[s.user_id] = s;
 
@@ -56,24 +59,36 @@ export async function GET() {
       if (!lastPayByUser[p.user_id]) lastPayByUser[p.user_id] = p;
     }
 
-    const alunos = users.map((u) => ({
-      ...u,
-      subscription: subsByUser[u.id] ? {
-        stripe_subscription_id: subsByUser[u.id].stripe_subscription_id,
-        stripe_customer_id: subsByUser[u.id].stripe_customer_id,
-        current_period_end: subsByUser[u.id].current_period_end,
-        plan_name: (subsByUser[u.id].plan as any)?.name ?? null,
-        monthly_value: (subsByUser[u.id].plan as any)?.monthly_value ?? null,
-      } : null,
-      lastPayment: lastPayByUser[u.id] ?? null,
-    }));
+    // overdue = inadimplente (status) OU atrasado (payment_status) — mesma definição do dashboard
+    const isOverdue = (u: any) => u.status === 'inadimplente' || u.payment_status === 'atrasado';
+
+    const alunos = users.map((u: any) => {
+      const sub = subsByUser[u.id];
+      const planFromId = u.plan_id ? planById[u.plan_id] : null;
+      const planName = sub?.plan?.name ?? planFromId?.name ?? null;
+      const monthlyValue = u.monthly_value ?? sub?.plan?.monthly_value ?? planFromId?.price ?? null;
+      return {
+        ...u,
+        plan_name: planName,
+        monthly_value: monthlyValue,
+        is_overdue: isOverdue(u),
+        subscription: sub ? {
+          stripe_subscription_id: sub.stripe_subscription_id,
+          stripe_customer_id: sub.stripe_customer_id,
+          current_period_end: sub.current_period_end,
+          plan_name: planName,
+          monthly_value: monthlyValue,
+        } : null,
+        lastPayment: lastPayByUser[u.id] ?? null,
+      };
+    });
 
     return NextResponse.json({
       summary: {
         totalRevenue,
         totalPending,
-        alunosAtivos: users.filter((u) => u.status === 'ativo').length,
-        inadimplentes: users.filter((u) => u.status === 'inadimplente').length,
+        alunosAtivos: users.filter((u: any) => u.status === 'ativo' && !isOverdue(u)).length,
+        inadimplentes: users.filter((u: any) => isOverdue(u)).length,
       },
       alunos,
     });

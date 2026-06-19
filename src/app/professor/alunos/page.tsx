@@ -25,7 +25,8 @@ interface EditForm {
 
 interface FichaData {
   user: Record<string, unknown> | null;
-  ficha: Record<string, unknown> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ficha: Record<string, any> | null;
   avaliacoes: Record<string, unknown>[];
   presencas: Record<string, unknown>[];
   turmas: Record<string, unknown>[];
@@ -130,22 +131,67 @@ function FichaModal({ student, professorId, onClose }: {
                     <p className="text-slate-400 text-sm">Ficha de saúde não preenchida.</p>
                   ) : (
                     <>
-                      <SaudeSection title="Condições de Saúde">
-                        <Row label="Hipertensão" value={data.ficha.hypertension ? 'Sim' : 'Não'} />
-                        <Row label="Diabetes" value={data.ficha.diabetes ? 'Sim' : 'Não'} />
-                        <Row label="Cardiopatia" value={data.ficha.heart_disease ? 'Sim' : 'Não'} />
-                        <Row label="Osteoporose" value={data.ficha.osteoporosis ? 'Sim' : 'Não'} />
-                        <Row label="Gestante" value={data.ficha.pregnant ? 'Sim' : 'Não'} />
-                        <Row label="Problema na coluna" value={data.ficha.spine_problems ? 'Sim' : 'Não'} />
+                      <SaudeSection title="Dados Gerais">
+                        {data.ficha.blood_type && <Row label="Tipo Sanguíneo" value={String(data.ficha.blood_type)} />}
+                        {data.ficha.height_cm != null && <Row label="Altura" value={`${data.ficha.height_cm} cm`} />}
+                        {data.ficha.weight_kg != null && <Row label="Peso" value={`${data.ficha.weight_kg} kg`} />}
+                        {data.ficha.main_goal && <Row label="Objetivo" value={String(data.ficha.main_goal)} />}
                       </SaudeSection>
-                      {data.ficha.medications && (
-                        <Row label="Medicamentos" value={String(data.ficha.medications)} />
+
+                      <SaudeSection title="Condições Crônicas">
+                        {Array.isArray(data.ficha.chronic_conditions) && data.ficha.chronic_conditions.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {data.ficha.chronic_conditions.map((c: string, i: number) => (
+                              <span key={i} className="text-xs bg-red-600/20 text-red-300 px-2 py-1 rounded-full">{c}</span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-400">Nenhuma condição crônica informada.</p>
+                        )}
+                      </SaudeSection>
+
+                      {Array.isArray(data.ficha.injuries) && data.ficha.injuries.length > 0 && (
+                        <SaudeSection title="Lesões">
+                          {data.ficha.injuries.map((inj: any, i: number) => (
+                            <p key={i} className="text-sm text-slate-200">
+                              {[inj.local, inj.descricao, inj.data].filter(Boolean).join(' — ')}
+                            </p>
+                          ))}
+                        </SaudeSection>
                       )}
-                      {data.ficha.injuries && (
-                        <Row label="Lesões/Cirurgias" value={String(data.ficha.injuries)} />
+
+                      {Array.isArray(data.ficha.surgeries) && data.ficha.surgeries.length > 0 && (
+                        <SaudeSection title="Cirurgias">
+                          {data.ficha.surgeries.map((s: any, i: number) => (
+                            <p key={i} className="text-sm text-slate-200">
+                              {[s.tipo, s.data].filter(Boolean).join(' — ')}
+                            </p>
+                          ))}
+                        </SaudeSection>
                       )}
-                      {data.ficha.health_observations && (
-                        <Row label="Observações" value={String(data.ficha.health_observations)} />
+
+                      {Array.isArray(data.ficha.medications) && data.ficha.medications.length > 0 && (
+                        <SaudeSection title="Medicamentos">
+                          {data.ficha.medications.map((m: any, i: number) => (
+                            <p key={i} className="text-sm text-slate-200">
+                              {[m.nome, m.dose].filter(Boolean).join(' — ')}
+                            </p>
+                          ))}
+                        </SaudeSection>
+                      )}
+
+                      <SaudeSection title="Restrições e Alergias">
+                        {data.ficha.allergies && <Row label="Alergias" value={String(data.ficha.allergies)} />}
+                        {data.ficha.physical_restrictions && <Row label="Restrições Físicas" value={String(data.ficha.physical_restrictions)} highlight />}
+                        <Row label="Liberação Médica" value={data.ficha.doctor_clearance ? 'Sim' : 'Não'} />
+                        {data.ficha.doctor_notes && <Row label="Obs. Médico" value={String(data.ficha.doctor_notes)} />}
+                      </SaudeSection>
+
+                      {(data.ficha.emergency_contact_name || data.ficha.emergency_contact_phone) && (
+                        <SaudeSection title="Contato de Emergência">
+                          {data.ficha.emergency_contact_name && <Row label="Nome" value={String(data.ficha.emergency_contact_name)} />}
+                          {data.ficha.emergency_contact_phone && <Row label="Telefone" value={String(data.ficha.emergency_contact_phone)} />}
+                        </SaudeSection>
                       )}
                     </>
                   )}

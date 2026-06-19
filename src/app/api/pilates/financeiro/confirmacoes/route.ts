@@ -4,16 +4,26 @@ import { NextRequest, NextResponse } from 'next/server';
 function errMsg(e: unknown) { return (e as { message?: string })?.message ?? String(e); }
 
 // GET → confirmações pendentes (para o admin), com nome do aluno
+// Não há FK entre payment_confirmations e users_pilates, então buscamos os nomes
+// em uma query separada em vez de depender do join implícito do PostgREST.
 export async function GET() {
   try {
     const db = getSupabaseServerClient();
     const { data, error } = await db
       .from('payment_confirmations')
-      .select('*, users_pilates!user_id(full_name, email)')
+      .select('*')
       .eq('status', 'pending')
       .order('informed_at', { ascending: true });
     if (error) return NextResponse.json({ pendentes: [], ready: false });
-    return NextResponse.json({ pendentes: data ?? [], ready: true });
+
+    const userIds = [...new Set((data ?? []).map((c) => c.user_id).filter(Boolean))];
+    const usersById: Record<string, { full_name: string | null; email: string | null }> = {};
+    if (userIds.length > 0) {
+      const { data: us } = await db.from('users_pilates').select('id, full_name, email').in('id', userIds);
+      for (const u of us ?? []) usersById[u.id] = { full_name: u.full_name, email: u.email };
+    }
+    const pendentes = (data ?? []).map((c) => ({ ...c, users_pilates: usersById[c.user_id] ?? null }));
+    return NextResponse.json({ pendentes, ready: true });
   } catch (e) {
     return NextResponse.json({ error: errMsg(e) }, { status: 500 });
   }
@@ -45,7 +55,7 @@ export async function POST(req: NextRequest) {
         await db.from('payment_history').insert({
           user_id: conf.user_id, amount: conf.amount ?? 0, status: 'paid',
           payment_date: new Date().toISOString().split('T')[0],
-          reference_month: conf.reference_month, payment_method: 'pix',
+          payment_method: 'pix',
         });
         await db.from('users_pilates').update({ status: 'ativo', payment_status: 'em_dia' }).eq('id', conf.user_id);
       }

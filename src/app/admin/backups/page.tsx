@@ -29,6 +29,7 @@ export default function AdminBackupsPage() {
   const [logs, setLogs] = useState<BackupLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [backing, setBacking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [result, setResult] = useState<{ success?: boolean; rows?: number; url?: string | null; note?: string; error?: string } | null>(null);
   const supabase = getSupabaseBrowserClient();
 
@@ -70,6 +71,37 @@ export default function AdminBackupsPage() {
     }
   };
 
+  const handleDownloadPC = async () => {
+    if (!user) return;
+    setDownloading(true);
+    setResult(null);
+    try {
+      const res = await fetch('/api/backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: 'full', admin_user_id: user.id, include_content: true }),
+      });
+      const data = await res.json();
+      if (data.success && data.content) {
+        const blob = new Blob([data.content], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.file_name || `daimach_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setResult({ success: true, rows: data.rows_count, url: null, note: '📥 Backup baixado no seu computador.' });
+        await loadLogs();
+      } else {
+        setResult({ error: data.error || 'Backup sem conteúdo para download.' });
+      }
+    } catch {
+      setResult({ error: 'Erro ao baixar o backup.' });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -91,6 +123,13 @@ export default function AdminBackupsPage() {
           >
             📂 Abrir pasta no Drive
           </a>
+          <button
+            onClick={handleDownloadPC}
+            disabled={downloading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          >
+            {downloading ? '⏳ Gerando...' : '⬇️ Baixar Backup (PC)'}
+          </button>
           <button
             onClick={handleBackup}
             disabled={backing}

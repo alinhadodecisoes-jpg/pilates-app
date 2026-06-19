@@ -39,27 +39,18 @@ export default function AlunoReposicoesPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const [slotsRes, myReqRes] = await Promise.all([
-        supabase
-          .from('reposition_slots')
-          .select('*, classes_pilates(name)')
-          .gte('slot_date', new Date().toISOString().slice(0, 10))
-          .order('slot_date', { ascending: true }),
-        supabase
-          .from('reposition_requests')
-          .select('id, slot_id, status, requested_at, reposition_slots(slot_date, time_start, time_end, classes_pilates(name))')
-          .eq('user_id', user.id)
-          .order('requested_at', { ascending: false }),
-      ]);
-      setSlots((slotsRes.data ?? []) as unknown as RepoSlot[]);
-      setMyRequests((myReqRes.data ?? []) as unknown as MyRequest[]);
+      const res = await fetch(`/api/pilates/reposicoes?userId=${user.id}`);
+      if (!res.ok) throw new Error('Falha ao carregar');
+      const data = await res.json();
+      setSlots((data.slots ?? []) as unknown as RepoSlot[]);
+      setMyRequests((data.requests ?? []) as unknown as MyRequest[]);
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar. Verifique se o SQL C1 foi executado (PENDENCIAS_WILLIAN.md).');
+      setError('Erro ao carregar reposições.');
     } finally {
       setLoading(false);
     }
-  }, [user, supabase]);
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && user) loadData();
@@ -78,32 +69,34 @@ export default function AlunoReposicoesPage() {
     if (!user || selected.size === 0) { setError('Selecione pelo menos um horário.'); return; }
     setSubmitting(true);
     setError(null);
-    const inserts = Array.from(selected).map((slotId) => ({
-      user_id: user.id,
-      slot_id: slotId,
-      status: 'pending',
-    }));
-    const { error: err } = await supabase
-      .from('reposition_requests')
-      .upsert(inserts, { onConflict: 'user_id,slot_id' });
-    setSubmitting(false);
-    if (err) {
-      setError(err.message);
-      return;
+    const slotIds = Array.from(selected);
+    try {
+      for (const slotId of slotIds) {
+        const res = await fetch('/api/pilates/reposicoes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'request', user_id: user.id, slot_id: slotId }),
+        });
+        if (!res.ok) { const j = await res.json(); throw new Error(j.error || 'Erro'); }
+      }
+      setSelected(new Set());
+      setSuccess(`${slotIds.length} solicitação(ões) enviada(s)! Aguarde aprovação.`);
+      loadData();
+      setTimeout(() => setSuccess(null), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao solicitar.');
+    } finally {
+      setSubmitting(false);
     }
-    setSelected(new Set());
-    setSuccess(`${inserts.length} solicitação(ões) enviada(s)! Aguarde aprovação.`);
-    loadData();
-    setTimeout(() => setSuccess(null), 5000);
   };
 
   const handleCancelar = async (reqId: number) => {
     if (!user) return;
-    await supabase
-      .from('reposition_requests')
-      .update({ status: 'canceled' })
-      .eq('id', reqId)
-      .eq('user_id', user.id);
+    await fetch('/api/pilates/reposicoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel_request', request_id: reqId, user_id: user.id }),
+    });
     loadData();
   };
 

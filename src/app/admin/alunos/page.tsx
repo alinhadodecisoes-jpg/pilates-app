@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
-import { getAlunos, updateAluno, deleteAluno, getPlans } from '@/lib/pilates/pilates-db';
+import { getAlunos, updateAluno, deleteAluno } from '@/lib/pilates/pilates-db';
 import { apiFetch } from '@/lib/pilates/api-client';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
@@ -57,7 +57,10 @@ export default function AlunosPage() {
         .then(setAlunos)
         .catch(console.error)
         .finally(() => setLoading(false));
-      getPlans().then(setPlans).catch(console.error);
+      fetch('/api/pilates/planos')
+        .then((r) => r.json())
+        .then((d) => setPlans(Array.isArray(d) ? d : []))
+        .catch(console.error);
     }
   }, [authLoading]);
 
