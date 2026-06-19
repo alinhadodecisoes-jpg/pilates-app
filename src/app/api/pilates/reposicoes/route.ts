@@ -200,14 +200,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Aluno cancela a própria solicitação
+    // Aluno cancela a própria solicitação (a constraint de status não aceita 'canceled',
+    // então removemos a solicitação pendente — some da lista e libera o slot).
     if (action === 'cancel_request') {
       const { request_id, user_id } = body;
       const { error } = await db
         .from('reposition_requests')
-        .update({ status: 'canceled' })
+        .delete()
         .eq('id', Number(request_id))
-        .eq('user_id', user_id);
+        .eq('user_id', user_id)
+        .eq('status', 'pending');
       if (error) throw error;
       return NextResponse.json({ success: true });
     }

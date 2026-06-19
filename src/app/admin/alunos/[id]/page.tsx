@@ -185,26 +185,61 @@ export default function AlunoProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {data.ficha.blood_type && <Row label="Tipo Sanguíneo" value={String(data.ficha.blood_type)} />}
+                    {data.ficha.height_cm != null && <Row label="Altura" value={`${data.ficha.height_cm} cm`} />}
+                    {data.ficha.weight_kg != null && <Row label="Peso" value={`${data.ficha.weight_kg} kg`} />}
+                    {data.ficha.main_goal && <Row label="Objetivo" value={String(data.ficha.main_goal)} />}
+                  </div>
+
                   <div>
-                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Condições de Saúde</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {[
-                        ['Hipertensão', 'hypertension'],
-                        ['Diabetes', 'diabetes'],
-                        ['Cardiopatia', 'heart_disease'],
-                        ['Osteoporose', 'osteoporosis'],
-                        ['Gestante', 'pregnant'],
-                        ['Problema na coluna', 'spine_problems'],
-                      ].map(([label, key]) => (
-                        <div key={key} className={`rounded-lg px-3 py-2.5 text-sm ${data.ficha![key] ? 'bg-red-600/10 border border-red-600/20 text-red-400' : 'bg-slate-700/30 text-slate-500'}`}>
-                          {label}: <strong>{data.ficha![key] ? 'Sim' : 'Não'}</strong>
-                        </div>
+                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Condições Crônicas</h3>
+                    {Array.isArray(data.ficha.chronic_conditions) && data.ficha.chronic_conditions.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {data.ficha.chronic_conditions.map((c: string, i: number) => (
+                          <span key={i} className="text-xs bg-red-600/15 text-red-300 px-2.5 py-1 rounded-full border border-red-600/20">{c}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500">Nenhuma condição crônica informada.</p>
+                    )}
+                  </div>
+
+                  {Array.isArray(data.ficha.injuries) && data.ficha.injuries.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Lesões</h3>
+                      {data.ficha.injuries.map((inj: Record<string, string>, i: number) => (
+                        <p key={i} className="text-sm text-slate-200">{[inj.local, inj.descricao, inj.data].filter(Boolean).join(' — ')}</p>
                       ))}
                     </div>
+                  )}
+
+                  {Array.isArray(data.ficha.surgeries) && data.ficha.surgeries.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Cirurgias</h3>
+                      {data.ficha.surgeries.map((s: Record<string, string>, i: number) => (
+                        <p key={i} className="text-sm text-slate-200">{[s.tipo, s.data].filter(Boolean).join(' — ')}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {Array.isArray(data.ficha.medications) && data.ficha.medications.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Medicamentos</h3>
+                      {data.ficha.medications.map((m: Record<string, string>, i: number) => (
+                        <p key={i} className="text-sm text-slate-200">{[m.nome, m.dose].filter(Boolean).join(' — ')}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    {data.ficha.allergies && <Row label="Alergias" value={String(data.ficha.allergies)} />}
+                    {data.ficha.physical_restrictions && <Row label="Restrições Físicas" value={String(data.ficha.physical_restrictions)} />}
+                    <Row label="Liberação Médica" value={data.ficha.doctor_clearance ? 'Sim' : 'Não'} />
+                    {data.ficha.emergency_contact_name && <Row label="Contato Emergência" value={String(data.ficha.emergency_contact_name)} />}
+                    {data.ficha.emergency_contact_phone && <Row label="Telefone Emergência" value={String(data.ficha.emergency_contact_phone)} />}
                   </div>
-                  {data.ficha.medications && <Row label="Medicamentos" value={String(data.ficha.medications)} />}
-                  {data.ficha.injuries && <Row label="Lesões/Cirurgias" value={String(data.ficha.injuries)} />}
-                  {data.ficha.health_observations && <Row label="Observações" value={String(data.ficha.health_observations)} />}
+
                   <div className="pt-2">
                     <Link href={`/admin/ficha-saude/${alunoId}`} className="text-sm text-green-400 hover:text-green-300">
                       Editar ficha de saúde →
