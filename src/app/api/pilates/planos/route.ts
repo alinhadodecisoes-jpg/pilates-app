@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/planos
 export async function GET() {
@@ -19,6 +20,8 @@ export async function GET() {
 // POST /api/pilates/planos  { action: 'create' | 'update' | 'delete', ... }
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const body = await req.json();
     const { action } = body;
     const db = getSupabaseServerClient();

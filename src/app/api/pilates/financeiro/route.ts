@@ -1,9 +1,12 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // POST — dar baixa em pagamento manual (admin)
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const { userId, amount } = await req.json();
     const db = getSupabaseServerClient();
     const { error: payErr } = await db.from('payment_history').insert({
@@ -25,8 +28,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

@@ -1,6 +1,7 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { requireRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // Pacientes = alunos de pilates ativos + pacientes só-fisio (is_physio_patient)
 async function getPatients(db: ReturnType<typeof getSupabaseServerClient>) {
@@ -21,8 +22,10 @@ async function getPatients(db: ReturnType<typeof getSupabaseServerClient>) {
 }
 
 // GET /api/pilates/fisioterapia  → casos, sessões, pacientes, terapeutas
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await requireRole(req, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
     const [casesRes, evosRes, sessionsRes, therapistsRes, patients] = await Promise.all([
       db.from('physio_cases').select('*, aluno:users_pilates!user_id(full_name, email)').order('created_at', { ascending: false }),
@@ -50,6 +53,8 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireRole(req, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const body = await req.json();
     const { action } = body;
     const db = getSupabaseServerClient();
@@ -134,6 +139,8 @@ export async function POST(req: NextRequest) {
 // DELETE /api/pilates/fisioterapia?sessionId=xx
 export async function DELETE(req: NextRequest) {
   try {
+    const auth = await requireRole(req, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const sessionId = req.nextUrl.searchParams.get('sessionId');
     if (!sessionId) return NextResponse.json({ error: 'sessionId obrigatório' }, { status: 400 });
     const db = getSupabaseServerClient();

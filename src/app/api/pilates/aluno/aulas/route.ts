@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/aluno/aulas?userId=xxx — turmas em que o aluno está matriculado (ativo)
 export async function GET(req: NextRequest) {
@@ -8,6 +9,8 @@ export async function GET(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'userId obrigatório' }, { status: 400 });
     }
+    const auth = await requireSelfOrRole(req, userId, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
     const { data, error } = await db
       .from('enrollments_pilates')

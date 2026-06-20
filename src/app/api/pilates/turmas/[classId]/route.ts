@@ -1,11 +1,14 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ classId: string }> }
 ) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const { classId } = await params;
     const updates = await req.json();
     const db = getSupabaseServerClient();
@@ -23,10 +26,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ classId: string }> }
 ) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const { classId } = await params;
     const db = getSupabaseServerClient();
     const { error } = await db

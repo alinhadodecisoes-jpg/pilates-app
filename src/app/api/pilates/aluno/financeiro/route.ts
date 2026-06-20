@@ -1,11 +1,14 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/aluno/financeiro?userId=xxx
 export async function GET(req: NextRequest) {
   try {
     const userId = req.nextUrl.searchParams.get('userId');
     if (!userId) return NextResponse.json({ error: 'userId obrigatório' }, { status: 400 });
+    const auth = await requireSelfOrRole(req, userId, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
 
     const [userRes, subRes, payRes] = await Promise.all([

@@ -1,9 +1,12 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/relatorios?tipo=alunos|financeiro|turmas|presenca
 export async function GET(req: NextRequest) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const tipo = req.nextUrl.searchParams.get('tipo') ?? 'alunos';
     const db = getSupabaseServerClient();
 

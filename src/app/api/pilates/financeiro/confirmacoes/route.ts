@@ -1,13 +1,16 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, requireSelfOrRole, ADMIN_ROLES, STAFF_ROLES } from '@/lib/api-auth';
 
 function errMsg(e: unknown) { return (e as { message?: string })?.message ?? String(e); }
 
 // GET → confirmações pendentes (para o admin), com nome do aluno
 // Não há FK entre payment_confirmations e users_pilates, então buscamos os nomes
 // em uma query separada em vez de depender do join implícito do PostgREST.
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await requireRole(req, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
     const { data, error } = await db
       .from('payment_confirmations')
@@ -33,6 +36,16 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // 'inform' é do próprio aluno; 'confirm'/'reject' são exclusivos de admin
+    if (body.action === 'inform') {
+      const auth = await requireSelfOrRole(req, body.user_id, STAFF_ROLES);
+      if (auth.error) return auth.error;
+    } else {
+      const auth = await requireRole(req, ADMIN_ROLES);
+      if (auth.error) return auth.error;
+    }
+
     const db = getSupabaseServerClient();
 
     // Aluno informa que pagou

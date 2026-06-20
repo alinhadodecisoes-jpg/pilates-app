@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 const DEFAULTS: Record<string, string> = {
   pix_key: '',
@@ -31,6 +32,8 @@ export async function GET() {
 // POST { updates: {key: value} } → upsert
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const { updates } = await req.json();
     if (!updates || typeof updates !== 'object') {
       return NextResponse.json({ error: 'updates obrigatório' }, { status: 400 });

@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, requireSelfOrRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/reposicoes?professorId=opcional
 // Retorna slots, solicitações e turmas (para o dropdown). Tudo via service role.
@@ -11,6 +12,8 @@ export async function GET(req: NextRequest) {
 
     // --- Visão do ALUNO: slots futuros + as próprias solicitações ---
     if (userId) {
+      const auth = await requireSelfOrRole(req, userId, STAFF_ROLES);
+      if (auth.error) return auth.error;
       const today = new Date().toISOString().slice(0, 10);
       const [slotsRes, myReqRes] = await Promise.all([
         db.from('reposition_slots').select('*, classes_pilates(name)').gte('slot_date', today).order('slot_date', { ascending: true }),
@@ -21,6 +24,10 @@ export async function GET(req: NextRequest) {
       ]);
       return NextResponse.json({ slots: slotsRes.data ?? [], requests: myReqRes.data ?? [] });
     }
+
+    // Visão de gestão (admin/professor): exige papel de staff
+    const staffAuth = await requireRole(req, STAFF_ROLES);
+    if (staffAuth.error) return staffAuth.error;
 
     // Se professorId for passado, restringe turmas/slots às turmas do professor
     let classQuery = db
@@ -77,6 +84,16 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action } = body;
+
+    // Autorização por ação: aluno só mexe nas próprias solicitações; o resto é staff.
+    if (action === 'request' || action === 'cancel_request') {
+      const auth = await requireSelfOrRole(req, body.user_id, STAFF_ROLES);
+      if (auth.error) return auth.error;
+    } else {
+      const auth = await requireRole(req, STAFF_ROLES);
+      if (auth.error) return auth.error;
+    }
+
     const db = getSupabaseServerClient();
 
     if (action === 'create_slot') {
@@ -223,6 +240,8 @@ export async function POST(req: NextRequest) {
 // DELETE /api/pilates/reposicoes?slotId=xx
 export async function DELETE(req: NextRequest) {
   try {
+    const del = await requireRole(req, STAFF_ROLES);
+    if (del.error) return del.error;
     const slotId = req.nextUrl.searchParams.get('slotId');
     if (!slotId) return NextResponse.json({ error: 'slotId obrigatório' }, { status: 400 });
     const db = getSupabaseServerClient();

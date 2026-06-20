@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import { requireRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // POST — Gerar class_sessions para as próximas 4 semanas
 // Idempotente: usa UNIQUE(class_id, session_date) para não duplicar
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireRole(req, STAFF_ROLES);
+    if (auth.error) return auth.error;
     const supabase = getSupabaseServerClient();
 
     // Buscar todas as turmas ativas

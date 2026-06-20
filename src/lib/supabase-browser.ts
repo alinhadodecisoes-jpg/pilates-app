@@ -33,6 +33,52 @@ type NativeCapacitorWindow = Window & {
 let browserClient: SupabaseClient | null = null
 let sessionRestored = false
 
+// Token de acesso mais recente (mantido em sincronia via onAuthStateChange).
+// Usado pelo wrapper de fetch para autenticar chamadas às rotas /api.
+let currentAccessToken: string | null = null
+let fetchPatched = false
+
+/**
+ * Instala um wrapper no window.fetch que anexa o JWT do usuário logado
+ * (Authorization: Bearer ...) somente em chamadas same-origin para /api/.
+ * Assim o servidor consegue validar quem está chamando (a sessão fica em
+ * localStorage, não em cookie, então o token precisa ir no header).
+ */
+function installAuthFetch(client: SupabaseClient) {
+  if (fetchPatched || typeof window === 'undefined') return
+  fetchPatched = true
+  const origFetch = window.fetch.bind(window)
+
+  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    try {
+      const url =
+        typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      const isApi =
+        !!url &&
+        (url.startsWith('/api/') || url.startsWith(window.location.origin + '/api/'))
+
+      if (isApi) {
+        let token = currentAccessToken
+        if (!token) {
+          try {
+            const { data } = await client.auth.getSession()
+            token = data.session?.access_token ?? null
+            if (token) currentAccessToken = token
+          } catch {}
+        }
+        if (token) {
+          const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined))
+          if (!headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`)
+          init = { ...init, headers }
+        }
+      }
+    } catch {
+      // Em caso de erro no wrapper, segue com o fetch original sem header.
+    }
+    return origFetch(input, init)
+  }
+}
+
 export function getSupabaseBrowserClient(): SupabaseClient {
   if (!browserClient) {
     browserClient = createClient(supabaseUrl, anonKey, {
@@ -52,9 +98,17 @@ export function getSupabaseBrowserClient(): SupabaseClient {
     })
 
     if (typeof window !== 'undefined') {
+      // Instala o wrapper de fetch que envia o token nas chamadas /api
+      installAuthFetch(browserClient)
+      // Captura o token atual logo no início (caso já exista sessão salva)
+      browserClient.auth.getSession().then(({ data }) => {
+        currentAccessToken = data.session?.access_token ?? null
+      }).catch(() => {})
+
       // Listener para manter backup da sessao sincronizado
       browserClient.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          currentAccessToken = session?.access_token ?? currentAccessToken
           if (session) {
             try {
               localStorage.setItem(BACKUP_KEY, JSON.stringify({
@@ -66,6 +120,7 @@ export function getSupabaseBrowserClient(): SupabaseClient {
             syncTokenToNative(session.access_token)
           }
         } else if (event === 'SIGNED_OUT') {
+          currentAccessToken = null
           try {
             localStorage.removeItem(BACKUP_KEY)
           } catch {}

@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 export async function GET() {
   try {
@@ -26,6 +27,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const body = await req.json();
     const db = getSupabaseServerClient();
     const { data, error } = await db

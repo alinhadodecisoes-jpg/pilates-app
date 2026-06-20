@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // POST — Gerar backup e enviar para Google Drive
 // Protegido por CRON_SECRET_KEY ou chamada manual admin
@@ -109,6 +110,12 @@ export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('Authorization');
   const cronSecret = process.env.CRON_SECRET_KEY;
   const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+  // Se não for o cron, exige admin autenticado (o backup exporta TODOS os dados)
+  if (!isCron) {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
+  }
 
   const supabase = getSupabaseServerClient();
   const dateStr = new Date().toISOString().slice(0, 10);
