@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { Resend } from 'resend';
+import { requireRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // TODO: Configurar VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY e RESEND_API_KEY no .env.local
 // Ver PENDENCIAS_WILLIAN.md para as variáveis necessárias
 
 export async function POST(req: NextRequest) {
   try {
+    // Só staff dispara notificações (evita spam de um aluno para outros)
+    const auth = await requireRole(req, STAFF_ROLES);
+    if (auth.error) return auth.error;
+
     const { user_id, type, title, body, channels = ['push'] } = await req.json();
 
     if (!user_id || !title) {

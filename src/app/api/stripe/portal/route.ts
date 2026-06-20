@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -15,6 +16,8 @@ export async function POST(req: NextRequest) {
     if (!user_id) {
       return NextResponse.json({ error: 'user_id é obrigatório' }, { status: 400 });
     }
+    const auth = await requireSelfOrRole(req, user_id, ADMIN_ROLES);
+    if (auth.error) return auth.error;
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2026-02-25.clover' as Stripe.LatestApiVersion });
     const supabase = getSupabaseServerClient();

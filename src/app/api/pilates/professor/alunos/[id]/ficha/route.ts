@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/professor/alunos/[id]/ficha?professorId=xxx
 // Retorna ficha completa do aluno — só se ele for da turma do professor
@@ -8,6 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id: alunoId } = await params;
     const professorId = req.nextUrl.searchParams.get('professorId');
     if (!professorId) return NextResponse.json({ error: 'professorId obrigatório' }, { status: 400 });
+    const auth = await requireSelfOrRole(req, professorId, ADMIN_ROLES);
+    if (auth.error) return auth.error;
 
     const db = getSupabaseServerClient();
 

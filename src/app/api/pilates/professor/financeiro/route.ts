@@ -1,11 +1,14 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // GET /api/pilates/professor/financeiro?professorId=xxx
 export async function GET(req: NextRequest) {
   try {
     const professorId = req.nextUrl.searchParams.get('professorId');
     if (!professorId) return NextResponse.json({ error: 'professorId obrigatório' }, { status: 400 });
+    const auth = await requireSelfOrRole(req, professorId, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
 
     // Turmas do professor

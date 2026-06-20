@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // TODO: Configurar STRIPE_SECRET_KEY e NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY no .env.local
 // Ver PENDENCIAS_WILLIAN.md
@@ -18,6 +19,9 @@ export async function POST(req: NextRequest) {
     if (!user_id || !price_id) {
       return NextResponse.json({ error: 'user_id e price_id são obrigatórios' }, { status: 400 });
     }
+    // Só o próprio usuário (ou admin) cria checkout em seu nome
+    const auth = await requireSelfOrRole(req, user_id, ADMIN_ROLES);
+    if (auth.error) return auth.error;
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2026-02-25.clover' as Stripe.LatestApiVersion });
     const supabase = getSupabaseServerClient();

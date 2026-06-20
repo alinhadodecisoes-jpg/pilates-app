@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
+import { requireRole, requireSelfOrRole, STAFF_ROLES } from '@/lib/api-auth';
 
 // POST — Reservar ou cancelar uma sessão
 // Body: { action: 'book'|'cancel', session_id, user_id }
@@ -9,6 +10,15 @@ export async function POST(req: NextRequest) {
 
     if (!action || !session_id || !user_id) {
       return NextResponse.json({ error: 'action, session_id e user_id são obrigatórios' }, { status: 400 });
+    }
+
+    // 'attended'/'no_show' são marcação de presença (staff); 'book'/'cancel' são do próprio aluno.
+    if (action === 'attended' || action === 'no_show') {
+      const a = await requireRole(req, STAFF_ROLES);
+      if (a.error) return a.error;
+    } else {
+      const a = await requireSelfOrRole(req, user_id, STAFF_ROLES);
+      if (a.error) return a.error;
     }
 
     const supabase = getSupabaseServerClient();

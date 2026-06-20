@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // POST /api/pilates/professor/turmas/[id]/cancelar
 // Body: { professorId, date: "YYYY-MM-DD", reason?: string }
@@ -13,6 +14,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!professorId || !date) {
       return NextResponse.json({ error: 'professorId e date são obrigatórios' }, { status: 400 });
     }
+    const auth = await requireSelfOrRole(req, professorId, ADMIN_ROLES);
+    if (auth.error) return auth.error;
 
     const db = getSupabaseServerClient();
 

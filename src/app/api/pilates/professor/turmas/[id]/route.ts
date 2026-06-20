@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // PUT /api/pilates/professor/turmas/[id]
 // Atualiza notas da turma — valida que o professor é dono
@@ -9,6 +10,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const classId = Number(id);
     const { professorId, notes } = await req.json();
     if (!professorId) return NextResponse.json({ error: 'professorId obrigatório' }, { status: 400 });
+    const auth = await requireSelfOrRole(req, professorId, ADMIN_ROLES);
+    if (auth.error) return auth.error;
 
     const db = getSupabaseServerClient();
 

@@ -1,5 +1,6 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
 // Retorna tudo que o painel do professor precisa, usando service role (RLS não bloqueia).
 // GET /api/pilates/professor?professorId=xxx
@@ -9,6 +10,8 @@ export async function GET(req: NextRequest) {
     if (!professorId) {
       return NextResponse.json({ error: 'professorId obrigatório' }, { status: 400 });
     }
+    const auth = await requireSelfOrRole(req, professorId, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const db = getSupabaseServerClient();
 
     // Minhas turmas
