@@ -198,13 +198,12 @@ WHERE NOT EXISTS (SELECT 1 FROM classes_pilates c WHERE c.name = grid.nm);
 
 -- =============================================================================
 -- 12) 🔴 SEGURANÇA CRÍTICA — impede aluno de virar admin / se marcar pago
---     (REVOKE é idempotente; service_role das rotas /api NÃO é afetado)
+--     IMPORTANTE: revogar UPDATE da TABELA inteira. Um REVOKE só de colunas
+--     NÃO basta quando existe grant de UPDATE no nível da tabela (o aluno
+--     continuaria podendo mudar role/status). O app escreve em users_pilates
+--     apenas via rotas /api (service_role), que NÃO é afetado por isto.
 -- =============================================================================
-REVOKE UPDATE (
-  role, status, payment_status, plan_id, monthly_value,
-  due_day, next_due_date, is_physio_patient, is_pilates_student
-) ON public.users_pilates FROM authenticated, anon;
-
+REVOKE UPDATE ON public.users_pilates FROM authenticated, anon;
 REVOKE INSERT ON public.users_pilates FROM authenticated, anon;
 
 

@@ -15,20 +15,11 @@
 --   alterar tudo normalmente.
 -- =============================================================================
 
-REVOKE UPDATE (
-  role,
-  status,
-  payment_status,
-  plan_id,
-  monthly_value,
-  due_day,
-  next_due_date,
-  is_physio_patient,
-  is_pilates_student
-) ON public.users_pilates FROM authenticated, anon;
-
--- (Opcional, defesa extra) Garante que ninguém público insira linhas de usuário
--- direto na tabela — cadastros já passam pela rota /api/admin/create-user.
+-- ATENÇÃO: revogar UPDATE da TABELA inteira (não apenas colunas). Um REVOKE
+-- só de colunas NÃO funciona se o papel tiver grant de UPDATE no nível da
+-- tabela — o aluno continuaria conseguindo mudar role/status. O service_role
+-- (rotas /api) NÃO é afetado. O app não atualiza users_pilates pelo browser.
+REVOKE UPDATE ON public.users_pilates FROM authenticated, anon;
 REVOKE INSERT ON public.users_pilates FROM authenticated, anon;
 
 -- =============================================================================
