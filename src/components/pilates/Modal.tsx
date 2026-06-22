@@ -12,7 +12,14 @@ interface ModalProps {
   cancelText?: string;
   confirmVariant?: 'primary' | 'danger';
   loading?: boolean;
+  size?: 'md' | 'lg' | 'xl';
 }
+
+const SIZE_CLASS: Record<NonNullable<ModalProps['size']>, string> = {
+  md: 'max-w-md',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+};
 
 export function Modal({
   title,
@@ -23,6 +30,7 @@ export function Modal({
   cancelText = 'Cancelar',
   confirmVariant = 'primary',
   loading = false,
+  size = 'md',
 }: ModalProps) {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -35,8 +43,9 @@ export function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between p-5 border-b border-slate-700">
+      {/* max-h-[90vh] + flex-col: header e botões fixos, conteúdo rola por dentro */}
+      <div className={`relative bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full ${SIZE_CLASS[size]} max-h-[90vh] flex flex-col`}>
+        <div className="flex items-center justify-between p-5 border-b border-slate-700 shrink-0">
           <h3 className="text-lg font-bold text-white">{title}</h3>
           <button
             onClick={onClose}
@@ -47,9 +56,9 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto flex-1">{children}</div>
         {onConfirm && (
-          <div className="flex gap-3 p-5 pt-0 justify-end">
+          <div className="flex gap-3 p-5 border-t border-slate-700 justify-end shrink-0">
             <Button variant="ghost" size="md" onClick={onClose}>
               {cancelText}
             </Button>

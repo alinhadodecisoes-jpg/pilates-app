@@ -10,7 +10,7 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
   const pathname = usePathname();
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
-  const { user, loading } = usePilatesAuth();
+  const { user, loading, role } = usePilatesAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -40,11 +40,11 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-50 flex">
+    <div className="h-screen overflow-hidden bg-slate-900 text-slate-50 flex">
       {menuOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMenuOpen(false)} />
       )}
-      <aside className={`flex flex-col w-64 bg-slate-800 border-r border-slate-700 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`flex flex-col w-64 h-screen bg-slate-800 border-r border-slate-700 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-5 border-b border-slate-700 space-x-3">
           <img src="/images/logo-oficial.jpeg" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
@@ -71,7 +71,18 @@ export default function FisioterapeutaLayout({ children }: { children: React.Rea
             </Link>
           ))}
         </nav>
-        <div className="p-4 border-t border-slate-700">
+        <div className="p-4 border-t border-slate-700 space-y-1 shrink-0">
+          {role === 'prof_fisio' && (
+            <Link
+              href="/professor/dashboard"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-blue-300 hover:bg-slate-700 rounded-xl transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span className="font-medium">Área de Professor</span>
+            </Link>
+          )}
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-slate-700 rounded-xl transition-colors"

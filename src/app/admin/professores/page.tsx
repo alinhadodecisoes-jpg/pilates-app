@@ -180,6 +180,8 @@ export default function ProfessoresPage() {
         full_name: editItem.full_name ?? undefined,
         phone: editItem.phone ?? undefined,
         role: editItem.role,
+        pay_mode: editItem.pay_mode ?? null,
+        pay_rate: editItem.pay_rate ?? null,
       });
       // Sincroniza as turmas do professor: atribui as novas, libera as desmarcadas
       const toAssign = [...editTurmaIds].filter((id) => !editTurmaInitial.has(id));
@@ -289,6 +291,7 @@ export default function ProfessoresPage() {
       {createMode && (
         <Modal
           title="Novo Professor / Fisioterapeuta"
+          size="lg"
           onClose={() => setCreateMode(false)}
           onConfirm={handleCreate}
           confirmText="Criar Conta"
@@ -364,6 +367,7 @@ export default function ProfessoresPage() {
       {editItem && (
         <Modal
           title="Editar Profissional"
+          size="lg"
           onClose={() => setEditItem(null)}
           onConfirm={handleEdit}
           confirmText="Salvar"
@@ -398,6 +402,36 @@ export default function ProfessoresPage() {
                 <option value="prof_fisio">Professor + Fisioterapeuta</option>
                 <option value="prof_edfisica">Prof. Ed. Física</option>
               </select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">Forma de pagamento</label>
+                <select
+                  value={editItem.pay_mode ?? ''}
+                  onChange={(e) => setEditItem({ ...editItem, pay_mode: e.target.value || null })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Não definida</option>
+                  <option value="per_class">Por aula</option>
+                  <option value="per_day">Por dia</option>
+                  <option value="percent">% da mensalidade do aluno</option>
+                  <option value="fixed">Fixo mensal</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-slate-400 mb-1">
+                  {editItem.pay_mode === 'percent' ? 'Percentual (%)' : 'Valor (R$)'}
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editItem.pay_rate ?? ''}
+                  onChange={(e) => setEditItem({ ...editItem, pay_rate: e.target.value ? Number(e.target.value) : null })}
+                  placeholder={editItem.pay_mode === 'percent' ? 'Ex: 50' : 'Ex: 30.00'}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
             </div>
             <TurmaPicker turmas={turmas} selected={editTurmaIds} onToggle={toggleEditTurma} />
           </div>

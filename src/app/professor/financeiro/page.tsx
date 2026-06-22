@@ -12,9 +12,21 @@ interface TeacherPayment {
   status: string;
 }
 
+const PAY_MODE_LABEL: Record<string, string> = {
+  per_class: 'Por aula',
+  per_day: 'Por dia',
+  percent: '% da mensalidade',
+  fixed: 'Fixo mensal',
+};
+
 export default function ProfessorFinanceiroPage() {
   const { user, loading: authLoading } = usePilatesAuth();
   const [classesThisMonth, setClassesThisMonth] = useState(0);
+  const [daysThisMonth, setDaysThisMonth] = useState(0);
+  const [alunosCount, setAlunosCount] = useState(0);
+  const [payMode, setPayMode] = useState('');
+  const [payRate, setPayRate] = useState(0);
+  const [aReceber, setAReceber] = useState<number | null>(null);
   const [payments, setPayments] = useState<TeacherPayment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +35,15 @@ export default function ProfessorFinanceiroPage() {
       fetch(`/api/pilates/professor/financeiro?professorId=${user.id}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
-          if (d) { setClassesThisMonth(d.classesThisMonth ?? 0); setPayments(d.payments ?? []); }
+          if (d) {
+            setClassesThisMonth(d.classesThisMonth ?? 0);
+            setDaysThisMonth(d.daysThisMonth ?? 0);
+            setAlunosCount(d.alunosCount ?? 0);
+            setPayMode(d.payMode ?? '');
+            setPayRate(Number(d.payRate ?? 0));
+            setAReceber(d.aReceber ?? null);
+            setPayments(d.payments ?? []);
+          }
         })
         .finally(() => setLoading(false));
     } else if (!authLoading && !user) {
@@ -36,6 +56,8 @@ export default function ProfessorFinanceiroPage() {
   }
 
   const mesAtual = payments.find((p) => p.month === new Date().toISOString().slice(0, 7));
+  // Prioriza o valor lançado pelo admin (teacher_payments); senão, a estimativa pela forma de pagamento
+  const valorReceber = mesAtual ? Number(mesAtual.total_amount) : aReceber;
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -45,17 +67,27 @@ export default function ProfessorFinanceiroPage() {
         <div className="bg-slate-800 rounded-xl border border-slate-700 p-5">
           <p className="text-slate-400 text-sm">Aulas este mês</p>
           <p className="text-3xl font-bold text-green-400 mt-1">{classesThisMonth}</p>
+          <p className="text-xs text-slate-500 mt-1">{daysThisMonth} dia(s) · {alunosCount} aluno(s)</p>
         </div>
         <div className="bg-slate-800 rounded-xl border border-slate-700 p-5">
           <p className="text-slate-400 text-sm">A receber (mês)</p>
           <p className="text-3xl font-bold text-blue-400 mt-1">
-            {mesAtual ? `R$ ${Number(mesAtual.total_amount).toFixed(2)}` : '—'}
+            {valorReceber != null ? `R$ ${Number(valorReceber).toFixed(2)}` : '—'}
           </p>
+          {payMode ? (
+            <p className="text-xs text-slate-500 mt-1">
+              {PAY_MODE_LABEL[payMode] ?? payMode}
+              {payMode === 'percent' ? ` · ${payRate}%` : payMode === 'fixed' ? '' : ` · R$ ${payRate.toFixed(2)}`}
+              {!mesAtual && aReceber != null ? ' (estimado)' : ''}
+            </p>
+          ) : (
+            <p className="text-xs text-amber-400/80 mt-1">Forma de pagamento não definida pelo admin</p>
+          )}
         </div>
         <div className="bg-slate-800 rounded-xl border border-slate-700 p-5">
           <p className="text-slate-400 text-sm">Status (mês)</p>
           <p className={`text-xl font-bold mt-1 ${mesAtual?.status === 'pago' ? 'text-green-400' : 'text-yellow-400'}`}>
-            {mesAtual?.status ? (mesAtual.status === 'pago' ? 'Pago' : 'Pendente') : '—'}
+            {mesAtual?.status ? (mesAtual.status === 'pago' ? 'Pago' : 'Pendente') : 'A lançar'}
           </p>
         </div>
       </div>

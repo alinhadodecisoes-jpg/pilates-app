@@ -432,6 +432,7 @@ export default function AlunosPage() {
       {editAluno && (
         <Modal
           title="Editar Aluno"
+          size="lg"
           onClose={() => setEditAluno(null)}
           onConfirm={handleSave}
           confirmText="Salvar"
@@ -501,6 +502,7 @@ export default function AlunosPage() {
       {showNewAluno && (
         <Modal
           title="Novo Aluno"
+          size="lg"
           onClose={() => setShowNewAluno(false)}
           onConfirm={handleCreateAluno}
           confirmText="Criar Aluno"

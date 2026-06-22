@@ -1,13 +1,14 @@
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole, ADMIN_ROLES } from '@/lib/api-auth';
 
-// Campos que podem ser atualizados via painel (admin/professor)
-// Colunas editáveis em users_pilates (migração de pagamento já executada).
+// Campos que podem ser atualizados via painel (somente admin).
 const ALLOWED = new Set([
   'full_name', 'phone', 'role', 'status', 'monthly_value', 'plan_id',
   'emergency_contact', 'emergency_phone',
   'payment_status', 'due_day', 'next_due_date',
   'is_physio_patient', 'is_pilates_student',
+  'pay_mode', 'pay_rate', // forma de pagamento do professor
 ]);
 
 export async function PUT(
@@ -15,6 +16,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const { id } = await params;
     const body = await req.json();
     const updates: Record<string, unknown> = {};
@@ -38,10 +41,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireRole(req, ADMIN_ROLES);
+    if (auth.error) return auth.error;
     const { id } = await params;
     const db = getSupabaseServerClient();
     const { error } = await db.from('users_pilates').delete().eq('id', id);

@@ -69,3 +69,6 @@ run-sql-api.js
 dev-server.log
 
 .vercel
+
+# Credenciais de teste (não commitar)
+CREDENCIAIS_TESTE.md

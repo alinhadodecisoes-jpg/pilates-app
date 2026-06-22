@@ -25,7 +25,9 @@ ALTER TABLE users_pilates
   ADD COLUMN IF NOT EXISTS due_day integer,                         -- dia de vencimento (1-28)
   ADD COLUMN IF NOT EXISTS next_due_date date,
   ADD COLUMN IF NOT EXISTS is_physio_patient boolean DEFAULT false,
-  ADD COLUMN IF NOT EXISTS is_pilates_student boolean DEFAULT true;
+  ADD COLUMN IF NOT EXISTS is_pilates_student boolean DEFAULT true,
+  ADD COLUMN IF NOT EXISTS pay_mode text,                           -- forma de pgto do professor: per_class | per_day | percent | fixed
+  ADD COLUMN IF NOT EXISTS pay_rate numeric;                        -- valor por aula/dia, % do aluno, ou fixo mensal
 ALTER TABLE users_pilates ALTER COLUMN payment_status SET DEFAULT 'pendente';
 
 

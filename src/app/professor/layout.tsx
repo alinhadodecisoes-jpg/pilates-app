@@ -10,7 +10,7 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
-  const { user, loading } = usePilatesAuth();
+  const { user, loading, role } = usePilatesAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -37,11 +37,11 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="min-h-screen bg-daimach-dark text-daimach-light flex">
+    <div className="h-screen overflow-hidden bg-daimach-dark text-daimach-light flex">
       {menuOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMenuOpen(false)} />
       )}
-      <aside className={`flex flex-col w-64 bg-daimach-dark border-r border-daimach-primary/20 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`flex flex-col w-64 h-screen bg-daimach-dark border-r border-daimach-primary/20 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-5 border-b border-daimach-primary/20 space-x-3">
           <img src="/images/logo-daimach-oficial.jpeg" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
@@ -49,7 +49,7 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
             <p className="text-xs text-daimach-accent">Professor</p>
           </div>
         </div>
-        <nav className="flex-1 px-4 py-6 space-y-1">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <Link
               key={item.path}
@@ -68,7 +68,29 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
             </Link>
           ))}
         </nav>
-        <div className="p-4 border-t border-daimach-primary/20">
+        <div className="p-4 border-t border-daimach-primary/20 space-y-1 shrink-0">
+          {role === 'prof_fisio' && (
+            <Link
+              href="/fisioterapeuta/pacientes"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-teal-300 hover:bg-daimach-primary/20 rounded-xl transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span className="font-medium">Área de Fisioterapia</span>
+            </Link>
+          )}
+          <a
+            href="https://wa.me/5521763000055?text=Ol%C3%A1%2C%20sou%20professor%20no%20Daimach%20e%20preciso%20falar%20com%20o%20administrador."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-daimach-light hover:bg-daimach-primary/20 rounded-xl transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 3v-3z" />
+            </svg>
+            <span className="font-medium">Contatar admin</span>
+          </a>
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 text-daimach-secondary hover:bg-daimach-primary/20 rounded-xl transition-colors"

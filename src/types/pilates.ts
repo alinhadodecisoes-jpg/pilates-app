@@ -9,6 +9,8 @@ export interface PilatesUser {
   monthly_value?: number | null;
   emergency_contact?: string | null;
   emergency_phone?: string | null;
+  pay_mode?: string | null;   // professor: per_class | per_day | percent | fixed
+  pay_rate?: number | null;   // valor por aula/dia, % do aluno, ou fixo mensal
   created_at: string;
   updated_at?: string;
 }

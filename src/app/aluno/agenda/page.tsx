@@ -44,44 +44,16 @@ export default function AlunoAgendaPage() {
 
   const loadSessions = async () => {
     if (!user) return;
-    const [sessionsRes, bookingsRes, myBookingsRes] = await Promise.all([
-      supabase
-        .from('class_sessions')
-        .select('*, turma:classes_pilates!class_id(name)')
-        .gte('session_date', weekStart)
-        .lte('session_date', weekEnd)
-        .eq('status', 'scheduled')
-        .order('session_date')
-        .order('time_start'),
-      supabase
-        .from('bookings')
-        .select('session_id')
-        .eq('status', 'booked'),
-      supabase
-        .from('bookings')
-        .select('session_id, status, id')
-        .eq('user_id', user.id)
-        .in('status', ['booked', 'waitlist']),
-    ]);
-
-    if (!sessionsRes.error && sessionsRes.data) {
-      const countBySession: Record<number, number> = {};
-      for (const b of bookingsRes.data ?? []) {
-        countBySession[b.session_id] = (countBySession[b.session_id] ?? 0) + 1;
-      }
-      const myBySession: Record<number, { status: string; id: number }> = {};
-      for (const b of myBookingsRes.data ?? []) {
-        myBySession[b.session_id] = { status: b.status, id: b.id };
-      }
-      setSessions(
-        sessionsRes.data.map((s) => ({
-          ...s,
-          _booked_count: countBySession[s.id] ?? 0,
-          _my_booking: myBySession[s.id] ?? null,
-        })) as ClassSession[]
-      );
+    try {
+      // Via API (service role) — o RLS bloqueia a leitura direta de class_sessions pelo aluno
+      const res = await fetch(`/api/pilates/aluno/agenda?userId=${user.id}&start=${weekStart}&end=${weekEnd}`);
+      const data = await res.json();
+      setSessions((data.sessions ?? []) as ClassSession[]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
