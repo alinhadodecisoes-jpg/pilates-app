@@ -19,6 +19,55 @@ interface StaffForm {
   role: StaffRole;
 }
 
+const DAYS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+interface TurmaLite {
+  id: number;
+  name: string;
+  day_of_week: number;
+  time_start: string;
+  professor_id: string | null;
+}
+
+// Seletor de turmas (multi-seleção, com busca) — define quais turmas o professor dá
+function TurmaPicker({ turmas, selected, onToggle }: { turmas: TurmaLite[]; selected: Set<number>; onToggle: (id: number) => void }) {
+  const [q, setQ] = useState('');
+  const filtered = turmas.filter((t) => {
+    if (!q) return true;
+    const s = (t.name + ' ' + (DAYS[t.day_of_week] ?? '') + ' ' + (t.time_start ?? '')).toLowerCase();
+    return s.includes(q.toLowerCase());
+  });
+  return (
+    <div>
+      <label className="block text-sm text-slate-400 mb-1">Turmas que dá aula — {selected.size} selecionada(s)</label>
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Buscar turma por nome, dia ou horário..."
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+      />
+      <div className="max-h-52 overflow-y-auto space-y-1 border border-slate-700 rounded-lg p-2 bg-slate-900/50">
+        {filtered.length === 0 ? (
+          <p className="text-xs text-slate-500 py-2 text-center">Nenhuma turma encontrada.</p>
+        ) : (
+          filtered.map((t) => {
+            const checked = selected.has(t.id);
+            const ocupadaPorOutro = !!t.professor_id && !checked;
+            return (
+              <label key={t.id} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer ${checked ? 'bg-green-900/20' : 'hover:bg-slate-800'}`}>
+                <input type="checkbox" checked={checked} onChange={() => onToggle(t.id)} className="w-4 h-4 accent-green-500" />
+                <span className="text-sm text-white flex-1">{t.name}</span>
+                {ocupadaPorOutro && <span className="text-[10px] text-amber-400/80">tem prof.</span>}
+                <span className="text-xs text-slate-400">{DAYS[t.day_of_week] ?? ''} {t.time_start?.slice(0, 5)}</span>
+              </label>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ProfessoresPage() {
   const { loading: authLoading } = usePilatesAuth();
   const [staff, setStaff] = useState<PilatesUser[]>([]);
@@ -38,6 +87,12 @@ export default function ProfessoresPage() {
     role: 'professor',
   });
 
+  // Turmas (para atribuir o professor a turmas pelo próprio modal)
+  const [turmas, setTurmas] = useState<TurmaLite[]>([]);
+  const [createTurmaIds, setCreateTurmaIds] = useState<Set<number>>(new Set());
+  const [editTurmaIds, setEditTurmaIds] = useState<Set<number>>(new Set());
+  const [editTurmaInitial, setEditTurmaInitial] = useState<Set<number>>(new Set());
+
   const loadStaff = async () => {
     try {
       const res = await fetch('/api/pilates/professores');
@@ -52,9 +107,28 @@ export default function ProfessoresPage() {
     }
   };
 
+  const loadTurmas = async () => {
+    try {
+      const res = await apiFetch('/api/pilates/turmas');
+      const data = await res.json();
+      setTurmas(Array.isArray(data) ? data : []);
+    } catch { /* sem turmas */ }
+  };
+
   useEffect(() => {
-    if (!authLoading) loadStaff();
+    if (!authLoading) { loadStaff(); loadTurmas(); }
   }, [authLoading]);
+
+  const toggleCreateTurma = (id: number) => setCreateTurmaIds((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleEditTurma = (id: number) => setEditTurmaIds((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  // Abre edição já marcando as turmas atuais do professor
+  const openEdit = (item: PilatesUser) => {
+    setEditItem(item);
+    const atuais = new Set(turmas.filter((t) => t.professor_id === item.id).map((t) => t.id));
+    setEditTurmaIds(new Set(atuais));
+    setEditTurmaInitial(new Set(atuais));
+  };
 
   const handleCreate = async () => {
     if (!form.email || !form.password) {
@@ -78,8 +152,18 @@ export default function ProfessoresPage() {
       if (!res.ok) {
         setError(json.error ?? 'Erro ao criar usuário.');
       } else {
+        // Atribui o novo professor às turmas selecionadas
+        if (json.userId && createTurmaIds.size > 0) {
+          await Promise.all(
+            [...createTurmaIds].map((classId) =>
+              apiFetch(`/api/pilates/turmas/${classId}`, { method: 'PUT', body: JSON.stringify({ professor_id: json.userId }) })
+            )
+          );
+        }
         setCreateMode(false);
+        setCreateTurmaIds(new Set());
         await loadStaff();
+        await loadTurmas();
       }
     } catch (err) {
       setError('Erro de conexão.');
@@ -97,8 +181,16 @@ export default function ProfessoresPage() {
         phone: editItem.phone ?? undefined,
         role: editItem.role,
       });
+      // Sincroniza as turmas do professor: atribui as novas, libera as desmarcadas
+      const toAssign = [...editTurmaIds].filter((id) => !editTurmaInitial.has(id));
+      const toUnassign = [...editTurmaInitial].filter((id) => !editTurmaIds.has(id));
+      await Promise.all([
+        ...toAssign.map((classId) => apiFetch(`/api/pilates/turmas/${classId}`, { method: 'PUT', body: JSON.stringify({ professor_id: editItem.id }) })),
+        ...toUnassign.map((classId) => apiFetch(`/api/pilates/turmas/${classId}`, { method: 'PUT', body: JSON.stringify({ professor_id: null }) })),
+      ]);
       setStaff((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       setEditItem(null);
+      await loadTurmas();
     } catch (err) {
       console.error(err);
     } finally {
@@ -132,7 +224,7 @@ export default function ProfessoresPage() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Professores & Fisioterapeutas</h1>
-        <Button variant="primary" size="md" onClick={() => { setForm({ full_name: '', email: '', password: '', phone: '', role: 'professor' }); setError(null); setCreateMode(true); }}>
+        <Button variant="primary" size="md" onClick={() => { setForm({ full_name: '', email: '', password: '', phone: '', role: 'professor' }); setCreateTurmaIds(new Set()); setError(null); setCreateMode(true); }}>
           + Novo
         </Button>
       </div>
@@ -181,7 +273,7 @@ export default function ProfessoresPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" onClick={() => setEditItem(s)}>Editar</Button>
+                        <Button variant="secondary" size="sm" onClick={() => openEdit(s)}>Editar</Button>
                         <Button variant="danger" size="sm" onClick={() => setDeleteTarget(s.id)}>Deletar</Button>
                       </div>
                     </td>
@@ -263,6 +355,7 @@ export default function ProfessoresPage() {
                 </select>
               </div>
             </div>
+            <TurmaPicker turmas={turmas} selected={createTurmaIds} onToggle={toggleCreateTurma} />
           </div>
         </Modal>
       )}
@@ -306,6 +399,7 @@ export default function ProfessoresPage() {
                 <option value="prof_edfisica">Prof. Ed. Física</option>
               </select>
             </div>
+            <TurmaPicker turmas={turmas} selected={editTurmaIds} onToggle={toggleEditTurma} />
           </div>
         </Modal>
       )}

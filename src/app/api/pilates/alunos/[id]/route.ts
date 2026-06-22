@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         .limit(50),
       db
         .from('enrollments_pilates')
-        .select('class_id, is_active, enrolled_at, classes_pilates(name, day_of_week, time_start, time_end, professor_id)')
+        .select('class_id, is_active, enrollment_date, classes_pilates(name, day_of_week, time_start, time_end, professor_id)')
         .eq('user_id', alunoId),
       db
         .from('payment_history')

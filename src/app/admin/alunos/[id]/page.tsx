@@ -297,9 +297,9 @@ export default function AlunoProfilePage() {
                         <p className="text-xs text-slate-400 mt-0.5">
                           {cls ? `${DAYS[cls.day_of_week]} · ${String(cls.time_start).slice(0, 5)} — ${String(cls.time_end).slice(0, 5)}` : ''}
                         </p>
-                        {t.enrolled_at && (
+                        {t.enrollment_date && (
                           <p className="text-xs text-slate-500 mt-0.5">
-                            Desde {new Date(String(t.enrolled_at)).toLocaleDateString('pt-BR')}
+                            Desde {new Date(String(t.enrollment_date).slice(0, 10) + 'T12:00:00').toLocaleDateString('pt-BR')}
                           </p>
                         )}
                       </div>

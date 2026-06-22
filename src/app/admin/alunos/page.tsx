@@ -16,6 +16,55 @@ function generateStrongPassword(): string {
   return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
+const DAYS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+interface TurmaLite {
+  id: number;
+  name: string;
+  day_of_week: number;
+  time_start: string;
+  time_end: string;
+  capacity: number;
+  enrolled_count?: number;
+}
+
+// Seletor de turmas (multi-seleção, com busca) reutilizado nos modais de aluno
+function TurmaPicker({ turmas, selected, onToggle }: { turmas: TurmaLite[]; selected: Set<number>; onToggle: (id: number) => void }) {
+  const [q, setQ] = useState('');
+  const filtered = turmas.filter((t) => {
+    if (!q) return true;
+    const s = (t.name + ' ' + (DAYS[t.day_of_week] ?? '') + ' ' + (t.time_start ?? '')).toLowerCase();
+    return s.includes(q.toLowerCase());
+  });
+  return (
+    <div>
+      <label className="block text-sm text-slate-400 mb-1">Turmas (matrícula) — {selected.size} selecionada(s)</label>
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Buscar turma por nome, dia ou horário..."
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+      />
+      <div className="max-h-52 overflow-y-auto space-y-1 border border-slate-700 rounded-lg p-2 bg-slate-900/50">
+        {filtered.length === 0 ? (
+          <p className="text-xs text-slate-500 py-2 text-center">Nenhuma turma encontrada.</p>
+        ) : (
+          filtered.map((t) => {
+            const checked = selected.has(t.id);
+            return (
+              <label key={t.id} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer ${checked ? 'bg-green-900/20' : 'hover:bg-slate-800'}`}>
+                <input type="checkbox" checked={checked} onChange={() => onToggle(t.id)} className="w-4 h-4 accent-green-500" />
+                <span className="text-sm text-white flex-1">{t.name}</span>
+                <span className="text-xs text-slate-400">{DAYS[t.day_of_week] ?? ''} {t.time_start?.slice(0, 5)}</span>
+              </label>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface NewStudentForm {
   full_name: string;
   email: string;
@@ -51,6 +100,12 @@ export default function AlunosPage() {
   const [createdCredentials, setCreatedCredentials] = useState<CreatedCredentials | null>(null);
   const [plans, setPlans] = useState<PilatesPlan[]>([]);
 
+  // Turmas (para matrícula direta no modal)
+  const [turmas, setTurmas] = useState<TurmaLite[]>([]);
+  const [newTurmaIds, setNewTurmaIds] = useState<Set<number>>(new Set());
+  const [editTurmaIds, setEditTurmaIds] = useState<Set<number>>(new Set());
+  const [editTurmaInitial, setEditTurmaInitial] = useState<Set<number>>(new Set());
+
   useEffect(() => {
     if (!authLoading) {
       getAlunos()
@@ -61,8 +116,31 @@ export default function AlunosPage() {
         .then((r) => r.json())
         .then((d) => setPlans(Array.isArray(d) ? d : []))
         .catch(console.error);
+      apiFetch('/api/pilates/turmas')
+        .then((r) => r.json())
+        .then((d) => setTurmas(Array.isArray(d) ? d : []))
+        .catch(console.error);
     }
   }, [authLoading]);
+
+  // Abre o modal de edição já carregando as turmas em que o aluno está matriculado
+  const openEdit = async (aluno: PilatesUser) => {
+    setEditAluno(aluno);
+    setEditTurmaIds(new Set());
+    setEditTurmaInitial(new Set());
+    try {
+      const res = await apiFetch(`/api/pilates/alunos/${aluno.id}`);
+      const data = await res.json();
+      const ids: number[] = (data.turmas ?? [])
+        .filter((t: { is_active?: boolean }) => t.is_active !== false)
+        .map((t: { class_id: number }) => t.class_id);
+      setEditTurmaIds(new Set(ids));
+      setEditTurmaInitial(new Set(ids));
+    } catch { /* sem matrículas carregadas */ }
+  };
+
+  const toggleNewTurma = (id: number) => setNewTurmaIds((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleEditTurma = (id: number) => setEditTurmaIds((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const filteredAlunos = alunos.filter((a) => {
     const q = search.toLowerCase();
@@ -84,6 +162,13 @@ export default function AlunosPage() {
         monthly_value: editAluno.monthly_value ?? undefined,
         status: editAluno.status,
       });
+      // Sincroniza matrículas: adiciona as novas, remove as desmarcadas
+      const toAdd = [...editTurmaIds].filter((id) => !editTurmaInitial.has(id));
+      const toRemove = [...editTurmaInitial].filter((id) => !editTurmaIds.has(id));
+      await Promise.all([
+        ...toAdd.map((classId) => apiFetch(`/api/pilates/turmas/${classId}/alunos`, { method: 'POST', body: JSON.stringify({ userId: editAluno.id }) })),
+        ...toRemove.map((classId) => apiFetch(`/api/pilates/turmas/${classId}/alunos`, { method: 'DELETE', body: JSON.stringify({ userId: editAluno.id }) })),
+      ]);
       setAlunos((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
       setEditAluno(null);
     } catch (err) {
@@ -133,10 +218,19 @@ export default function AlunosPage() {
       if (!res.ok) {
         setNewError(json.error ?? 'Erro ao criar aluno.');
       } else {
+        // Matricula o novo aluno nas turmas selecionadas
+        if (json.userId && newTurmaIds.size > 0) {
+          await Promise.all(
+            [...newTurmaIds].map((classId) =>
+              apiFetch(`/api/pilates/turmas/${classId}/alunos`, { method: 'POST', body: JSON.stringify({ userId: json.userId }) })
+            )
+          );
+        }
         setShowNewAluno(false);
         setCreatedCredentials({ email: newForm.email, password: newForm.password, full_name: newForm.full_name });
         getAlunos().then(setAlunos).catch(console.error);
         setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' });
+        setNewTurmaIds(new Set());
       }
     } catch {
       setNewError('Erro de conexão.');
@@ -193,7 +287,7 @@ export default function AlunosPage() {
         <h1 className="text-2xl font-bold text-white">Gestão de Alunos</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400">{filteredAlunos.length} aluno(s)</span>
-          <Button variant="primary" size="md" onClick={() => { setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' }); setNewError(null); setShowNewAluno(true); }}>
+          <Button variant="primary" size="md" onClick={() => { setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' }); setNewTurmaIds(new Set()); setNewError(null); setShowNewAluno(true); }}>
             + Novo Aluno
           </Button>
         </div>
@@ -301,7 +395,7 @@ export default function AlunosPage() {
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => setEditAluno(aluno)}
+                          onClick={() => openEdit(aluno)}
                         >
                           Editar
                         </Button>
@@ -398,6 +492,7 @@ export default function AlunosPage() {
                 <option value="inadimplente">Inadimplente</option>
               </select>
             </div>
+            <TurmaPicker turmas={turmas} selected={editTurmaIds} onToggle={toggleEditTurma} />
           </div>
         </Modal>
       )}
@@ -515,6 +610,7 @@ export default function AlunosPage() {
                 <option value="inadimplente">Inadimplente</option>
               </select>
             </div>
+            <TurmaPicker turmas={turmas} selected={newTurmaIds} onToggle={toggleNewTurma} />
           </div>
         </Modal>
       )}
