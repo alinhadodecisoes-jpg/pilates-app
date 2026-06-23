@@ -2,8 +2,12 @@ import { getSupabaseServerClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole, requireSelfOrRole, ADMIN_ROLES } from '@/lib/api-auth';
 
-// Postgres: tabela inexistente
-const UNDEFINED_TABLE = '42P01';
+// Tabela inexistente: 42P01 (Postgres) ou PGRST205 (cache do PostgREST)
+function isMissingTable(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  if (error.code === '42P01' || error.code === 'PGRST205') return true;
+  return /Could not find the table|does not exist/i.test(error.message ?? '');
+}
 
 // GET /api/pilates/remarcacoes?professorId=opcional
 // - com professorId: turmas do professor + alunos matriculados + as próprias solicitações
@@ -48,7 +52,7 @@ export async function GET(req: NextRequest) {
         .select('*, classes_pilates(name)')
         .eq('professor_id', professorId)
         .order('created_at', { ascending: false });
-      if (reqRes.error && reqRes.error.code === UNDEFINED_TABLE) {
+      if (isMissingTable(reqRes.error)) {
         return NextResponse.json({ turmas: turmas ?? [], enrollments, requests: [], needsMigration: true });
       }
       return NextResponse.json({ turmas: turmas ?? [], enrollments, requests: reqRes.data ?? [] });
@@ -62,7 +66,7 @@ export async function GET(req: NextRequest) {
       .from('class_reschedule_requests')
       .select('*, classes_pilates(name, day_of_week, time_start)')
       .order('created_at', { ascending: false });
-    if (reqRes.error && reqRes.error.code === UNDEFINED_TABLE) {
+    if (isMissingTable(reqRes.error)) {
       return NextResponse.json({ requests: [], needsMigration: true });
     }
     const rows = reqRes.data ?? [];
@@ -114,7 +118,7 @@ export async function POST(req: NextRequest) {
         status: 'pending',
       });
       if (error) {
-        if (error.code === UNDEFINED_TABLE) {
+        if (isMissingTable(error)) {
           return NextResponse.json({ error: 'Tabela de remarcações ainda não criada. Rode o SQL (class_reschedule_requests).' }, { status: 503 });
         }
         throw error;
