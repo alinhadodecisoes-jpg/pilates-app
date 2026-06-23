@@ -150,30 +150,53 @@ export async function POST(req: NextRequest) {
       if (upErr) throw upErr;
 
       // Para remarcação da turma inteira: cancela a sessão original e cria a nova data na agenda
+      let sessionWarning: string | null = null;
       if (r && r.scope === 'turma') {
+        // time_start/time_end/capacity são NOT NULL em class_sessions → puxa da turma
+        const { data: cls } = await db
+          .from('classes_pilates')
+          .select('time_start, time_end, capacity')
+          .eq('id', r.class_id)
+          .maybeSingle();
+        const ts = r.new_time_start || cls?.time_start || '07:00:00';
+        const te = r.new_time_end || cls?.time_end || '08:00:00';
+        const cap = cls?.capacity ?? 4;
         const hora = r.new_time_start ? ` às ${String(r.new_time_start).slice(0, 5)}` : '';
-        try {
-          await db
+
+        // Cancela a sessão original (se houver) — update de 0 linhas não é erro
+        await db
+          .from('class_sessions')
+          .update({ is_cancelled: true, cancel_reason: `Remarcada para ${r.new_date}${hora}` })
+          .eq('class_id', r.class_id)
+          .eq('session_date', r.original_date);
+
+        // Cria/reativa a sessão na nova data
+        const { data: existing } = await db
+          .from('class_sessions')
+          .select('id')
+          .eq('class_id', r.class_id)
+          .eq('session_date', r.new_date)
+          .maybeSingle();
+        if (existing) {
+          const { error: e } = await db
             .from('class_sessions')
-            .update({ is_cancelled: true, cancel_reason: `Remarcada para ${r.new_date}${hora}` })
-            .eq('class_id', r.class_id)
-            .eq('session_date', r.original_date);
-        } catch { /* sem sessão original cadastrada — ok */ }
-        try {
-          const { data: existing } = await db
-            .from('class_sessions')
-            .select('id')
-            .eq('class_id', r.class_id)
-            .eq('session_date', r.new_date)
-            .maybeSingle();
-          if (existing) {
-            await db.from('class_sessions').update({ is_cancelled: false, status: 'scheduled' }).eq('id', existing.id);
-          } else {
-            await db.from('class_sessions').insert({ class_id: r.class_id, session_date: r.new_date, status: 'scheduled', is_cancelled: false });
-          }
-        } catch { /* não bloqueia a aprovação */ }
+            .update({ is_cancelled: false, status: 'scheduled', time_start: ts, time_end: te })
+            .eq('id', existing.id);
+          if (e) sessionWarning = e.message;
+        } else {
+          const { error: e } = await db.from('class_sessions').insert({
+            class_id: r.class_id,
+            session_date: r.new_date,
+            time_start: ts,
+            time_end: te,
+            capacity: cap,
+            status: 'scheduled',
+            is_cancelled: false,
+          });
+          if (e) sessionWarning = e.message;
+        }
       }
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, sessionWarning });
     }
 
     return NextResponse.json({ error: 'ação desconhecida' }, { status: 400 });
