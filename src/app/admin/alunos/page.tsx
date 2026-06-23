@@ -9,60 +9,12 @@ import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
 import { ConfirmDialog } from '@/components/pilates/ConfirmDialog';
 import type { PilatesUser, PilatesPlan } from '@/types/pilates';
+import { TurmaPicker, type TurmaLite } from '@/components/pilates/TurmaPicker';
 
 // Gera senha forte aleatória
 function generateStrongPassword(): string {
   const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
   return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
-const DAYS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-
-interface TurmaLite {
-  id: number;
-  name: string;
-  day_of_week: number;
-  time_start: string;
-  time_end: string;
-  capacity: number;
-  enrolled_count?: number;
-}
-
-// Seletor de turmas (multi-seleção, com busca) reutilizado nos modais de aluno
-function TurmaPicker({ turmas, selected, onToggle }: { turmas: TurmaLite[]; selected: Set<number>; onToggle: (id: number) => void }) {
-  const [q, setQ] = useState('');
-  const filtered = turmas.filter((t) => {
-    if (!q) return true;
-    const s = (t.name + ' ' + (DAYS[t.day_of_week] ?? '') + ' ' + (t.time_start ?? '')).toLowerCase();
-    return s.includes(q.toLowerCase());
-  });
-  return (
-    <div>
-      <label className="block text-sm text-slate-400 mb-1">Turmas (matrícula) — {selected.size} selecionada(s)</label>
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar turma por nome, dia ou horário..."
-        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-      />
-      <div className="max-h-52 overflow-y-auto space-y-1 border border-slate-700 rounded-lg p-2 bg-slate-900/50">
-        {filtered.length === 0 ? (
-          <p className="text-xs text-slate-500 py-2 text-center">Nenhuma turma encontrada.</p>
-        ) : (
-          filtered.map((t) => {
-            const checked = selected.has(t.id);
-            return (
-              <label key={t.id} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer ${checked ? 'bg-green-900/20' : 'hover:bg-slate-800'}`}>
-                <input type="checkbox" checked={checked} onChange={() => onToggle(t.id)} className="w-4 h-4 accent-green-500" />
-                <span className="text-sm text-white flex-1">{t.name}</span>
-                <span className="text-xs text-slate-400">{DAYS[t.day_of_week] ?? ''} {t.time_start?.slice(0, 5)}</span>
-              </label>
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
 }
 
 interface NewStudentForm {

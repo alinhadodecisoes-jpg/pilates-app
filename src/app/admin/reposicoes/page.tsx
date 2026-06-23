@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePilatesAuth } from '@/hooks/usePilatesAuth';
 import { Modal } from '@/components/pilates/Modal';
 import { Button } from '@/components/pilates/Button';
-
-const DAYS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+import { TurmaPicker } from '@/components/pilates/TurmaPicker';
 
 interface RepoSlot {
   id: number;
@@ -39,19 +38,34 @@ interface ClassRow {
   enrolled_count: number;
 }
 
+interface RemReq {
+  id: number;
+  class_id: number;
+  scope: 'turma' | 'aluno';
+  original_date: string;
+  new_date: string;
+  new_time_start: string | null;
+  reason: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  classes_pilates?: { name: string } | null;
+  professor?: { full_name: string | null; email: string | null } | null;
+  aluno?: { full_name: string | null; email: string | null } | null;
+}
+
 export default function AdminReposicoesPage() {
   const { user, loading: authLoading } = usePilatesAuth();
   const [slots, setSlots] = useState<RepoSlot[]>([]);
   const [requests, setRequests] = useState<RepoRequest[]>([]);
   const [classes, setClasses] = useState<ClassRow[]>([]);
+  const [remarcacoes, setRemarcacoes] = useState<RemReq[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'slots' | 'requests'>('requests');
+  const [tab, setTab] = useState<'slots' | 'requests' | 'remarcacoes'>('requests');
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [slotDate, setSlotDate] = useState(new Date().toISOString().slice(0, 10));
-  const [selected, setSelected] = useState<Record<number, boolean>>({});
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -62,6 +76,10 @@ export default function AdminReposicoesPage() {
       setSlots(data.slots ?? []);
       setRequests(data.requests ?? []);
       setClasses(data.classes ?? []);
+      try {
+        const remRes = await fetch('/api/pilates/remarcacoes');
+        if (remRes.ok) { const rd = await remRes.json(); setRemarcacoes(rd.requests ?? []); }
+      } catch { /* remarcações são complementares */ }
     } catch (err) {
       console.error(err);
       setError('Erro ao carregar reposições.');
@@ -75,10 +93,10 @@ export default function AdminReposicoesPage() {
   }, [authLoading, loadData]);
 
   const toggleClass = (id: number) =>
-    setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
+    setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const handleCreateSlots = async () => {
-    const chosen = classes.filter((c) => selected[c.id]);
+    const chosen = classes.filter((c) => selected.has(c.id));
     if (chosen.length === 0) { setError('Selecione ao menos uma turma.'); return; }
     setSaving(true);
     setError(null);
@@ -100,7 +118,7 @@ export default function AdminReposicoesPage() {
       });
       if (!res.ok) { const j = await res.json(); throw new Error(j.error || 'Erro'); }
       setShowCreate(false);
-      setSelected({});
+      setSelected(new Set());
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar slots.');
@@ -150,6 +168,20 @@ export default function AdminReposicoesPage() {
     loadData();
   };
 
+  const handleRemAction = async (reqId: number, action: 'approve' | 'reject') => {
+    setSaving(true);
+    try {
+      await fetch('/api/pilates/remarcacoes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, request_id: reqId, reviewer_id: user?.id }),
+      });
+      await loadData();
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -159,14 +191,15 @@ export default function AdminReposicoesPage() {
   }
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length;
-  const selectedCount = Object.values(selected).filter(Boolean).length;
+  const remPendingCount = remarcacoes.filter((r) => r.status === 'pending').length;
+  const selectedCount = selected.size;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Reposições</h1>
         {tab === 'slots' && (
-          <Button variant="primary" size="md" onClick={() => { setError(null); setSelected({}); setShowCreate(true); }}>
+          <Button variant="primary" size="md" onClick={() => { setError(null); setSelected(new Set()); setShowCreate(true); }}>
             + Disponibilizar Horários
           </Button>
         )}
@@ -192,6 +225,14 @@ export default function AdminReposicoesPage() {
           }`}
         >
           Horários Disponíveis ({slots.length})
+        </button>
+        <button
+          onClick={() => setTab('remarcacoes')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            tab === 'remarcacoes' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+          }`}
+        >
+          Remarcações {remPendingCount > 0 && <span className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{remPendingCount}</span>}
         </button>
       </div>
 
@@ -300,6 +341,49 @@ export default function AdminReposicoesPage() {
         </div>
       )}
 
+      {/* TAB: REMARCAÇÕES (pedidas pelo professor) */}
+      {tab === 'remarcacoes' && (
+        <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+          {remarcacoes.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">Nenhuma remarcação solicitada pelos professores.</div>
+          ) : (
+            <div className="divide-y divide-slate-700">
+              {remarcacoes.map((r) => {
+                const cfg = {
+                  pending: { label: 'Pendente', color: 'bg-yellow-600/20 text-yellow-400' },
+                  approved: { label: 'Aprovada', color: 'bg-green-600/20 text-green-400' },
+                  rejected: { label: 'Recusada', color: 'bg-red-600/20 text-red-400' },
+                }[r.status] ?? { label: r.status, color: 'bg-slate-600/20 text-slate-400' };
+                return (
+                  <div key={r.id} className="flex items-center justify-between px-5 py-4 gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium text-sm truncate">
+                        {r.classes_pilates?.name || `Turma ${r.class_id}`}
+                        <span className="text-slate-400 font-normal"> · {r.scope === 'turma' ? 'turma inteira' : `aluno: ${r.aluno?.full_name || '—'}`}</span>
+                      </p>
+                      <p className="text-slate-400 text-xs mt-0.5">
+                        {r.original_date} → {r.new_date}{r.new_time_start ? ` às ${r.new_time_start.slice(0, 5)}` : ''}
+                        {r.professor?.full_name ? ` · prof. ${r.professor.full_name}` : ''}
+                      </p>
+                      {r.reason && <p className="text-slate-500 text-xs mt-0.5 truncate">Motivo: {r.reason}</p>}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-xs px-2 py-1 rounded-full ${cfg.color}`}>{cfg.label}</span>
+                      {r.status === 'pending' && (
+                        <>
+                          <button onClick={() => handleRemAction(r.id, 'approve')} disabled={saving} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-colors disabled:opacity-50">✅ Aprovar</button>
+                          <button onClick={() => handleRemAction(r.id, 'reject')} disabled={saving} className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded-lg transition-colors">✕ Recusar</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Modal Disponibilizar Horários (multi-seleção de turmas) */}
       {showCreate && (
         <Modal
@@ -324,45 +408,19 @@ export default function AdminReposicoesPage() {
             </div>
             <div>
               <p className="text-sm text-slate-400 mb-2">
-                Selecione as turmas que ficarão disponíveis nesta data (mesmo as cheias — alguém pode ter cancelado):
+                Escolha o dia e os horários que ficarão disponíveis nesta data (mesmo as cheias — alguém pode ter cancelado):
               </p>
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {classes.length === 0 ? (
-                  <p className="text-slate-500 text-sm">Nenhuma turma cadastrada.</p>
-                ) : (
-                  classes.map((c) => {
-                    const cheia = c.enrolled_count >= c.capacity;
-                    return (
-                      <label
-                        key={c.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selected[c.id] ? 'border-green-500 bg-green-900/15' : 'border-slate-700 bg-slate-900 hover:border-slate-600'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={!!selected[c.id]}
-                          onChange={() => toggleClass(c.id)}
-                          className="w-4 h-4 accent-green-500"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm font-medium">{c.name}</p>
-                          <p className="text-slate-400 text-xs">
-                            {DAYS[c.day_of_week]} · {c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}
-                          </p>
-                        </div>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
-                            cheia ? 'bg-red-600/20 text-red-400' : 'bg-green-600/20 text-green-400'
-                          }`}
-                        >
-                          {c.enrolled_count}/{c.capacity} {cheia ? 'cheia' : 'vaga'}
-                        </span>
-                      </label>
-                    );
-                  })
-                )}
-              </div>
+              {classes.length === 0 ? (
+                <p className="text-slate-500 text-sm">Nenhuma turma cadastrada.</p>
+              ) : (
+                <TurmaPicker
+                  turmas={classes}
+                  selected={selected}
+                  onToggle={toggleClass}
+                  label="Turmas disponíveis nesta data"
+                  showCapacity
+                />
+              )}
             </div>
           </div>
         </Modal>

@@ -110,6 +110,29 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- Remarcações de aula pedidas pelo professor (turma inteira OU 1 aluno) -> admin aprova
+CREATE TABLE IF NOT EXISTS class_reschedule_requests (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  professor_id UUID REFERENCES users_pilates(id) ON DELETE SET NULL,
+  class_id BIGINT NOT NULL REFERENCES classes_pilates(id) ON DELETE CASCADE,
+  scope TEXT NOT NULL DEFAULT 'turma' CHECK (scope IN ('turma','aluno')),
+  aluno_id UUID REFERENCES users_pilates(id) ON DELETE SET NULL,
+  original_date DATE NOT NULL,
+  new_date DATE NOT NULL,
+  new_time_start TIME,
+  new_time_end TIME,
+  reason TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  reviewed_by UUID REFERENCES users_pilates(id),
+  reviewed_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_resched_prof ON class_reschedule_requests(professor_id, status);
+CREATE INDEX IF NOT EXISTS idx_resched_status ON class_reschedule_requests(status);
+-- Acesso só via API (service role). Bloqueia leitura/escrita direta pelo browser.
+ALTER TABLE class_reschedule_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON class_reschedule_requests FROM anon, authenticated;
+
 
 -- =============================================================================
 -- 6) studio_config — configurações + PIX
