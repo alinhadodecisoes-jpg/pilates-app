@@ -124,7 +124,7 @@ export default function ProfessorTurmasPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Minhas Turmas</h1>
+        <h1 className="text-2xl font-bold text-white">Minhas Turmas</h1>
         <span className="text-sm text-slate-400">{turmas.length} turma(s)</span>
       </div>
 
@@ -142,7 +142,7 @@ export default function ProfessorTurmasPage() {
             <div key={turma.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-ink font-semibold">{turma.name}</h3>
+                  <h3 className="text-white font-semibold">{turma.name}</h3>
                   <p className="text-slate-400 text-sm mt-0.5">
                     {DAYS[turma.day_of_week]} · {String(turma.time_start).slice(0, 5)} — {String(turma.time_end).slice(0, 5)}
                   </p>
@@ -159,7 +159,7 @@ export default function ProfessorTurmasPage() {
                 <div className="flex gap-2 shrink-0">
                   <button
                     onClick={() => { setEditingNotes(turma); setNotesText(turma.notes ?? ''); }}
-                    className="text-xs text-slate-300 hover:text-ink bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Editar Notas
                   </button>
@@ -181,8 +181,8 @@ export default function ProfessorTurmasPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-              <h2 className="text-base font-bold text-ink">Editar Observações</h2>
-              <button onClick={() => setEditingNotes(null)} className="text-slate-400 hover:text-ink text-xl">✕</button>
+              <h2 className="text-base font-bold text-white">Editar Observações</h2>
+              <button onClick={() => setEditingNotes(null)} className="text-slate-400 hover:text-white text-xl">✕</button>
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-slate-400">{editingNotes.name}</p>
@@ -191,7 +191,7 @@ export default function ProfessorTurmasPage() {
                 onChange={(e) => setNotesText(e.target.value)}
                 rows={5}
                 placeholder="Observações sobre a turma: nível, exercícios, particularidades..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
               />
               <div className="flex gap-3">
                 <button onClick={() => setEditingNotes(null)} className="flex-1 px-4 py-2.5 text-sm text-slate-400 bg-slate-700 hover:bg-slate-600 rounded-xl">Cancelar</button>
@@ -209,8 +209,8 @@ export default function ProfessorTurmasPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-              <h2 className="text-base font-bold text-ink">Cancelar Aula</h2>
-              <button onClick={() => setCancelingClass(null)} className="text-slate-400 hover:text-ink text-xl">✕</button>
+              <h2 className="text-base font-bold text-white">Cancelar Aula</h2>
+              <button onClick={() => setCancelingClass(null)} className="text-slate-400 hover:text-white text-xl">✕</button>
             </div>
             <div className="p-6 space-y-4">
               {cancelSuccess ? (
@@ -224,12 +224,12 @@ export default function ProfessorTurmasPage() {
                   <div>
                     <label className="block text-sm text-slate-400 mb-1">Data a cancelar</label>
                     <input type="date" value={cancelDate} onChange={(e) => setCancelDate(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
                   </div>
                   <div>
                     <label className="block text-sm text-slate-400 mb-1">Motivo (opcional)</label>
                     <input type="text" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} placeholder="Ex: Feriado, doença..."
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
                   </div>
                   <p className="text-xs text-amber-400 bg-amber-600/10 border border-amber-600/20 rounded-lg px-3 py-2">
                     ⚠️ Reservas dos alunos nessa data serão canceladas automaticamente.

@@ -94,7 +94,7 @@ export default function AlunoProfilePage() {
   if (error) {
     return (
       <div className="max-w-3xl mx-auto space-y-4">
-        <Link href="/admin/alunos" className="text-sm text-slate-400 hover:text-ink">← Voltar</Link>
+        <Link href="/admin/alunos" className="text-sm text-slate-400 hover:text-white">← Voltar</Link>
         <p className="text-red-400 bg-red-900/20 border border-red-800 rounded-xl px-4 py-3">{error}</p>
       </div>
     );
@@ -107,7 +107,7 @@ export default function AlunoProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/admin/alunos" className="text-slate-400 hover:text-ink text-sm">← Voltar</Link>
+        <Link href="/admin/alunos" className="text-slate-400 hover:text-white text-sm">← Voltar</Link>
       </div>
 
       <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
@@ -117,7 +117,7 @@ export default function AlunoProfilePage() {
             {nome.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-ink truncate">{nome}</h1>
+            <h1 className="text-xl font-bold text-white truncate">{nome}</h1>
             <p className="text-sm text-slate-400">{String(user?.email ?? '—')}</p>
           </div>
           <div className="flex gap-3 flex-wrap">
@@ -134,7 +134,7 @@ export default function AlunoProfilePage() {
             )}
             <Link
               href={`/admin/ficha-saude/${alunoId}`}
-              className="text-xs text-slate-300 hover:text-ink bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg"
+              className="text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-lg"
             >
               Editar Ficha
             </Link>
@@ -150,7 +150,7 @@ export default function AlunoProfilePage() {
               className={`px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                 tab === t.key
                   ? 'text-green-400 border-b-2 border-green-400'
-                  : 'text-slate-400 hover:text-ink'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {t.label}
@@ -268,10 +268,10 @@ export default function AlunoProfilePage() {
                       {av.evaluation_date ? new Date(String(av.evaluation_date) + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {av.weight && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Peso</p><p className="text-ink font-medium">{av.weight} kg</p></div>}
-                      {av.height && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Altura</p><p className="text-ink font-medium">{av.height} cm</p></div>}
-                      {av.body_fat && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Gordura</p><p className="text-ink font-medium">{av.body_fat}%</p></div>}
-                      {av.muscle_mass && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Músculo</p><p className="text-ink font-medium">{av.muscle_mass} kg</p></div>}
+                      {av.weight && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Peso</p><p className="text-white font-medium">{av.weight} kg</p></div>}
+                      {av.height && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Altura</p><p className="text-white font-medium">{av.height} cm</p></div>}
+                      {av.body_fat && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Gordura</p><p className="text-white font-medium">{av.body_fat}%</p></div>}
+                      {av.muscle_mass && <div className="text-center bg-slate-800 rounded-lg p-2"><p className="text-xs text-slate-500">Músculo</p><p className="text-white font-medium">{av.muscle_mass} kg</p></div>}
                     </div>
                     {av.posture_assessment && <Row label="Postura" value={String(av.posture_assessment)} />}
                     {av.goals && <Row label="Objetivos" value={String(av.goals)} />}
@@ -293,7 +293,7 @@ export default function AlunoProfilePage() {
                   return (
                     <div key={i} className={`bg-slate-900 rounded-xl p-4 flex items-center justify-between gap-3 ${!t.is_active ? 'opacity-50' : ''}`}>
                       <div>
-                        <p className="text-ink font-medium">{cls?.name ?? '—'}</p>
+                        <p className="text-white font-medium">{cls?.name ?? '—'}</p>
                         <p className="text-xs text-slate-400 mt-0.5">
                           {cls ? `${DAYS[cls.day_of_week]} · ${String(cls.time_start).slice(0, 5)} — ${String(cls.time_end).slice(0, 5)}` : ''}
                         </p>
@@ -324,7 +324,7 @@ export default function AlunoProfilePage() {
                     {(data?.pagamentos ?? []).map((p, i) => (
                       <div key={i} className="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2.5 gap-3">
                         <div>
-                          <p className="text-sm text-ink">
+                          <p className="text-sm text-white">
                             {p.due_date ? new Date(String(p.due_date) + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}
                           </p>
                           {p.amount_paid && (
@@ -353,7 +353,7 @@ export default function AlunoProfilePage() {
                       return (
                         <div key={i} className="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2.5 gap-3">
                           <div>
-                            <p className="text-sm text-ink">{session?.classes_pilates?.name ?? '—'}</p>
+                            <p className="text-sm text-white">{session?.classes_pilates?.name ?? '—'}</p>
                             <p className="text-xs text-slate-400">{date}</p>
                           </div>
                           <StatusBadge status={String(p.status ?? '')} />

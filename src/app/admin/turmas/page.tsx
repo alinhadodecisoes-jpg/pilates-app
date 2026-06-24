@@ -190,7 +190,7 @@ export default function TurmasPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Gestão de Turmas</h1>
+        <h1 className="text-2xl font-bold text-white">Gestão de Turmas</h1>
         <Button variant="primary" size="md" onClick={openCreate}>+ Nova Turma</Button>
       </div>
 
@@ -201,7 +201,7 @@ export default function TurmasPage() {
           return (
             <div key={idx} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
               <div className="px-4 py-3 bg-slate-700/50 border-b border-slate-700 flex items-center justify-between">
-                <h3 className="font-semibold text-ink">{dayName}</h3>
+                <h3 className="font-semibold text-white">{dayName}</h3>
                 <span className="text-xs text-slate-400">{dayClasses.length} turma(s)</span>
               </div>
               <div className="p-3 space-y-2">
@@ -215,19 +215,19 @@ export default function TurmasPage() {
                         c.is_active ? 'border-slate-600 bg-slate-700/50' : 'border-slate-700 bg-slate-800/50 opacity-50'
                       }`}
                     >
-                      <p className="font-medium text-ink text-sm">{c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}</p>
+                      <p className="font-medium text-white text-sm">{c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{c.name}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{c.enrolled_count ?? 0}/{c.capacity} alunos</p>
                       <div className="flex gap-1 mt-2">
                         <button
                           onClick={() => openEdit(c)}
-                          className="text-xs text-slate-400 hover:text-ink bg-slate-600/50 hover:bg-slate-600 px-2 py-1 rounded transition-colors"
+                          className="text-xs text-slate-400 hover:text-white bg-slate-600/50 hover:bg-slate-600 px-2 py-1 rounded transition-colors"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => openEnrollModal(c)}
-                          className="text-xs text-green-400 hover:text-ink bg-green-900/30 hover:bg-green-600 px-2 py-1 rounded transition-colors"
+                          className="text-xs text-green-400 hover:text-white bg-green-900/30 hover:bg-green-600 px-2 py-1 rounded transition-colors"
                         >
                           👥 Alunos
                         </button>
@@ -254,14 +254,14 @@ export default function TurmasPage() {
             <div>
               <label className="block text-sm text-slate-400 mb-1">Nome da Turma</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Ex: Pilates Solo"
               />
             </div>
             <div>
               <label className="block text-sm text-slate-400 mb-1">Professor</label>
               <select value={form.professor_id} onChange={(e) => setForm({ ...form, professor_id: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
                 <option value="">Sem professor</option>
                 {professors.map((p) => (
                   <option key={p.id} value={p.id}>{p.full_name || p.email}</option>
@@ -272,14 +272,14 @@ export default function TurmasPage() {
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Dia</label>
                 <select value={form.day_of_week} onChange={(e) => setForm({ ...form, day_of_week: Number(e.target.value) })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
                   {DAYS.map((d, i) => <option key={i + 1} value={i + 1}>{d}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Capacidade</label>
                 <input type="number" min={1} max={20} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: Number(e.target.value) })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -287,13 +287,13 @@ export default function TurmasPage() {
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Início</label>
                 <input type="time" value={form.time_start} onChange={(e) => setForm({ ...form, time_start: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Fim</label>
                 <input type="time" value={form.time_end} onChange={(e) => setForm({ ...form, time_end: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -347,7 +347,7 @@ export default function TurmasPage() {
                     {enrolled.map((e) => (
                       <div key={e.user_id} className="flex items-center justify-between bg-slate-700/50 rounded-lg px-3 py-2">
                         <div>
-                          <p className="text-ink text-sm">{e.users_pilates?.full_name || '—'}</p>
+                          <p className="text-white text-sm">{e.users_pilates?.full_name || '—'}</p>
                           <p className="text-slate-400 text-xs">{e.users_pilates?.email || ''}</p>
                         </div>
                         <button
@@ -376,13 +376,13 @@ export default function TurmasPage() {
                     {availableAlunos.map((a) => (
                       <div key={a.id} className="flex items-center justify-between bg-slate-700/30 rounded-lg px-3 py-2">
                         <div>
-                          <p className="text-ink text-sm">{a.full_name || '—'}</p>
+                          <p className="text-white text-sm">{a.full_name || '—'}</p>
                           <p className="text-slate-400 text-xs">{a.email || ''}</p>
                         </div>
                         <button
                           onClick={() => handleEnroll(a.id)}
                           disabled={enrolled.length >= enrollClass.capacity}
-                          className="text-green-400 hover:text-ink text-xs bg-green-900/20 hover:bg-green-600 px-2 py-1 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="text-green-400 hover:text-white text-xs bg-green-900/20 hover:bg-green-600 px-2 py-1 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           + Matricular
                         </button>

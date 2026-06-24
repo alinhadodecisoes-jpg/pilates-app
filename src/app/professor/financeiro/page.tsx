@@ -61,7 +61,7 @@ export default function ProfessorFinanceiroPage() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-ink">Meu Financeiro</h1>
+      <h1 className="text-2xl font-bold text-white">Meu Financeiro</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div className="bg-slate-800 rounded-xl border border-slate-700 p-5">
@@ -110,7 +110,7 @@ export default function ProfessorFinanceiroPage() {
             <tbody className="divide-y divide-slate-700">
               {payments.map((p) => (
                 <tr key={p.id}>
-                  <td className="px-5 py-3 text-ink">{p.month}</td>
+                  <td className="px-5 py-3 text-white">{p.month}</td>
                   <td className="px-5 py-3 text-slate-300">{p.total_classes}</td>
                   <td className="px-5 py-3 text-slate-300">R$ {Number(p.rate_per_class).toFixed(2)}</td>
                   <td className="px-5 py-3 text-slate-300">R$ {Number(p.total_amount).toFixed(2)}</td>

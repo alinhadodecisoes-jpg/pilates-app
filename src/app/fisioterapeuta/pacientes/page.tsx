@@ -166,17 +166,17 @@ export default function FisioPacientesPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Prontuários / Pacientes</h1>
+        <h1 className="text-2xl font-bold text-white">Prontuários / Pacientes</h1>
         <div className="flex gap-2">
           <button
             onClick={() => { setPatientError(''); setShowPatient(true); }}
-            className="bg-slate-700 hover:bg-slate-600 text-ink px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
           >
             + Novo Paciente
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-green-600 hover:bg-green-700 text-ink px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium"
           >
             + Novo Caso
           </button>
@@ -191,8 +191,8 @@ export default function FisioPacientesPage() {
             onClick={() => setFilterStatus(val)}
             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
               filterStatus === val
-                ? 'bg-green-600 text-ink'
-                : 'bg-slate-800 text-slate-400 hover:text-ink border border-slate-700'
+                ? 'bg-green-600 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'
             }`}
           >
             {label}
@@ -219,7 +219,7 @@ export default function FisioPacientesPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-ink">{alunoName}</span>
+                      <span className="font-semibold text-white">{alunoName}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${cfg.color}`}>{cfg.label}</span>
                     </div>
                     <p className="text-sm text-slate-300">{c.chief_complaint || '—'}</p>
@@ -242,14 +242,14 @@ export default function FisioPacientesPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-lg p-6 space-y-4">
-            <h2 className="text-xl font-bold text-ink">Novo Caso de Tratamento</h2>
+            <h2 className="text-xl font-bold text-white">Novo Caso de Tratamento</h2>
 
             <div>
               <label className="block text-xs text-slate-400 mb-1">Aluno *</label>
               <select
                 value={form.user_id}
                 onChange={(e) => setForm({ ...form, user_id: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
               >
                 <option value="">Selecione o paciente...</option>
                 {alunos.map((a) => (
@@ -266,7 +266,7 @@ export default function FisioPacientesPage() {
                 type="date"
                 value={form.start_date}
                 onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
               />
             </div>
 
@@ -277,7 +277,7 @@ export default function FisioPacientesPage() {
                 value={form.chief_complaint}
                 onChange={(e) => setForm({ ...form, chief_complaint: e.target.value })}
                 placeholder="Descreva a queixa principal do paciente..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
               />
             </div>
 
@@ -288,7 +288,7 @@ export default function FisioPacientesPage() {
                 value={form.diagnosis}
                 onChange={(e) => setForm({ ...form, diagnosis: e.target.value })}
                 placeholder="CID, hipótese diagnóstica..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
               />
             </div>
 
@@ -299,7 +299,7 @@ export default function FisioPacientesPage() {
                 value={form.treatment_plan}
                 onChange={(e) => setForm({ ...form, treatment_plan: e.target.value })}
                 placeholder="Abordagem terapêutica, sessões previstas..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
               />
             </div>
 
@@ -308,14 +308,14 @@ export default function FisioPacientesPage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => { setShowModal(false); setError(''); setForm(EMPTY_FORM); }}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 text-ink py-2.5 rounded-xl text-sm"
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-xl text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink py-2.5 rounded-xl text-sm font-medium"
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
               >
                 {saving ? 'Criando...' : 'Criar Caso'}
               </button>
@@ -328,7 +328,7 @@ export default function FisioPacientesPage() {
       {showPatient && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-lg p-6 space-y-4">
-            <h2 className="text-xl font-bold text-ink">Novo Paciente de Fisioterapia</h2>
+            <h2 className="text-xl font-bold text-white">Novo Paciente de Fisioterapia</h2>
             <p className="text-xs text-slate-400">
               Para quem ainda não é aluno de pilates. Se a pessoa já é aluno, use o &ldquo;Novo Caso&rdquo; e selecione-a direto.
             </p>
@@ -338,7 +338,7 @@ export default function FisioPacientesPage() {
               <input
                 value={patientForm.full_name}
                 onChange={(e) => setPatientForm({ ...patientForm, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                 placeholder="Nome do paciente"
               />
             </div>
@@ -348,7 +348,7 @@ export default function FisioPacientesPage() {
                 <input
                   value={patientForm.phone}
                   onChange={(e) => setPatientForm({ ...patientForm, phone: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                   placeholder="(21) 99999-9999"
                 />
               </div>
@@ -358,7 +358,7 @@ export default function FisioPacientesPage() {
                   type="email"
                   value={patientForm.email}
                   onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                   placeholder="email@exemplo.com"
                 />
               </div>
@@ -383,7 +383,7 @@ export default function FisioPacientesPage() {
                   type="text"
                   value={patientForm.password}
                   onChange={(e) => setPatientForm({ ...patientForm, password: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
                   placeholder="Mínimo 6 caracteres"
                 />
               </div>
@@ -394,14 +394,14 @@ export default function FisioPacientesPage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => { setShowPatient(false); setPatientError(''); }}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 text-ink py-2.5 rounded-xl text-sm"
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-xl text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreatePatient}
                 disabled={savingPatient}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink py-2.5 rounded-xl text-sm font-medium"
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
               >
                 {savingPatient ? 'Cadastrando...' : 'Cadastrar Paciente'}
               </button>

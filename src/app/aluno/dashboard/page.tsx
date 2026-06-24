@@ -71,7 +71,7 @@ export default function AlunoDashboard() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-ink">Meu Painel</h1>
+        <h1 className="text-2xl font-bold text-white">Meu Painel</h1>
         <p className="text-slate-400 mt-1">Bem-vindo de volta!</p>
       </div>
 
@@ -109,7 +109,7 @@ export default function AlunoDashboard() {
             <p className="text-xs font-medium text-slate-400 mb-1">PRÓXIMA AULA</p>
             {proximaAula ? (
               <>
-                <p className="text-xl font-bold text-ink">
+                <p className="text-xl font-bold text-white">
                   {DAYS[proximaAula.day_of_week]} · {proximaAula.time_start?.slice(0, 5)}
                 </p>
                 <p className="text-sm text-slate-300 mt-1">
@@ -163,7 +163,7 @@ export default function AlunoDashboard() {
             <p className="text-xs font-medium text-slate-400 mb-1">PLANO</p>
             {plan ? (
               <>
-                <p className="text-xl font-bold text-ink">{plan.name}</p>
+                <p className="text-xl font-bold text-white">{plan.name}</p>
                 <p className="text-sm text-slate-300 mt-1">{plan.classes_per_week}x por semana</p>
                 <div className="mt-3">
                   <span className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-full">
@@ -195,7 +195,7 @@ export default function AlunoDashboard() {
               return (
                 <div key={e.class_id} className="flex items-center justify-between py-2 border-b border-slate-700 last:border-0">
                   <div>
-                    <p className="text-ink text-sm font-medium">{cls.name}</p>
+                    <p className="text-white text-sm font-medium">{cls.name}</p>
                     <p className="text-slate-400 text-xs">
                       {DAYS[cls.day_of_week]} · {cls.time_start?.slice(0, 5)}
                       {cls.professor?.full_name ? ` · Prof. ${cls.professor.full_name}` : ''}
@@ -210,7 +210,7 @@ export default function AlunoDashboard() {
 
       {/* Banner Presença */}
       <div className="bg-gradient-to-r from-green-900/40 to-cyan-900/30 rounded-xl p-6 border border-green-700/30">
-        <h3 className="text-lg font-bold text-ink mb-1">
+        <h3 className="text-lg font-bold text-white mb-1">
           {aulasNoMes && aulasNoMes > 0 ? `Continue assim! 💪` : 'Boas-vindas ao Daimach!'}
         </h3>
         <p className="text-slate-300 text-sm">

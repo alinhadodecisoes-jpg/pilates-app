@@ -136,7 +136,7 @@ export default function NotificacoesPage() {
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Notificações</h1>
+        <h1 className="text-2xl font-bold text-white">Notificações</h1>
         {saved && <span className="text-green-400 text-sm">✅ Salvo!</span>}
       </div>
 
@@ -161,7 +161,7 @@ export default function NotificacoesPage() {
             <button
               onClick={requestPushPermission}
               disabled={pushStatus === 'requesting'}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-4 py-2 rounded-lg text-sm font-medium"
+              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium"
             >
               {pushStatus === 'requesting' ? 'Aguardando...' : 'Ativar Notificações Push'}
             </button>
@@ -180,7 +180,7 @@ export default function NotificacoesPage() {
         ].map(({ key, label, desc }) => (
           <div key={key} className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-ink text-sm font-medium">{label}</p>
+              <p className="text-white text-sm font-medium">{label}</p>
               <p className="text-slate-400 text-xs">{desc}</p>
             </div>
             <button
@@ -200,13 +200,13 @@ export default function NotificacoesPage() {
 
         {/* Horas antes da aula */}
         <div className="pt-2 border-t border-slate-700">
-          <label className="block text-sm text-ink font-medium mb-2">
+          <label className="block text-sm text-white font-medium mb-2">
             Avisar quantas horas antes da aula?
           </label>
           <select
             value={prefs.horas_antes_aula}
             onChange={(e) => setPrefs({ ...prefs, horas_antes_aula: Number(e.target.value) })}
-            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm w-full"
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm w-full"
           >
             <option value={1}>1 hora antes</option>
             <option value={2}>2 horas antes</option>
@@ -221,7 +221,7 @@ export default function NotificacoesPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink font-semibold py-3 rounded-xl"
+        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl"
       >
         {saving ? 'Salvando...' : 'Salvar Preferências'}
       </button>

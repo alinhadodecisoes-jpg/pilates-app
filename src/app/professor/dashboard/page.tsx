@@ -98,7 +98,7 @@ export default function ProfessorDashboard() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-ink">Meu Dashboard</h1>
+      <h1 className="text-2xl font-bold text-white">Meu Dashboard</h1>
 
       {/* Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -122,7 +122,7 @@ export default function ProfessorDashboard() {
       <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
           <h2 className="text-green-400 font-semibold">Minhas Turmas</h2>
-          <Link href="/professor/alunos" className="text-xs text-slate-400 hover:text-ink transition-colors">
+          <Link href="/professor/alunos" className="text-xs text-slate-400 hover:text-white transition-colors">
             Ver alunos →
           </Link>
         </div>
@@ -135,7 +135,7 @@ export default function ProfessorDashboard() {
             {classes.map((c) => (
               <div key={c.id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-ink font-medium text-sm">{c.name}</p>
+                  <p className="text-white font-medium text-sm">{c.name}</p>
                   <p className="text-slate-400 text-xs">{DAYS[c.day_of_week]} · {c.time_start?.slice(0, 5)}–{c.time_end?.slice(0, 5)}</p>
                 </div>
                 <span className="text-xs bg-green-900/30 text-green-400 px-2 py-1 rounded-full">{c.capacity} vagas</span>
@@ -155,7 +155,7 @@ export default function ProfessorDashboard() {
             {pendingRequests.map((req) => (
               <div key={req.id} className="flex items-center justify-between px-5 py-4 gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-ink text-sm font-medium">{req.users_pilates?.full_name || req.users_pilates?.email || '—'}</p>
+                  <p className="text-white text-sm font-medium">{req.users_pilates?.full_name || req.users_pilates?.email || '—'}</p>
                   {req.reposition_slots && (
                     <p className="text-slate-400 text-xs mt-0.5">
                       {new Date(req.reposition_slots.slot_date + 'T00:00:00').toLocaleDateString('pt-BR')}
@@ -167,7 +167,7 @@ export default function ProfessorDashboard() {
                   <button
                     onClick={() => handleApprove(req)}
                     disabled={approving === req.id}
-                    className="text-xs bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-xs bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
                   >
                     ✅ Aprovar
                   </button>

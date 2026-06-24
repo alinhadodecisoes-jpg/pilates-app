@@ -51,11 +51,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {menuOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMenuOpen(false)} />
       )}
-      <aside className={`flex flex-col w-64 h-screen bg-sage border-r border-slate-700 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`flex flex-col w-64 h-screen bg-slate-800 border-r border-slate-700 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-5 border-b border-slate-700 space-x-3">
           <img src="/images/logo-simbolo.png" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
-            <p className="font-bold text-ink text-sm">Daimach.Movement</p>
+            <p className="font-bold text-white text-sm">Daimach.Movement</p>
             <p className="text-xs text-slate-400">Admin</p>
           </div>
         </div>
@@ -67,8 +67,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={() => setMenuOpen(false)}
               className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
                 pathname === item.path
-                  ? 'bg-green-600 text-ink'
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-ink'
+                  ? 'bg-green-600 text-white'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="h-16 bg-sage/40 border-b border-slate-700 flex items-center justify-between px-4 md:px-6 shrink-0">
+        <header className="h-16 bg-slate-800/50 border-b border-slate-700 flex items-center justify-between px-4 md:px-6 shrink-0">
           <button
             className="md:hidden p-2 -ml-1 text-slate-200 hover:bg-slate-700 rounded-lg"
             onClick={() => setMenuOpen(true)}

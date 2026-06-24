@@ -197,7 +197,7 @@ export default function AdminReposicoesPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Reposições</h1>
+        <h1 className="text-2xl font-bold text-white">Reposições</h1>
         {tab === 'slots' && (
           <Button variant="primary" size="md" onClick={() => { setError(null); setSelected(new Set()); setShowCreate(true); }}>
             + Disponibilizar Horários
@@ -213,7 +213,7 @@ export default function AdminReposicoesPage() {
         <button
           onClick={() => setTab('requests')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'requests' ? 'bg-green-600 text-ink' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            tab === 'requests' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
           }`}
         >
           Solicitações {pendingCount > 0 && <span className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{pendingCount}</span>}
@@ -221,7 +221,7 @@ export default function AdminReposicoesPage() {
         <button
           onClick={() => setTab('slots')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'slots' ? 'bg-green-600 text-ink' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            tab === 'slots' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
           }`}
         >
           Horários Disponíveis ({slots.length})
@@ -229,7 +229,7 @@ export default function AdminReposicoesPage() {
         <button
           onClick={() => setTab('remarcacoes')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'remarcacoes' ? 'bg-green-600 text-ink' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            tab === 'remarcacoes' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
           }`}
         >
           Remarcações {remPendingCount > 0 && <span className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{remPendingCount}</span>}
@@ -255,7 +255,7 @@ export default function AdminReposicoesPage() {
                 return (
                   <div key={req.id} className="flex items-center justify-between px-5 py-4 gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-ink font-medium text-sm truncate">
+                      <p className="text-white font-medium text-sm truncate">
                         {req.users_pilates?.full_name || req.users_pilates?.email || '—'}
                       </p>
                       {slot && (
@@ -273,7 +273,7 @@ export default function AdminReposicoesPage() {
                           <button
                             onClick={() => handleApprove(req)}
                             disabled={saving}
-                            className="text-xs bg-green-600 hover:bg-green-700 text-ink px-3 py-1 rounded-lg transition-colors disabled:opacity-50"
+                            className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-colors disabled:opacity-50"
                           >
                             ✅ Aprovar
                           </button>
@@ -314,7 +314,7 @@ export default function AdminReposicoesPage() {
                 <tbody className="divide-y divide-slate-700">
                   {slots.map((slot) => (
                     <tr key={slot.id}>
-                      <td className="px-5 py-3 text-ink">
+                      <td className="px-5 py-3 text-white">
                         {new Date(slot.slot_date + 'T00:00:00').toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-5 py-3 text-slate-300">
@@ -357,7 +357,7 @@ export default function AdminReposicoesPage() {
                 return (
                   <div key={r.id} className="flex items-center justify-between px-5 py-4 gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-ink font-medium text-sm truncate">
+                      <p className="text-white font-medium text-sm truncate">
                         {r.classes_pilates?.name || `Turma ${r.class_id}`}
                         <span className="text-slate-400 font-normal"> · {r.scope === 'turma' ? 'turma inteira' : `aluno: ${r.aluno?.full_name || '—'}`}</span>
                       </p>
@@ -371,7 +371,7 @@ export default function AdminReposicoesPage() {
                       <span className={`text-xs px-2 py-1 rounded-full ${cfg.color}`}>{cfg.label}</span>
                       {r.status === 'pending' && (
                         <>
-                          <button onClick={() => handleRemAction(r.id, 'approve')} disabled={saving} className="text-xs bg-green-600 hover:bg-green-700 text-ink px-3 py-1 rounded-lg transition-colors disabled:opacity-50">✅ Aprovar</button>
+                          <button onClick={() => handleRemAction(r.id, 'approve')} disabled={saving} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-colors disabled:opacity-50">✅ Aprovar</button>
                           <button onClick={() => handleRemAction(r.id, 'reject')} disabled={saving} className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded-lg transition-colors">✕ Recusar</button>
                         </>
                       )}
@@ -403,7 +403,7 @@ export default function AdminReposicoesPage() {
                 type="date"
                 value={slotDate}
                 onChange={(e) => setSlotDate(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <div>

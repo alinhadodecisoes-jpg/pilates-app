@@ -137,10 +137,10 @@ export default function FinanceiroAdmin() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Gestão Financeira</h1>
+        <h1 className="text-2xl font-bold text-white">Gestão Financeira</h1>
         <button
           onClick={handleExportCSV}
-          className="bg-slate-700 hover:bg-slate-600 text-ink px-4 py-2 rounded-xl text-sm font-medium"
+          className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
         >
           ⬇️ Exportar CSV
         </button>
@@ -148,7 +148,7 @@ export default function FinanceiroAdmin() {
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-green-600 text-ink p-5 rounded-xl">
+        <div className="bg-green-600 text-white p-5 rounded-xl">
           <p className="text-xs opacity-80">Receita (30 dias)</p>
           <p className="text-2xl font-bold">R$ {(summary?.totalRevenue || 0).toFixed(2)}</p>
         </div>
@@ -156,7 +156,7 @@ export default function FinanceiroAdmin() {
           <p className="text-xs opacity-80">Pendente</p>
           <p className="text-2xl font-bold">R$ {(summary?.totalPending || 0).toFixed(2)}</p>
         </div>
-        <div className="bg-slate-700 text-ink p-5 rounded-xl">
+        <div className="bg-slate-700 text-white p-5 rounded-xl">
           <p className="text-xs opacity-80">Alunos ativos</p>
           <p className="text-2xl font-bold">{summary?.alunosAtivos || 0}</p>
         </div>
@@ -178,14 +178,14 @@ export default function FinanceiroAdmin() {
             {pendentes.map((p) => (
               <div key={p.id} className="flex items-center justify-between px-5 py-3 gap-4">
                 <div>
-                  <p className="text-ink text-sm font-medium">{p.users_pilates?.full_name || p.users_pilates?.email || '—'}</p>
+                  <p className="text-white text-sm font-medium">{p.users_pilates?.full_name || p.users_pilates?.email || '—'}</p>
                   <p className="text-slate-400 text-xs">
                     {p.amount != null ? `R$ ${Number(p.amount).toFixed(2)}` : 'valor não informado'}
                     {p.reference_month ? ` · ${p.reference_month}` : ''}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={() => handleConfirmar(p.id, 'confirm')} className="text-xs bg-green-600 hover:bg-green-700 text-ink px-3 py-1.5 rounded-lg">✅ Confirmar</button>
+                  <button onClick={() => handleConfirmar(p.id, 'confirm')} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg">✅ Confirmar</button>
                   <button onClick={() => handleConfirmar(p.id, 'reject')} className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg">✕ Rejeitar</button>
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function FinanceiroAdmin() {
           placeholder="Buscar aluno..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-slate-800 border border-slate-700 text-ink rounded-xl px-4 py-2 text-sm flex-1 min-w-[200px]"
+          className="bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2 text-sm flex-1 min-w-[200px]"
         />
         {['todos', 'ativo', 'inadimplente', 'inativo', 'pendente'].map((s) => (
           <button
@@ -209,7 +209,7 @@ export default function FinanceiroAdmin() {
             onClick={() => setFilterStatus(s)}
             className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${
               filterStatus === s
-                ? 'bg-green-600 text-ink'
+                ? 'bg-green-600 text-white'
                 : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
             }`}
           >
@@ -243,7 +243,7 @@ export default function FinanceiroAdmin() {
                 filtered.map((aluno) => (
                   <tr key={aluno.id} className="hover:bg-slate-700/30 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="text-ink font-medium">{aluno.full_name || '—'}</p>
+                      <p className="text-white font-medium">{aluno.full_name || '—'}</p>
                       <p className="text-slate-400 text-xs">{aluno.email}</p>
                     </td>
                     <td className="px-4 py-3">
@@ -324,7 +324,7 @@ export default function FinanceiroAdmin() {
                               )
                             }
                             disabled={markingPaid === aluno.id}
-                            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-2 py-1 rounded-lg text-xs"
+                            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-2 py-1 rounded-lg text-xs"
                           >
                             {markingPaid === aluno.id ? '...' : '✅ Dar baixa'}
                           </button>
@@ -337,7 +337,7 @@ export default function FinanceiroAdmin() {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-green-700 hover:bg-green-600 text-ink px-2 py-1 rounded-lg text-xs"
+                            className="bg-green-700 hover:bg-green-600 text-white px-2 py-1 rounded-lg text-xs"
                           >
                             WhatsApp
                           </a>

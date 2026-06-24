@@ -122,11 +122,11 @@ export default function PlanosPage() {
         <button
           onClick={() => { onSave(val); setEditing(false); }}
           disabled={saving}
-          className="text-xs bg-green-600 text-ink px-2 py-1 rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+          className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
         >
           {saving ? '…' : '✓'}
         </button>
-        <button onClick={() => { setVal(plan.stripe_price_id ?? ''); setEditing(false); }} className="text-xs text-slate-400 hover:text-ink px-1">✕</button>
+        <button onClick={() => { setVal(plan.stripe_price_id ?? ''); setEditing(false); }} className="text-xs text-slate-400 hover:text-white px-1">✕</button>
       </div>
     ) : (
       <button
@@ -147,7 +147,7 @@ export default function PlanosPage() {
       <div>
         <label className="block text-sm text-slate-400 mb-1">Nome do Plano</label>
         <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="Ex: Pilates 2x/Semana"
         />
       </div>
@@ -155,20 +155,20 @@ export default function PlanosPage() {
         <div>
           <label className="block text-sm text-slate-400 mb-1">Preço (R$)</label>
           <input type="number" min={0} step={0.01} value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
         <div>
           <label className="block text-sm text-slate-400 mb-1">Aulas/Semana</label>
           <input type="number" min={1} max={7} value={form.classes_per_week} onChange={(e) => setForm({ ...form, classes_per_week: Number(e.target.value) })}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
       </div>
       <div>
         <label className="block text-sm text-slate-400 mb-1">Descrição</label>
         <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
           placeholder="Breve descrição do plano..."
         />
       </div>
@@ -180,7 +180,7 @@ export default function PlanosPage() {
         <input
           value={form.stripe_price_id}
           onChange={(e) => setForm({ ...form, stripe_price_id: e.target.value })}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder={isTestMode ? 'price_1abc...' : 'price_1abc... (do Stripe Dashboard)'}
         />
         <p className="text-xs text-slate-500 mt-1">
@@ -197,7 +197,7 @@ export default function PlanosPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Gestão de Planos</h1>
+        <h1 className="text-2xl font-bold text-white">Gestão de Planos</h1>
         <Button variant="primary" size="md" onClick={openCreate}>+ Novo Plano</Button>
       </div>
 
@@ -224,7 +224,7 @@ export default function PlanosPage() {
             <div key={plan.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden hover:border-green-600/50 transition-colors">
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold text-ink text-lg">{plan.name}</h3>
+                  <h3 className="font-bold text-white text-lg">{plan.name}</h3>
                   <span className={`text-xs px-2 py-1 rounded-full ${plan.is_active ? 'bg-green-600/20 text-green-400' : 'bg-slate-600/20 text-slate-400'}`}>
                     {plan.is_active ? 'Ativo' : 'Inativo'}
                   </span>

@@ -143,7 +143,7 @@ export default function ProfessorRemarcacoesPage() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-ink">Remarcação de Aula</h1>
+        <h1 className="text-2xl font-bold text-white">Remarcação de Aula</h1>
         <p className="text-sm text-slate-400 mt-1">Peça para remarcar uma aula — para a turma inteira ou para um aluno específico. O administrador aprova.</p>
       </div>
 
@@ -159,7 +159,7 @@ export default function ProfessorRemarcacoesPage() {
       <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-4">
         <div>
           <label className="block text-sm text-slate-400 mb-1">Turma</label>
-          <select value={classId} onChange={(e) => onPickTurma(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+          <select value={classId} onChange={(e) => onPickTurma(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
             <option value="">Selecione a turma...</option>
             {turmas.map((t) => (
               <option key={t.id} value={t.id}>{t.name} · {DAYS[t.day_of_week]} {t.time_start?.slice(0, 5)}</option>
@@ -171,15 +171,15 @@ export default function ProfessorRemarcacoesPage() {
         <div>
           <label className="block text-sm text-slate-400 mb-1">Remarcar para</label>
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={() => setScope('turma')} className={`py-2 rounded-lg text-sm font-medium border transition-colors ${scope === 'turma' ? 'bg-green-600 text-ink border-green-600' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-600'}`}>Turma inteira</button>
-            <button type="button" onClick={() => setScope('aluno')} className={`py-2 rounded-lg text-sm font-medium border transition-colors ${scope === 'aluno' ? 'bg-green-600 text-ink border-green-600' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-600'}`}>Um aluno</button>
+            <button type="button" onClick={() => setScope('turma')} className={`py-2 rounded-lg text-sm font-medium border transition-colors ${scope === 'turma' ? 'bg-green-600 text-white border-green-600' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-600'}`}>Turma inteira</button>
+            <button type="button" onClick={() => setScope('aluno')} className={`py-2 rounded-lg text-sm font-medium border transition-colors ${scope === 'aluno' ? 'bg-green-600 text-white border-green-600' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-600'}`}>Um aluno</button>
           </div>
         </div>
 
         {scope === 'aluno' && (
           <div>
             <label className="block text-sm text-slate-400 mb-1">Aluno</label>
-            <select value={alunoId} onChange={(e) => setAlunoId(e.target.value)} disabled={!classId} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
+            <select value={alunoId} onChange={(e) => setAlunoId(e.target.value)} disabled={!classId} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50">
               <option value="">{classId ? 'Selecione o aluno...' : 'Escolha a turma primeiro'}</option>
               {alunosDaTurma.map((a) => (
                 <option key={a.user_id} value={a.user_id}>{a.full_name || a.user_id.slice(0, 8)}</option>
@@ -192,25 +192,25 @@ export default function ProfessorRemarcacoesPage() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm text-slate-400 mb-1">Data da aula a remarcar</label>
-            <input type="date" value={originalDate} onChange={(e) => setOriginalDate(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input type="date" value={originalDate} onChange={(e) => setOriginalDate(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label className="block text-sm text-slate-400 mb-1">Nova data</label>
-            <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label className="block text-sm text-slate-400 mb-1">Novo horário (início)</label>
-            <input type="time" value={newTimeStart} onChange={(e) => setNewTimeStart(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input type="time" value={newTimeStart} onChange={(e) => setNewTimeStart(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label className="block text-sm text-slate-400 mb-1">Novo horário (fim)</label>
-            <input type="time" value={newTimeEnd} onChange={(e) => setNewTimeEnd(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            <input type="time" value={newTimeEnd} onChange={(e) => setNewTimeEnd(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
         </div>
 
         <div>
           <label className="block text-sm text-slate-400 mb-1">Motivo (opcional)</label>
-          <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Ex.: feriado, imprevisto, consulta..." className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+          <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="Ex.: feriado, imprevisto, consulta..." className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
         </div>
 
         <div className="flex justify-end">
@@ -232,7 +232,7 @@ export default function ProfessorRemarcacoesPage() {
               return (
                 <div key={r.id} className="px-5 py-4 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-ink text-sm font-medium truncate">
+                    <p className="text-white text-sm font-medium truncate">
                       {r.classes_pilates?.name || `Turma ${r.class_id}`} · {r.scope === 'turma' ? 'turma inteira' : 'aluno'}
                     </p>
                     <p className="text-slate-400 text-xs mt-0.5">

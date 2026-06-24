@@ -123,20 +123,20 @@ export default function AlunoAgendaPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-10">
-      <h1 className="text-2xl font-bold text-ink">Agenda de Aulas</h1>
+      <h1 className="text-2xl font-bold text-white">Agenda de Aulas</h1>
 
       {/* Navegação semanal */}
       <div className="flex items-center gap-4 bg-slate-800 rounded-xl border border-slate-700 p-3">
-        <button onClick={prevWeek} className="text-slate-400 hover:text-ink px-3 py-1 rounded-lg hover:bg-slate-700 text-sm">
+        <button onClick={prevWeek} className="text-slate-400 hover:text-white px-3 py-1 rounded-lg hover:bg-slate-700 text-sm">
           ←
         </button>
         <div className="flex-1 text-center">
-          <p className="text-ink font-semibold text-sm">
+          <p className="text-white font-semibold text-sm">
             {weekDates[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} —{' '}
             {weekDates[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
           </p>
         </div>
-        <button onClick={nextWeek} className="text-slate-400 hover:text-ink px-3 py-1 rounded-lg hover:bg-slate-700 text-sm">
+        <button onClick={nextWeek} className="text-slate-400 hover:text-white px-3 py-1 rounded-lg hover:bg-slate-700 text-sm">
           →
         </button>
       </div>
@@ -153,7 +153,7 @@ export default function AlunoAgendaPage() {
             <div key={dateStr}>
               <div className={`text-center mb-1.5 py-1 rounded-lg ${isToday ? 'bg-green-600' : 'bg-slate-800'}`}>
                 <p className="text-[9px] text-slate-400">{DAYS[date.getDay()]}</p>
-                <p className={`text-sm font-bold ${isToday ? 'text-ink' : isPast ? 'text-slate-600' : 'text-slate-300'}`}>
+                <p className={`text-sm font-bold ${isToday ? 'text-white' : isPast ? 'text-slate-600' : 'text-slate-300'}`}>
                   {date.getDate()}
                 </p>
               </div>
@@ -178,7 +178,7 @@ export default function AlunoAgendaPage() {
                           : 'bg-slate-800 border-slate-700'
                       }`}
                     >
-                      <p className="text-ink font-semibold">{s.time_start?.slice(0, 5)}</p>
+                      <p className="text-white font-semibold">{s.time_start?.slice(0, 5)}</p>
                       <p className="text-slate-300 truncate">{(s.turma as any)?.name}</p>
                       <p className={`text-[9px] ${isFull && !myBooking ? 'text-red-400' : 'text-slate-500'}`}>
                         {s._booked_count}/{s.capacity}

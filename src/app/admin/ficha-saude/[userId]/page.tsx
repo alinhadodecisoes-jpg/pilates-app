@@ -43,7 +43,7 @@ function InfoRow({ label, value, highlight }: { label: string; value: React.Reac
   return (
     <div className={`flex gap-2 py-2 border-b border-slate-700/50 last:border-0 ${highlight ? 'bg-red-900/10 rounded-lg px-2' : ''}`}>
       <span className="text-slate-400 text-sm w-40 flex-shrink-0">{label}</span>
-      <span className={`text-sm flex-1 ${highlight ? 'text-red-300 font-medium' : 'text-ink'}`}>{value || '—'}</span>
+      <span className={`text-sm flex-1 ${highlight ? 'text-red-300 font-medium' : 'text-white'}`}>{value || '—'}</span>
     </div>
   );
 }
@@ -97,11 +97,11 @@ export default function AdminFichaSaudePage() {
         <div>
           <button
             onClick={() => router.back()}
-            className="text-slate-400 hover:text-ink text-sm flex items-center gap-1 mb-2"
+            className="text-slate-400 hover:text-white text-sm flex items-center gap-1 mb-2"
           >
             ← Voltar
           </button>
-          <h1 className="text-2xl font-bold text-ink">
+          <h1 className="text-2xl font-bold text-white">
             Ficha de Saúde — {aluno?.full_name || aluno?.email || 'Aluno'}
           </h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -168,7 +168,7 @@ export default function AdminFichaSaudePage() {
                 footer: `Documento confidencial — uso exclusivo Daimach.Movement | ${aluno?.email || ''} | Gerado em ${new Date().toLocaleDateString('pt-BR')}`,
               });
             }}
-            className="bg-slate-700 hover:bg-slate-600 text-ink px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
           >
             🖨️ Exportar PDF
           </button>
@@ -219,7 +219,7 @@ export default function AdminFichaSaudePage() {
           {/* Objetivo */}
           <div className="bg-slate-800 rounded-xl border border-slate-700 p-5">
             <h2 className="text-green-400 font-semibold mb-3">🎯 Objetivo Principal</h2>
-            <p className="text-ink text-sm">{record.main_goal || 'Não informado'}</p>
+            <p className="text-white text-sm">{record.main_goal || 'Não informado'}</p>
           </div>
 
           {/* Lesões */}
@@ -228,7 +228,7 @@ export default function AdminFichaSaudePage() {
               <h2 className="text-green-400 font-semibold mb-3">🦴 Lesões</h2>
               <div className="space-y-2">
                 {record.injuries.map((inj, i) => (
-                  <div key={i} className="text-sm text-ink">
+                  <div key={i} className="text-sm text-white">
                     <span className="font-medium">{inj.local}</span>: {inj.descricao}
                     {inj.data && <span className="text-slate-400"> ({new Date(inj.data + 'T00:00:00').toLocaleDateString('pt-BR')})</span>}
                   </div>
@@ -243,7 +243,7 @@ export default function AdminFichaSaudePage() {
               <h2 className="text-green-400 font-semibold mb-3">🏥 Cirurgias</h2>
               <div className="space-y-2">
                 {record.surgeries.map((surg, i) => (
-                  <div key={i} className="text-sm text-ink">
+                  <div key={i} className="text-sm text-white">
                     {surg.tipo}
                     {surg.data && <span className="text-slate-400"> ({new Date(surg.data + 'T00:00:00').toLocaleDateString('pt-BR')})</span>}
                   </div>
@@ -270,7 +270,7 @@ export default function AdminFichaSaudePage() {
                 <p className="text-slate-400 text-xs mb-1">Medicamentos em uso</p>
                 <div className="space-y-1">
                   {record.medications.map((med, i) => (
-                    <p key={i} className="text-sm text-ink">{med.nome} — {med.dose}</p>
+                    <p key={i} className="text-sm text-white">{med.nome} — {med.dose}</p>
                   ))}
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function AdminFichaSaudePage() {
             {record.allergies && (
               <div>
                 <p className="text-slate-400 text-xs mb-1">Alergias</p>
-                <p className="text-sm text-ink">{record.allergies}</p>
+                <p className="text-sm text-white">{record.allergies}</p>
               </div>
             )}
           </div>

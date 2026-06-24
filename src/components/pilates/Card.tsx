@@ -28,7 +28,7 @@ export function Card({
       <div className="pl-4">
         {(title || icon) && (
           <div className="flex items-center justify-between p-5 pb-3">
-            {title && <h3 className="font-semibold text-ink">{title}</h3>}
+            {title && <h3 className="font-semibold text-white">{title}</h3>}
             {icon && <div className="text-green-400">{icon}</div>}
           </div>
         )}

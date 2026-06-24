@@ -57,7 +57,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-ink">Configurações</h1>
+      <h1 className="text-2xl font-bold text-white">Configurações</h1>
 
       {!ready && (
         <p className="text-sm text-yellow-400 bg-yellow-900/20 border border-yellow-800 rounded-lg px-4 py-3">
@@ -75,7 +75,7 @@ export default function ConfiguracoesPage() {
                 value={cfg[f.key] ?? ''}
                 onChange={(e) => setCfg({ ...cfg, [f.key]: e.target.value })}
                 placeholder={f.placeholder}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
           ))}

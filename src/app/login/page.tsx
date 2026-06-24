@@ -59,16 +59,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-cream text-ink">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-sand">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 text-slate-50">
+      <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-700">
         <div className="flex flex-col items-center mb-7">
           <img src="/images/logo-simbolo.png" alt="Daimach Movement" width={88} height={88} className="mb-3 object-contain" />
-          <h2 className="text-2xl font-bold text-ink">Acesso ao Estúdio</h2>
-          <p className="text-slate-500 text-sm mt-1">Entre com sua conta para continuar</p>
+          <h2 className="text-2xl font-bold text-white">Acesso ao Estúdio</h2>
+          <p className="text-slate-400 text-sm mt-1">Entre com sua conta para continuar</p>
         </div>
 
         {registered && (
-          <div className="bg-green-500/10 border border-green-500/40 text-green-700 p-3 rounded-lg mb-5 text-sm flex items-center gap-2">
+          <div className="bg-green-500/10 border border-green-500/40 text-green-400 p-3 rounded-lg mb-5 text-sm flex items-center gap-2">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -77,7 +77,7 @@ export default function LoginPage() {
         )}
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/40 text-red-600 p-3 rounded-lg mb-5 text-sm flex items-start gap-2">
+          <div className="bg-red-500/10 border border-red-500/40 text-red-400 p-3 rounded-lg mb-5 text-sm flex items-start gap-2">
             <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -87,24 +87,24 @@ export default function LoginPage() {
 
         <form onSubmit={handleEmailLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1.5">E-mail</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">E-mail</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-cream border border-sand rounded-xl px-4 py-3 text-ink placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-gold transition-colors"
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
               placeholder="seu@email.com"
               required
               autoComplete="email"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1.5">Senha</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">Senha</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-cream border border-sand rounded-xl px-4 py-3 text-ink placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-gold transition-colors"
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
               placeholder="••••••••"
               required
               autoComplete="current-password"
@@ -113,17 +113,17 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-forest hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed text-cream font-bold py-3.5 rounded-xl text-base shadow-lg transition flex items-center justify-center gap-2"
+            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base shadow-lg transition-colors flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><div className="w-4 h-4 border-2 border-cream border-t-transparent rounded-full animate-spin" />Entrando...</>
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Entrando...</>
             ) : 'Entrar com E-mail'}
           </button>
         </form>
 
-        <div className="mt-7 text-center text-sm text-slate-500">
+        <div className="mt-7 text-center text-sm text-slate-400">
           Não tem conta?{' '}
-          <Link href="/register" className="text-gold hover:brightness-110 font-semibold">
+          <Link href="/register" className="text-green-400 hover:text-green-300 font-semibold">
             Solicitar cadastro
           </Link>
         </div>

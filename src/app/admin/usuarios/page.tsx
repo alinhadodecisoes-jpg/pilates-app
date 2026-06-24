@@ -50,16 +50,16 @@ export default function UsuariosAdmin() {
       <h1 className="text-2xl font-bold mb-4">👥 Cadastrar Novo Usuário</h1>
       {message && <div className="bg-blue-600 p-3 rounded mb-4">{message}</div>}
       <form onSubmit={handleCreate} className="max-w-md space-y-3">
-        <input type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-ink" required />
-        <input type="password" placeholder="Senha" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-ink" required />
-        <input type="text" placeholder="Telefone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-ink" />
-        <input type="text" placeholder="Endereço" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-ink" />
-        <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-ink">
+        <input type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-white" required />
+        <input type="password" placeholder="Senha" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-white" required />
+        <input type="text" placeholder="Telefone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-white" />
+        <input type="text" placeholder="Endereço" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-white" />
+        <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full p-2 rounded bg-gray-800 text-white">
           <option value="aluno">Aluno</option>
           <option value="professor">Professor</option>
           <option value="admin">Admin</option>
         </select>
-        <button type="submit" disabled={loading} className="w-full bg-green-600 p-2 rounded text-ink">
+        <button type="submit" disabled={loading} className="w-full bg-green-600 p-2 rounded text-white">
           {loading ? 'Criando...' : 'Criar Usuário'}
         </button>
       </form>

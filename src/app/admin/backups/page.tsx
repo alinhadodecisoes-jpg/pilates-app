@@ -113,13 +113,13 @@ export default function AdminBackupsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Backups do Sistema</h1>
+        <h1 className="text-2xl font-bold text-white">Backups do Sistema</h1>
         <div className="flex gap-2">
           <a
             href={DRIVE_FOLDER_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-slate-700 hover:bg-slate-600 text-ink px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium"
           >
             📂 Abrir pasta no Drive
           </a>
@@ -133,7 +133,7 @@ export default function AdminBackupsPage() {
           <button
             onClick={handleBackup}
             disabled={backing}
-            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
           >
             {backing ? '⏳ Gerando backup...' : '💾 Fazer Backup Agora'}
           </button>
@@ -208,7 +208,7 @@ export default function AdminBackupsPage() {
       {/* Histórico de backups */}
       <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
         <div className="p-4 border-b border-slate-700">
-          <h2 className="text-ink font-semibold">Histórico de Backups</h2>
+          <h2 className="text-white font-semibold">Histórico de Backups</h2>
         </div>
         {logs.length === 0 ? (
           <div className="p-8 text-center text-slate-500 text-sm">
@@ -221,7 +221,7 @@ export default function AdminBackupsPage() {
               return (
                 <div key={log.id} className="flex items-center justify-between px-5 py-3 gap-4">
                   <div>
-                    <p className="text-ink text-sm">
+                    <p className="text-white text-sm">
                       {new Date(log.backup_date).toLocaleDateString('pt-BR', {
                         day: '2-digit', month: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit',

@@ -68,10 +68,10 @@ function FichaModal({ student, professorId, onClose }: {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700">
           <div>
-            <h2 className="text-lg font-bold text-ink">{student.users_pilates?.full_name || '—'}</h2>
+            <h2 className="text-lg font-bold text-white">{student.users_pilates?.full_name || '—'}</h2>
             <p className="text-xs text-slate-400">{student.class_name}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-ink text-xl leading-none">✕</button>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl leading-none">✕</button>
         </div>
 
         {/* Tabs */}
@@ -83,7 +83,7 @@ function FichaModal({ student, professorId, onClose }: {
               className={`px-4 py-3 text-sm font-medium transition-colors ${
                 tab === t.key
                   ? 'text-green-400 border-b-2 border-green-400'
-                  : 'text-slate-400 hover:text-ink'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {t.label}
@@ -237,7 +237,7 @@ function FichaModal({ student, professorId, onClose }: {
                       return (
                         <div key={i} className="flex items-center justify-between bg-slate-900 rounded-lg px-4 py-2.5">
                           <div>
-                            <p className="text-sm text-ink">{turma}</p>
+                            <p className="text-sm text-white">{turma}</p>
                             <p className="text-xs text-slate-400">{date}</p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded-full ${
@@ -374,7 +374,7 @@ export default function ProfessorAlunosPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ink">Meus Alunos</h1>
+        <h1 className="text-2xl font-bold text-white">Meus Alunos</h1>
         <span className="text-sm text-slate-400">{filtered.length} aluno(s)</span>
       </div>
 
@@ -387,7 +387,7 @@ export default function ProfessorAlunosPage() {
         placeholder="Buscar por nome, email ou turma..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-ink focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
       />
 
       <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
@@ -415,7 +415,7 @@ export default function ProfessorAlunosPage() {
                 filtered.map((s) => (
                   <tr key={`${s.user_id}-${s.class_id}`} className="hover:bg-slate-700/30 transition-colors">
                     <td className="px-5 py-4">
-                      <p className="text-ink font-medium">{s.users_pilates?.full_name || '—'}</p>
+                      <p className="text-white font-medium">{s.users_pilates?.full_name || '—'}</p>
                       <p className="text-slate-400 text-xs">{s.users_pilates?.email || ''}</p>
                     </td>
                     <td className="px-5 py-4 text-slate-300 text-xs">{s.class_name}</td>
@@ -449,7 +449,7 @@ export default function ProfessorAlunosPage() {
                         </button>
                         <button
                           onClick={() => openEdit(s)}
-                          className="text-xs text-slate-300 hover:text-ink bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
+                          className="text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
                         >
                           Editar
                         </button>
@@ -490,7 +490,7 @@ export default function ProfessorAlunosPage() {
               <input
                 value={editForm.full_name}
                 onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <div>
@@ -498,7 +498,7 @@ export default function ProfessorAlunosPage() {
               <input
                 value={editForm.phone}
                 onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="(11) 99999-9999"
               />
             </div>

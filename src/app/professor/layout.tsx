@@ -20,10 +20,10 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-sage flex items-center justify-center">
+      <div className="min-h-screen bg-daimach-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-daimach-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-ink">Carregando...</p>
+          <p className="text-daimach-light">Carregando...</p>
         </div>
       </div>
     );
@@ -38,15 +38,15 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
   ];
 
   return (
-    <div className="h-screen overflow-hidden bg-cream text-ink flex">
+    <div className="h-screen overflow-hidden bg-daimach-dark text-daimach-light flex">
       {menuOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMenuOpen(false)} />
       )}
-      <aside className={`flex flex-col w-64 h-screen bg-sage border-r border-daimach-primary/20 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`flex flex-col w-64 h-screen bg-daimach-dark border-r border-daimach-primary/20 shrink-0 fixed inset-y-0 left-0 z-50 transition-transform md:static md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-5 border-b border-daimach-primary/20 space-x-3">
           <img src="/images/logo-simbolo.png" alt="Logo" width={36} height={36} className="rounded-lg object-contain" />
           <div>
-            <p className="font-bold text-ink text-sm">Daimach.Movement</p>
+            <p className="font-bold text-daimach-light text-sm">Daimach.Movement</p>
             <p className="text-xs text-daimach-accent">Professor</p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
               className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
                 pathname === item.path
                   ? 'bg-daimach-primary text-daimach-dark'
-                  : 'text-ink hover:bg-daimach-primary/20'
+                  : 'text-daimach-light hover:bg-daimach-primary/20'
               }`}
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
             href="https://wa.me/5521763000055?text=Ol%C3%A1%2C%20sou%20professor%20no%20Daimach%20e%20preciso%20falar%20com%20o%20administrador."
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center space-x-3 px-4 py-3 text-ink hover:bg-daimach-primary/20 rounded-xl transition-colors"
+            className="w-full flex items-center space-x-3 px-4 py-3 text-daimach-light hover:bg-daimach-primary/20 rounded-xl transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 3v-3z" />
@@ -105,9 +105,9 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="h-16 bg-sage/40 border-b border-daimach-primary/20 flex items-center justify-between px-4 md:px-6 shrink-0">
+        <header className="h-16 bg-daimach-dark/50 border-b border-daimach-primary/20 flex items-center justify-between px-4 md:px-6 shrink-0">
           <button
-            className="md:hidden p-2 -ml-1 text-ink hover:bg-daimach-primary/20 rounded-lg"
+            className="md:hidden p-2 -ml-1 text-daimach-light hover:bg-daimach-primary/20 rounded-lg"
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menu"
           >
@@ -115,7 +115,7 @@ export default function ProfessorLayout({ children }: { children: React.ReactNod
           </button>
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-daimach-accent rounded-full flex items-center justify-center text-sm font-bold text-daimach-dark">P</div>
-            <span className="text-sm text-ink">Professor</span>
+            <span className="text-sm text-daimach-light">Professor</span>
           </div>
         </header>
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>

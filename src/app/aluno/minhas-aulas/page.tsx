@@ -36,7 +36,7 @@ export default function MinhasAulasPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-ink">Minhas Aulas</h1>
+      <h1 className="text-2xl font-bold text-white">Minhas Aulas</h1>
 
       {enrollments.length === 0 ? (
         <div className="bg-slate-800 rounded-xl p-10 border border-slate-700 text-center space-y-4">
@@ -74,7 +74,7 @@ export default function MinhasAulasPage() {
 
                 {/* Info da turma */}
                 <div className="flex-1">
-                  <p className="font-semibold text-ink">{cls.name}</p>
+                  <p className="font-semibold text-white">{cls.name}</p>
                   <p className="text-sm text-slate-400">
                     {DAY_NAMES[dayNum] ?? '—'} · {cls.time_start?.slice(0, 5)}–{cls.time_end?.slice(0, 5)}
                   </p>
