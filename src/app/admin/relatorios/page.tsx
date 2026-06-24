@@ -57,11 +57,11 @@ export default function RelatoriosAdmin() {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Relatórios</h1>
+        <h1 className="text-2xl font-bold text-ink">Relatórios</h1>
         <button
           onClick={exportCSV}
           disabled={rows.length === 0}
-          className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white px-4 py-2 rounded-xl text-sm font-medium"
+          className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-ink px-4 py-2 rounded-xl text-sm font-medium"
         >
           ⬇️ Exportar CSV
         </button>
@@ -73,7 +73,7 @@ export default function RelatoriosAdmin() {
             key={t.id}
             onClick={() => setTipo(t.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tipo === t.id ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              tipo === t.id ? 'bg-green-600 text-ink' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
             }`}
           >
             {t.label}
@@ -86,7 +86,7 @@ export default function RelatoriosAdmin() {
           {Object.entries(resumo).map(([k, v]) => (
             <div key={k} className="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3">
               <p className="text-xs text-slate-400 capitalize">{k.replace(/_/g, ' ')}</p>
-              <p className="text-xl font-bold text-white">
+              <p className="text-xl font-bold text-ink">
                 {typeof v === 'number' && /receb|pendente|valor/i.test(k) ? `R$ ${Number(v).toFixed(2)}` : String(v)}
               </p>
             </div>

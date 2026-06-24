@@ -150,7 +150,7 @@ export default function AlunoFinanceiroPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-10">
-      <h1 className="text-2xl font-bold text-white">Meu Financeiro</h1>
+      <h1 className="text-2xl font-bold text-ink">Meu Financeiro</h1>
 
       {/* Checkout result banner */}
       {checkoutResult === 'success' && (
@@ -174,11 +174,11 @@ export default function AlunoFinanceiroPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-700/50 rounded-lg p-3">
             <p className="text-xs text-slate-400 mb-1">Plano</p>
-            <p className="text-white font-medium text-sm">{plan?.name || 'Sem plano'}</p>
+            <p className="text-ink font-medium text-sm">{plan?.name || 'Sem plano'}</p>
           </div>
           <div className="bg-slate-700/50 rounded-lg p-3">
             <p className="text-xs text-slate-400 mb-1">Mensalidade</p>
-            <p className="text-white font-medium text-sm">
+            <p className="text-ink font-medium text-sm">
               {userInfo?.monthly_value != null
                 ? `R$ ${Number(userInfo.monthly_value).toFixed(2)}`
                 : plan?.price != null
@@ -206,10 +206,10 @@ export default function AlunoFinanceiroPage() {
           <h2 className="text-green-400 font-semibold">📱 Pagar via PIX</h2>
           <div className="bg-slate-900 rounded-lg p-4">
             <p className="text-xs text-slate-400 mb-1">Chave PIX{pixCfg.pix_name ? ` (${pixCfg.pix_name})` : ''}</p>
-            <p className="text-white font-mono text-sm break-all select-text" data-allow-copy>{pixCfg.pix_key}</p>
+            <p className="text-ink font-mono text-sm break-all select-text" data-allow-copy>{pixCfg.pix_key}</p>
             <button
               onClick={() => navigator.clipboard?.writeText(pixCfg.pix_key || '')}
-              className="mt-2 text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg"
+              className="mt-2 text-xs bg-slate-700 hover:bg-slate-600 text-ink px-3 py-1.5 rounded-lg"
             >
               Copiar chave PIX
             </button>
@@ -222,7 +222,7 @@ export default function AlunoFinanceiroPage() {
             <button
               onClick={handleInform}
               disabled={informing}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
+              className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink py-2.5 rounded-xl text-sm font-medium"
             >
               {informing ? 'Enviando...' : '✅ Já fiz o pagamento'}
             </button>
@@ -260,7 +260,7 @@ export default function AlunoFinanceiroPage() {
               <button
                 onClick={handleCheckout}
                 disabled={checkoutLoading}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors"
+                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink font-semibold py-3 rounded-xl transition-colors"
               >
                 {checkoutLoading ? 'Redirecionando...' : '💳 Assinar / Pagar Mensalidade'}
               </button>
@@ -270,7 +270,7 @@ export default function AlunoFinanceiroPage() {
               <button
                 onClick={handlePortal}
                 disabled={portalLoading}
-                className="w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-medium py-3 rounded-xl transition-colors"
+                className="w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-ink font-medium py-3 rounded-xl transition-colors"
               >
                 {portalLoading ? 'Abrindo...' : '⚙️ Gerenciar Assinatura (trocar cartão, cancelar)'}
               </button>
@@ -297,7 +297,7 @@ export default function AlunoFinanceiroPage() {
             {payments.map((p) => (
               <div key={p.id} className="flex items-center justify-between px-4 py-3">
                 <div>
-                  <p className="text-white text-sm">
+                  <p className="text-ink text-sm">
                     {p.reference_month
                       ? `${p.reference_month.slice(5, 7)}/${p.reference_month.slice(0, 4)}`
                       : new Date(p.payment_date).toLocaleDateString('pt-BR')}
@@ -305,7 +305,7 @@ export default function AlunoFinanceiroPage() {
                   <p className="text-slate-400 text-xs">{p.payment_method || 'manual'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-medium text-sm">R$ {Number(p.amount).toFixed(2)}</p>
+                  <p className="text-ink font-medium text-sm">R$ {Number(p.amount).toFixed(2)}</p>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
                       p.status === 'paid' ? 'bg-green-600/20 text-green-400' : 'bg-yellow-600/20 text-yellow-400'

@@ -236,7 +236,7 @@ export default function AlunosPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-white">Gestão de Alunos</h1>
+        <h1 className="text-2xl font-bold text-ink">Gestão de Alunos</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400">{filteredAlunos.length} aluno(s)</span>
           <Button variant="primary" size="md" onClick={() => { setNewForm({ full_name: '', email: '', phone: '', password: generateStrongPassword(), plan_id: '', monthly_value: '', due_day: '10', status: 'ativo' }); setNewTurmaIds(new Set()); setNewError(null); setShowNewAluno(true); }}>
@@ -250,20 +250,20 @@ export default function AlunosPage() {
         <div className="bg-green-600/10 border border-green-500/30 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-green-400 font-semibold">✅ Aluno criado! Guarde as credenciais:</h3>
-            <button onClick={() => setCreatedCredentials(null)} className="text-slate-400 hover:text-white text-sm">✕</button>
+            <button onClick={() => setCreatedCredentials(null)} className="text-slate-400 hover:text-ink text-sm">✕</button>
           </div>
           <div className="bg-slate-900 rounded-lg p-3 font-mono text-sm space-y-1">
-            <p className="text-white">Login: <span className="text-green-400">{createdCredentials.email}</span></p>
-            <p className="text-white">Senha: <span className="text-green-400">{createdCredentials.password}</span></p>
+            <p className="text-ink">Login: <span className="text-green-400">{createdCredentials.email}</span></p>
+            <p className="text-ink">Senha: <span className="text-green-400">{createdCredentials.password}</span></p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <button onClick={sendWhatsApp} className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors">
+            <button onClick={sendWhatsApp} className="text-xs bg-green-600 hover:bg-green-700 text-ink px-3 py-2 rounded-lg transition-colors">
               📱 Enviar por WhatsApp
             </button>
             <button onClick={sendEmail} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors">
               📧 Enviar por Email
             </button>
-            <button onClick={copyCredentials} className="text-xs bg-slate-600 hover:bg-slate-500 text-white px-3 py-2 rounded-lg transition-colors">
+            <button onClick={copyCredentials} className="text-xs bg-slate-600 hover:bg-slate-500 text-ink px-3 py-2 rounded-lg transition-colors">
               📋 Copiar Credenciais
             </button>
           </div>
@@ -277,12 +277,12 @@ export default function AlunosPage() {
           placeholder="Buscar por nome ou e-mail..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-ink focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
         />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+          className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-ink focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
         >
           <option value="all">Todos os Status</option>
           <option value="ativo">Ativo</option>
@@ -315,7 +315,7 @@ export default function AlunosPage() {
               ) : (
                 filteredAlunos.map((aluno) => (
                   <tr key={aluno.id} className="hover:bg-slate-750 transition-colors">
-                    <td className="px-5 py-4 text-white font-medium">
+                    <td className="px-5 py-4 text-ink font-medium">
                       {aluno.full_name || '—'}
                     </td>
                     <td className="px-5 py-4 text-slate-300 text-xs">
@@ -397,7 +397,7 @@ export default function AlunosPage() {
                 type="text"
                 value={editAluno.full_name ?? ''}
                 onChange={(e) => setEditAluno({ ...editAluno, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Nome do aluno"
               />
             </div>
@@ -407,7 +407,7 @@ export default function AlunosPage() {
                 type="text"
                 value={editAluno.phone ?? ''}
                 onChange={(e) => setEditAluno({ ...editAluno, phone: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="(11) 99999-9999"
               />
             </div>
@@ -424,7 +424,7 @@ export default function AlunosPage() {
                     monthly_value: e.target.value ? Number(e.target.value) : null,
                   })
                 }
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="0.00"
               />
             </div>
@@ -438,7 +438,7 @@ export default function AlunosPage() {
                     status: e.target.value as PilatesUser['status'],
                   })
                 }
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="ativo">Ativo</option>
                 <option value="inativo">Inativo</option>
@@ -469,7 +469,7 @@ export default function AlunosPage() {
               <input
                 value={newForm.full_name}
                 onChange={(e) => setNewForm({ ...newForm, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Nome do aluno"
               />
             </div>
@@ -479,7 +479,7 @@ export default function AlunosPage() {
                 type="email"
                 value={newForm.email}
                 onChange={(e) => setNewForm({ ...newForm, email: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="email@exemplo.com"
               />
             </div>
@@ -488,7 +488,7 @@ export default function AlunosPage() {
               <input
                 value={newForm.phone}
                 onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="11999999999"
               />
             </div>
@@ -503,7 +503,7 @@ export default function AlunosPage() {
                 <button
                   type="button"
                   onClick={() => setNewForm({ ...newForm, password: generateStrongPassword() })}
-                  className="text-xs text-slate-400 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg transition-colors"
+                  className="text-xs text-slate-400 hover:text-ink bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg transition-colors"
                 >
                   🔄 Nova
                 </button>
@@ -518,7 +518,7 @@ export default function AlunosPage() {
                   const plan = plans.find((p) => p.id === Number(e.target.value));
                   setNewForm({ ...newForm, plan_id: e.target.value ? Number(e.target.value) : '', monthly_value: plan ? String(plan.price) : newForm.monthly_value });
                 }}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Sem plano definido</option>
                 {plans.map((p) => (
@@ -536,7 +536,7 @@ export default function AlunosPage() {
                   value={newForm.monthly_value}
                   onChange={(e) => setNewForm({ ...newForm, monthly_value: e.target.value })}
                   placeholder="0.00"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
@@ -548,7 +548,7 @@ export default function AlunosPage() {
                   value={newForm.due_day}
                   onChange={(e) => setNewForm({ ...newForm, due_day: e.target.value })}
                   placeholder="10"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -557,7 +557,7 @@ export default function AlunosPage() {
               <select
                 value={newForm.status}
                 onChange={(e) => setNewForm({ ...newForm, status: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="ativo">Ativo</option>
                 <option value="inativo">Inativo</option>

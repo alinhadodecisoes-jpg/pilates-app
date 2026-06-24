@@ -67,7 +67,7 @@ function Input({ label, ...props }: { label: string } & React.InputHTMLAttribute
       <label className="block text-sm text-slate-400 mb-1">{label}</label>
       <input
         {...props}
-        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
       />
     </div>
   );
@@ -79,7 +79,7 @@ function TextArea({ label, ...props }: { label: string } & React.TextareaHTMLAtt
       <label className="block text-sm text-slate-400 mb-1">{label}</label>
       <textarea
         {...props}
-        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
       />
     </div>
   );
@@ -198,7 +198,7 @@ export default function FichaSaudePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-2 pb-10">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-white">Ficha de Saúde</h1>
+        <h1 className="text-2xl font-bold text-ink">Ficha de Saúde</h1>
         {saved && (
           <span className="text-green-400 text-sm font-medium">✅ Salvo com sucesso!</span>
         )}
@@ -234,7 +234,7 @@ export default function FichaSaudePage() {
           <select
             value={form.blood_type}
             onChange={(e) => setForm({ ...form, blood_type: e.target.value })}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="">Não sei</option>
             {BLOOD_TYPES.map((bt) => <option key={bt} value={bt}>{bt}</option>)}
@@ -271,7 +271,7 @@ export default function FichaSaudePage() {
       <div className="space-y-2">
         {form.injuries.map((inj, i) => (
           <div key={i} className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-3 py-2 text-sm">
-            <span className="text-white flex-1">{inj.local} — {inj.descricao} {inj.data && `(${inj.data})`}</span>
+            <span className="text-ink flex-1">{inj.local} — {inj.descricao} {inj.data && `(${inj.data})`}</span>
             <button
               onClick={() => setForm({ ...form, injuries: form.injuries.filter((_, j) => j !== i) })}
               className="text-red-400 hover:text-red-300 text-xs"
@@ -283,20 +283,20 @@ export default function FichaSaudePage() {
             placeholder="Local (ex: joelho)"
             value={newInjury.local}
             onChange={(e) => setNewInjury({ ...newInjury, local: e.target.value })}
-            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
             placeholder="Descrição"
             value={newInjury.descricao}
             onChange={(e) => setNewInjury({ ...newInjury, descricao: e.target.value })}
-            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <div className="flex gap-1">
             <input
               type="date"
               value={newInjury.data}
               onChange={(e) => setNewInjury({ ...newInjury, data: e.target.value })}
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <button
               onClick={() => {
@@ -305,7 +305,7 @@ export default function FichaSaudePage() {
                   setNewInjury({ local: '', descricao: '', data: '' });
                 }
               }}
-              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium"
+              className="bg-green-600 hover:bg-green-700 text-ink px-3 py-2 rounded-lg text-sm font-medium"
             >+</button>
           </div>
         </div>
@@ -316,7 +316,7 @@ export default function FichaSaudePage() {
       <div className="space-y-2">
         {form.surgeries.map((surg, i) => (
           <div key={i} className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-3 py-2 text-sm">
-            <span className="text-white flex-1">{surg.tipo} {surg.data && `(${surg.data})`}</span>
+            <span className="text-ink flex-1">{surg.tipo} {surg.data && `(${surg.data})`}</span>
             <button
               onClick={() => setForm({ ...form, surgeries: form.surgeries.filter((_, j) => j !== i) })}
               className="text-red-400 hover:text-red-300 text-xs"
@@ -328,14 +328,14 @@ export default function FichaSaudePage() {
             placeholder="Tipo de cirurgia"
             value={newSurgery.tipo}
             onChange={(e) => setNewSurgery({ ...newSurgery, tipo: e.target.value })}
-            className="col-span-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="col-span-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <div className="flex gap-1">
             <input
               type="date"
               value={newSurgery.data}
               onChange={(e) => setNewSurgery({ ...newSurgery, data: e.target.value })}
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <button
               onClick={() => {
@@ -344,7 +344,7 @@ export default function FichaSaudePage() {
                   setNewSurgery({ tipo: '', data: '' });
                 }
               }}
-              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium"
+              className="bg-green-600 hover:bg-green-700 text-ink px-3 py-2 rounded-lg text-sm font-medium"
             >+</button>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function FichaSaudePage() {
             onClick={() => toggleChronic(cond)}
             className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
               form.chronic_conditions.includes(cond)
-                ? 'bg-green-600 border-green-600 text-white'
+                ? 'bg-green-600 border-green-600 text-ink'
                 : 'border-slate-600 text-slate-400 hover:border-slate-400'
             }`}
           >
@@ -373,7 +373,7 @@ export default function FichaSaudePage() {
       <div className="space-y-2">
         {form.medications.map((med, i) => (
           <div key={i} className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-3 py-2 text-sm">
-            <span className="text-white flex-1">{med.nome} — {med.dose}</span>
+            <span className="text-ink flex-1">{med.nome} — {med.dose}</span>
             <button
               onClick={() => setForm({ ...form, medications: form.medications.filter((_, j) => j !== i) })}
               className="text-red-400 hover:text-red-300 text-xs"
@@ -385,14 +385,14 @@ export default function FichaSaudePage() {
             placeholder="Nome do medicamento"
             value={newMedication.nome}
             onChange={(e) => setNewMedication({ ...newMedication, nome: e.target.value })}
-            className="col-span-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="col-span-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <div className="flex gap-1">
             <input
               placeholder="Dose"
               value={newMedication.dose}
               onChange={(e) => setNewMedication({ ...newMedication, dose: e.target.value })}
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
             <button
               onClick={() => {
@@ -401,7 +401,7 @@ export default function FichaSaudePage() {
                   setNewMedication({ nome: '', dose: '' });
                 }
               }}
-              className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium"
+              className="bg-green-600 hover:bg-green-700 text-ink px-3 py-2 rounded-lg text-sm font-medium"
             >+</button>
           </div>
         </div>
@@ -433,7 +433,7 @@ export default function FichaSaudePage() {
             className="mt-0.5 accent-green-500"
           />
           <div>
-            <label htmlFor="doctor_clearance" className="text-sm text-white font-medium cursor-pointer">
+            <label htmlFor="doctor_clearance" className="text-sm text-ink font-medium cursor-pointer">
               Tenho liberação médica para atividade física
             </label>
             {form.doctor_clearance && (
@@ -483,7 +483,7 @@ export default function FichaSaudePage() {
             onChange={(e) => setForm({ ...form, consent_signed: e.target.checked })}
             className="w-5 h-5 accent-green-500"
           />
-          <label htmlFor="consent" className="text-white font-medium cursor-pointer">
+          <label htmlFor="consent" className="text-ink font-medium cursor-pointer">
             Li e aceito o termo de consentimento (LGPD)
           </label>
         </div>
@@ -498,7 +498,7 @@ export default function FichaSaudePage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors mt-4"
+        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink font-semibold py-3 rounded-xl transition-colors mt-4"
       >
         {saving ? 'Salvando...' : 'Salvar Ficha de Saúde'}
       </button>

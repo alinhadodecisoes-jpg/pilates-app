@@ -194,19 +194,19 @@ export default function AdminAgendaPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Agenda de Aulas</h1>
+        <h1 className="text-2xl font-bold text-ink">Agenda de Aulas</h1>
         <div className="flex gap-2">
           <button
             onClick={handleExportMonth}
             disabled={exporting}
-            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-ink px-4 py-2 rounded-xl text-sm font-medium"
           >
             {exporting ? '⏳...' : '⬇️ Exportar Mês (CSV)'}
           </button>
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium"
+            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-4 py-2 rounded-xl text-sm font-medium"
           >
             {generating ? '⏳ Gerando...' : '📅 Gerar Agenda do Mês'}
           </button>
@@ -221,16 +221,16 @@ export default function AdminAgendaPage() {
 
       {/* Navegação semanal */}
       <div className="flex items-center gap-4 bg-slate-800 rounded-xl border border-slate-700 p-4">
-        <button onClick={prevWeek} className="text-slate-400 hover:text-white px-3 py-1 rounded-lg hover:bg-slate-700">
+        <button onClick={prevWeek} className="text-slate-400 hover:text-ink px-3 py-1 rounded-lg hover:bg-slate-700">
           ← Anterior
         </button>
         <div className="flex-1 text-center">
-          <p className="text-white font-semibold">
+          <p className="text-ink font-semibold">
             {weekDates[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} —{' '}
             {weekDates[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
           </p>
         </div>
-        <button onClick={nextWeek} className="text-slate-400 hover:text-white px-3 py-1 rounded-lg hover:bg-slate-700">
+        <button onClick={nextWeek} className="text-slate-400 hover:text-ink px-3 py-1 rounded-lg hover:bg-slate-700">
           Próxima →
         </button>
       </div>
@@ -247,7 +247,7 @@ export default function AdminAgendaPage() {
             <div key={dateStr} className="min-h-[120px]">
               <div className={`text-center mb-2 py-1 rounded-lg ${isToday ? 'bg-green-600' : 'bg-slate-800'}`}>
                 <p className="text-xs text-slate-400">{DAYS[date.getDay()]}</p>
-                <p className={`text-sm font-bold ${isToday ? 'text-white' : 'text-slate-300'}`}>
+                <p className={`text-sm font-bold ${isToday ? 'text-ink' : 'text-slate-300'}`}>
                   {date.getDate()}
                 </p>
               </div>
@@ -266,7 +266,7 @@ export default function AdminAgendaPage() {
                           : 'bg-green-600/20 border-green-600/30'
                       }`}
                     >
-                      <p className="text-white font-medium truncate">{s.time_start?.slice(0, 5)}</p>
+                      <p className="text-ink font-medium truncate">{s.time_start?.slice(0, 5)}</p>
                       <p className="text-slate-300 truncate">
                         {(s.turma as any)?.name || `Turma ${s.class_id}`}
                       </p>
@@ -315,7 +315,7 @@ export default function AdminAgendaPage() {
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-lg">
             <div className="p-5 border-b border-slate-700 flex items-center justify-between">
               <div>
-                <h2 className="text-white font-bold text-lg">
+                <h2 className="text-ink font-bold text-lg">
                   ✅ Presença —{' '}
                   {(presenceModal.turma as any)?.name || `Turma ${presenceModal.class_id}`}
                 </h2>
@@ -324,7 +324,7 @@ export default function AdminAgendaPage() {
                   {presenceModal.time_start?.slice(0, 5)}–{presenceModal.time_end?.slice(0, 5)}
                 </p>
               </div>
-              <button onClick={() => setPresenceModal(null)} className="text-slate-400 hover:text-white text-xl">✕</button>
+              <button onClick={() => setPresenceModal(null)} className="text-slate-400 hover:text-ink text-xl">✕</button>
             </div>
             <div className="p-5 space-y-3 max-h-80 overflow-y-auto">
               {bookings.length === 0 ? (
@@ -335,7 +335,7 @@ export default function AdminAgendaPage() {
                   return (
                     <div key={b.user_id} className="flex items-center justify-between bg-slate-700/50 rounded-xl px-4 py-3">
                       <div>
-                        <p className="text-white text-sm font-medium">
+                        <p className="text-ink text-sm font-medium">
                           {b.full_name || 'Aluno'}
                         </p>
                         <p className="text-slate-400 text-xs">{b.email}</p>
@@ -352,7 +352,7 @@ export default function AdminAgendaPage() {
                             <button
                               onClick={() => handleMarkPresence(presenceModal.id, b.user_id, 'attended')}
                               disabled={markingPresence === key}
-                              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-3 py-1 rounded-lg text-xs"
+                              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-3 py-1 rounded-lg text-xs"
                             >
                               ✅ Presente
                             </button>
@@ -374,7 +374,7 @@ export default function AdminAgendaPage() {
             <div className="p-4 border-t border-slate-700 flex justify-end">
               <button
                 onClick={() => setPresenceModal(null)}
-                className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm"
+                className="bg-slate-700 hover:bg-slate-600 text-ink px-4 py-2 rounded-xl text-sm"
               >
                 Fechar
               </button>

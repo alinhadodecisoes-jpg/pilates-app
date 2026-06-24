@@ -120,7 +120,7 @@ export default function AlunoReposicoesPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-10">
-      <h1 className="text-2xl font-bold text-white">Reposições</h1>
+      <h1 className="text-2xl font-bold text-ink">Reposições</h1>
 
       {success && (
         <div className="bg-green-600/20 border border-green-600/50 text-green-400 p-4 rounded-xl text-sm">
@@ -141,7 +141,7 @@ export default function AlunoReposicoesPage() {
             <button
               onClick={handleSolicitar}
               disabled={submitting}
-              className="text-sm bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg transition-colors"
+              className="text-sm bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink px-4 py-2 rounded-lg transition-colors"
             >
               {submitting ? 'Enviando...' : `Solicitar ${selected.size} horário(s)`}
             </button>
@@ -167,7 +167,7 @@ export default function AlunoReposicoesPage() {
                   onClick={() => !alreadyRequested && toggleSlot(slot.id)}
                 >
                   <div>
-                    <p className="text-white font-medium text-sm">
+                    <p className="text-ink font-medium text-sm">
                       {new Date(slot.slot_date + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
                       {' · '}
                       {slot.time_start?.slice(0, 5)}–{slot.time_end?.slice(0, 5)}
@@ -182,7 +182,7 @@ export default function AlunoReposicoesPage() {
                       <span className="text-xs bg-blue-900/30 text-blue-400 px-2 py-1 rounded-full">Solicitado</span>
                     ) : (
                       <div className={`w-5 h-5 rounded border-2 transition-colors ${isSelected ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
-                        {isSelected && <svg className="w-full h-full text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                        {isSelected && <svg className="w-full h-full text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                       </div>
                     )}
                   </div>
@@ -210,7 +210,7 @@ export default function AlunoReposicoesPage() {
                   <div>
                     {slot ? (
                       <>
-                        <p className="text-white text-sm font-medium">
+                        <p className="text-ink text-sm font-medium">
                           {new Date(slot.slot_date + 'T00:00:00').toLocaleDateString('pt-BR')}
                           {' · '}{slot.time_start?.slice(0, 5)}–{slot.time_end?.slice(0, 5)}
                         </p>

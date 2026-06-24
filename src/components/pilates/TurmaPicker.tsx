@@ -70,7 +70,7 @@ export function TurmaPicker({
               onClick={() => setOpenDay(isOpen ? null : d)}
               className={`relative py-2 rounded-lg text-sm font-medium transition-colors ${
                 isOpen
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-green-600 text-ink'
                   : n > 0
                   ? 'bg-green-900/30 text-green-300 border border-green-700'
                   : 'bg-slate-900 text-slate-300 border border-slate-700 hover:border-slate-600'
@@ -78,7 +78,7 @@ export function TurmaPicker({
             >
               {DAYS_FULL[d]}
               {n > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-ink text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                   {n}
                 </span>
               )}
@@ -104,7 +104,7 @@ export function TurmaPicker({
                   type="button"
                   onClick={() => onToggle(t.id)}
                   className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-colors text-center ${
-                    checked ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    checked ? 'bg-green-600 text-ink' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                   }`}
                 >
                   {t.time_start?.slice(0, 5)}
@@ -133,7 +133,7 @@ export function TurmaPicker({
                 className="inline-flex items-center gap-1 bg-green-900/30 border border-green-700 text-green-200 text-xs px-2 py-1 rounded-full"
               >
                 {DAYS_FULL[t.day_of_week]} {t.time_start?.slice(0, 5)}
-                <button type="button" onClick={() => onToggle(t.id)} className="text-green-300 hover:text-white">
+                <button type="button" onClick={() => onToggle(t.id)} className="text-green-300 hover:text-ink">
                   ✕
                 </button>
               </span>

@@ -183,10 +183,10 @@ export default function ProntuarioPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link href="/fisioterapeuta/pacientes" className="text-slate-400 hover:text-white text-sm flex items-center gap-1 mb-2">
+          <Link href="/fisioterapeuta/pacientes" className="text-slate-400 hover:text-ink text-sm flex items-center gap-1 mb-2">
             ← Pacientes
           </Link>
-          <h1 className="text-2xl font-bold text-white">{alunoName}</h1>
+          <h1 className="text-2xl font-bold text-ink">{alunoName}</h1>
           <p className="text-slate-400 text-sm">{(physioCase.aluno as any)?.email}</p>
         </div>
         <div className="flex gap-2">
@@ -196,7 +196,7 @@ export default function ProntuarioPage() {
           {physioCase.status === 'active' && (
             <button
               onClick={() => setShowDischarge(true)}
-              className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded-full"
+              className="text-xs bg-slate-700 hover:bg-slate-600 text-ink px-3 py-1 rounded-full"
             >
               Dar Alta
             </button>
@@ -244,7 +244,7 @@ export default function ProntuarioPage() {
                 footer: `Prontuário confidencial — Daimach.Movement | ${(physioCase.aluno as any)?.email || ''} | Gerado em ${new Date().toLocaleDateString('pt-BR')}`,
               });
             }}
-            className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded-full"
+            className="text-xs bg-slate-700 hover:bg-slate-600 text-ink px-3 py-1 rounded-full"
           >
             🖨️ PDF
           </button>
@@ -282,15 +282,15 @@ export default function ProntuarioPage() {
       <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-3">
         <h2 className="text-green-400 font-semibold">📋 Caso Clínico</h2>
         <div className="space-y-2 text-sm">
-          <div><span className="text-slate-400">Início: </span><span className="text-white">{new Date(physioCase.start_date + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
+          <div><span className="text-slate-400">Início: </span><span className="text-ink">{new Date(physioCase.start_date + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
           {physioCase.chief_complaint && (
-            <div><span className="text-slate-400">Queixa: </span><span className="text-white">{physioCase.chief_complaint}</span></div>
+            <div><span className="text-slate-400">Queixa: </span><span className="text-ink">{physioCase.chief_complaint}</span></div>
           )}
           {physioCase.diagnosis && (
-            <div><span className="text-slate-400">Diagnóstico: </span><span className="text-white">{physioCase.diagnosis}</span></div>
+            <div><span className="text-slate-400">Diagnóstico: </span><span className="text-ink">{physioCase.diagnosis}</span></div>
           )}
           {physioCase.treatment_plan && (
-            <div><span className="text-slate-400">Plano: </span><span className="text-white">{physioCase.treatment_plan}</span></div>
+            <div><span className="text-slate-400">Plano: </span><span className="text-ink">{physioCase.treatment_plan}</span></div>
           )}
           {physioCase.discharge_notes && (
             <div className="bg-slate-700/50 rounded-lg p-3">
@@ -305,7 +305,7 @@ export default function ProntuarioPage() {
       {physioCase.status === 'active' && (
         <button
           onClick={() => setShowEvoForm(true)}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-xl transition-colors"
+          className="w-full bg-green-600 hover:bg-green-700 text-ink font-medium py-3 rounded-xl transition-colors"
         >
           + Nova Evolução SOAP
         </button>
@@ -313,7 +313,7 @@ export default function ProntuarioPage() {
 
       {/* Linha do tempo de evoluções */}
       <div className="space-y-3">
-        <h2 className="text-white font-semibold">Evoluções ({evolutions.length})</h2>
+        <h2 className="text-ink font-semibold">Evoluções ({evolutions.length})</h2>
         {evolutions.length === 0 ? (
           <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
             <p className="text-slate-500 text-sm">Nenhuma evolução registrada ainda.</p>
@@ -322,7 +322,7 @@ export default function ProntuarioPage() {
           evolutions.map((evo) => (
             <div key={evo.id} className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-white text-sm">
+                <p className="font-semibold text-ink text-sm">
                   {new Date(evo.evolution_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </p>
                 {evo.pain_scale != null && (
@@ -380,7 +380,7 @@ export default function ProntuarioPage() {
       {showEvoForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl p-6 space-y-4 my-4">
-            <h2 className="text-xl font-bold text-white">Nova Evolução SOAP</h2>
+            <h2 className="text-xl font-bold text-ink">Nova Evolução SOAP</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
@@ -390,7 +390,7 @@ export default function ProntuarioPage() {
                   value={evoForm.subjective}
                   onChange={(e) => setEvoForm({ ...evoForm, subjective: e.target.value })}
                   placeholder="O que o paciente relata..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -400,7 +400,7 @@ export default function ProntuarioPage() {
                   value={evoForm.objective}
                   onChange={(e) => setEvoForm({ ...evoForm, objective: e.target.value })}
                   placeholder="Exame físico, testes, goniometria..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
                 />
               </div>
               <div>
@@ -410,7 +410,7 @@ export default function ProntuarioPage() {
                   value={evoForm.assessment}
                   onChange={(e) => setEvoForm({ ...evoForm, assessment: e.target.value })}
                   placeholder="Interpretação clínica..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
                 />
               </div>
               <div>
@@ -420,7 +420,7 @@ export default function ProntuarioPage() {
                   value={evoForm.plan}
                   onChange={(e) => setEvoForm({ ...evoForm, plan: e.target.value })}
                   placeholder="Próximos passos, exercícios, conduta..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
                 />
               </div>
             </div>
@@ -439,7 +439,7 @@ export default function ProntuarioPage() {
                 />
                 <div className="flex justify-between text-xs text-slate-500 mt-0.5">
                   <span>0 (Sem dor)</span>
-                  <span className="font-bold text-white text-sm">{evoForm.pain_scale || '—'}</span>
+                  <span className="font-bold text-ink text-sm">{evoForm.pain_scale || '—'}</span>
                   <span>10 (Máximo)</span>
                 </div>
               </div>
@@ -449,7 +449,7 @@ export default function ProntuarioPage() {
                   value={evoForm.techniques_used}
                   onChange={(e) => setEvoForm({ ...evoForm, techniques_used: e.target.value })}
                   placeholder="Ex: TENS, ultrassom, crochetagem..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
                 />
               </div>
             </div>
@@ -457,14 +457,14 @@ export default function ProntuarioPage() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => { setShowEvoForm(false); setEvoForm(EMPTY_EVO); }}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-xl text-sm"
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-ink py-2.5 rounded-xl text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleAddEvolution}
                 disabled={saving}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-xl text-sm font-medium"
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink py-2.5 rounded-xl text-sm font-medium"
               >
                 {saving ? 'Salvando...' : 'Registrar Evolução'}
               </button>
@@ -477,7 +477,7 @@ export default function ProntuarioPage() {
       {showDischarge && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md p-6 space-y-4">
-            <h2 className="text-xl font-bold text-white">Dar Alta ao Paciente</h2>
+            <h2 className="text-xl font-bold text-ink">Dar Alta ao Paciente</h2>
             <p className="text-slate-400 text-sm">Esta ação muda o status do caso para &ldquo;Alta&rdquo;.</p>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Notas de Alta</label>
@@ -486,13 +486,13 @@ export default function ProntuarioPage() {
                 value={dischargeNotes}
                 onChange={(e) => setDischargeNotes(e.target.value)}
                 placeholder="Evolução final, orientações para o paciente..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm resize-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm resize-none"
               />
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDischarge(false)}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-xl text-sm"
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-ink py-2.5 rounded-xl text-sm"
               >
                 Cancelar
               </button>

@@ -34,13 +34,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-white">Painel Administrativo</h1>
+      <h1 className="text-2xl font-bold text-ink">Painel Administrativo</h1>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
           <p className="text-sm text-slate-400 mb-1">Total de Alunos</p>
-          <p className="text-4xl font-bold text-white">{stats?.total_alunos ?? 0}</p>
+          <p className="text-4xl font-bold text-ink">{stats?.total_alunos ?? 0}</p>
         </div>
 
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
@@ -63,42 +63,42 @@ export default function AdminDashboard() {
             className="bg-slate-800 border border-slate-700 hover:border-green-600 rounded-xl p-5 text-center transition-colors"
           >
             <p className="text-2xl mb-1">👥</p>
-            <p className="text-sm font-medium text-white">Alunos</p>
+            <p className="text-sm font-medium text-ink">Alunos</p>
           </Link>
           <Link
             href="/admin/turmas"
             className="bg-slate-800 border border-slate-700 hover:border-green-600 rounded-xl p-5 text-center transition-colors"
           >
             <p className="text-2xl mb-1">📚</p>
-            <p className="text-sm font-medium text-white">Turmas</p>
+            <p className="text-sm font-medium text-ink">Turmas</p>
           </Link>
           <Link
             href="/admin/professores"
             className="bg-slate-800 border border-slate-700 hover:border-green-600 rounded-xl p-5 text-center transition-colors"
           >
             <p className="text-2xl mb-1">👨‍🏫</p>
-            <p className="text-sm font-medium text-white">Professores</p>
+            <p className="text-sm font-medium text-ink">Professores</p>
           </Link>
           <Link
             href="/admin/financeiro"
             className="bg-slate-800 border border-slate-700 hover:border-green-600 rounded-xl p-5 text-center transition-colors"
           >
             <p className="text-2xl mb-1">💰</p>
-            <p className="text-sm font-medium text-white">Financeiro</p>
+            <p className="text-sm font-medium text-ink">Financeiro</p>
           </Link>
           <Link
             href="/admin/relatorios"
             className="bg-slate-800 border border-slate-700 hover:border-green-600 rounded-xl p-5 text-center transition-colors"
           >
             <p className="text-2xl mb-1">📊</p>
-            <p className="text-sm font-medium text-white">Relatórios</p>
+            <p className="text-sm font-medium text-ink">Relatórios</p>
           </Link>
           <Link
             href="/admin/fisioterapia"
             className="bg-slate-800 border border-slate-700 hover:border-green-600 rounded-xl p-5 text-center transition-colors"
           >
             <p className="text-2xl mb-1">🏥</p>
-            <p className="text-sm font-medium text-white">Fisioterapia</p>
+            <p className="text-sm font-medium text-ink">Fisioterapia</p>
           </Link>
         </div>
       </div>

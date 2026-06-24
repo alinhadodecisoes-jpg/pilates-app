@@ -46,7 +46,7 @@ export default function AlunoFisioterapiaPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-white">Fisioterapia</h1>
+      <h1 className="text-2xl font-bold text-ink">Fisioterapia</h1>
 
       {sessions.length === 0 ? (
         <div className="bg-slate-800 rounded-xl p-10 border border-slate-700 text-center space-y-3">
@@ -92,14 +92,14 @@ function SessionCard({ session: s }: { session: PhysicalTherapySession }) {
         <p className="text-[10px] text-slate-400 font-medium uppercase">
           {new Date(s.session_date.slice(0, 10) + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' })}
         </p>
-        <p className="text-xl font-bold text-white">
+        <p className="text-xl font-bold text-ink">
           {new Date(s.session_date.slice(0, 10) + 'T12:00:00').getDate()}
         </p>
       </div>
 
       {/* Info */}
       <div className="flex-1">
-        <p className="font-semibold text-white">{s.therapy_type || 'Fisioterapia'}</p>
+        <p className="font-semibold text-ink">{s.therapy_type || 'Fisioterapia'}</p>
         {therapistName && (
           <p className="text-sm text-slate-400">{therapistName}</p>
         )}

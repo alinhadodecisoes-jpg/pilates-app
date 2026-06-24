@@ -97,7 +97,7 @@ export default function PacientesPage() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Pacientes (Fisioterapia)</h1>
+          <h1 className="text-2xl font-bold text-ink">Pacientes (Fisioterapia)</h1>
           <p className="text-sm text-slate-400">{filtered.length} paciente(s)</p>
         </div>
         <Button variant="primary" size="md" onClick={() => { setError(''); setShowCreate(true); }}>+ Novo Paciente</Button>
@@ -108,7 +108,7 @@ export default function PacientesPage() {
         placeholder="Buscar por nome ou email..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
       />
 
       <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
@@ -126,7 +126,7 @@ export default function PacientesPage() {
               <tr><td colSpan={4} className="px-5 py-10 text-center text-slate-500">Nenhum paciente de fisioterapia.</td></tr>
             ) : filtered.map((p) => (
               <tr key={p.id} className="hover:bg-slate-700/30">
-                <td className="px-5 py-4 text-white font-medium">{p.full_name || '—'}</td>
+                <td className="px-5 py-4 text-ink font-medium">{p.full_name || '—'}</td>
                 <td className="px-5 py-4 text-slate-300 text-xs">{p.email || '—'}</td>
                 <td className="px-5 py-4">
                   <span className={`text-xs px-2 py-1 rounded-full ${p.tipo === 'ambos' ? 'bg-teal-600/20 text-teal-400' : 'bg-purple-600/20 text-purple-400'}`}>
@@ -134,7 +134,7 @@ export default function PacientesPage() {
                   </span>
                 </td>
                 <td className="px-5 py-4">
-                  <button onClick={() => toggleTipo(p)} className="text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors">
+                  <button onClick={() => toggleTipo(p)} className="text-xs text-slate-300 hover:text-ink bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors">
                     {p.tipo === 'ambos' ? 'Tornar só fisio' : 'Marcar também pilates'}
                   </button>
                 </td>
@@ -151,18 +151,18 @@ export default function PacientesPage() {
             <div>
               <label className="block text-sm text-slate-400 mb-1">Nome completo *</label>
               <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nome do paciente" />
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Nome do paciente" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Telefone</label>
                 <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="(21) 99999-9999" />
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="(21) 99999-9999" />
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Email (opcional)</label>
                 <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="email@exemplo.com" />
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="email@exemplo.com" />
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-300">

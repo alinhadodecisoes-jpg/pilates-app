@@ -1,19 +1,76 @@
 @import "tailwindcss";
 
+/*
+  TEMA CLARO DA MARCA (igual ao site daimach.com.br).
+  Tailwind v4: o tema vai aqui no @theme. Redefinimos as escalas slate/gray/green
+  (usadas em todo o app) para tons claros: slate-900 (fundo) -> creme,
+  slate-800 (cards) -> branco, slate-300/400 (textos) -> escuros, green -> dourado.
+*/
 @theme {
-  --color-primary: #10b981;
-  --color-primary-hover: #059669;
-  --color-accent: #06b6d4;
-  --color-accent-hover: #0891b2;
-  --color-background: #0f172a;
-  --color-surface: #1e293b;
-  --color-text: #f8fafc;
-  --color-text-muted: #94a3b8;
+  /* slate -> claro (invertido) */
+  --color-slate-50:  #2c3327;
+  --color-slate-100: #2c3327;
+  --color-slate-200: #38402a;
+  --color-slate-300: #46503a;
+  --color-slate-400: #69715a;
+  --color-slate-500: #8a907b;
+  --color-slate-600: #cdc6b6;
+  --color-slate-700: #dcd5c7;
+  --color-slate-800: #ffffff;
+  --color-slate-900: #f6f1e8;
+  --color-slate-950: #efe9dc;
+
+  /* gray = mesma escala clara */
+  --color-gray-50:  #2c3327;
+  --color-gray-100: #2c3327;
+  --color-gray-200: #38402a;
+  --color-gray-300: #46503a;
+  --color-gray-400: #69715a;
+  --color-gray-500: #8a907b;
+  --color-gray-600: #cdc6b6;
+  --color-gray-700: #dcd5c7;
+  --color-gray-800: #ffffff;
+  --color-gray-900: #f6f1e8;
+  --color-gray-950: #efe9dc;
+
+  /* green/emerald -> dourado */
+  --color-green-50:  #f7f1e4;
+  --color-green-100: #eee1c7;
+  --color-green-200: #e0cda0;
+  --color-green-300: #d0b478;
+  --color-green-400: #c2a05c;
+  --color-green-500: #b49352;
+  --color-green-600: #b49352;
+  --color-green-700: #9a7c40;
+  --color-green-800: #7c6433;
+  --color-green-900: #5d4b27;
+  --color-emerald-400: #c2a05c;
+  --color-emerald-500: #b49352;
+  --color-emerald-600: #b49352;
+  --color-emerald-700: #9a7c40;
+
+  /* Tokens de marca */
+  --color-cream:  #f6f1e8;
+  --color-sand:   #d8d1c4;
+  --color-sage:   #c4ccac;
+  --color-forest: #38402a;
+  --color-gold:   #b49352;
+  --color-ink:    #2c3327;
+
+  /* Daimach */
+  --color-daimach-primary:   #b49352;
+  --color-daimach-secondary: #497c40;
+  --color-daimach-dark:      #38402a;
+  --color-daimach-accent:    #b49352;
+  --color-daimach-light:     #f6f1e8;
+
+  --color-primary: #b49352;
+  --color-accent:  #c4ccac;
 }
 
 html, body {
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: #f6f1e8;
+  color: #2c3327;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
@@ -23,4 +80,4 @@ html, body {
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background-color: #d8d1c4; border-radius: 3px; }

@@ -177,7 +177,7 @@ export default function ProfessoresPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Professores & Fisioterapeutas</h1>
+        <h1 className="text-2xl font-bold text-ink">Professores & Fisioterapeutas</h1>
         <Button variant="primary" size="md" onClick={() => { setForm({ full_name: '', email: '', password: '', phone: '', role: 'professor' }); setCreateTurmaIds(new Set()); setError(null); setCreateMode(true); }}>
           + Novo
         </Button>
@@ -206,7 +206,7 @@ export default function ProfessoresPage() {
               ) : (
                 staff.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-750 transition-colors">
-                    <td className="px-5 py-4 text-white font-medium">{s.full_name || '—'}</td>
+                    <td className="px-5 py-4 text-ink font-medium">{s.full_name || '—'}</td>
                     <td className="px-5 py-4 text-slate-300 text-xs">{s.email || '—'}</td>
                     <td className="px-5 py-4 text-slate-300">{s.phone ?? '—'}</td>
                     <td className="px-5 py-4">
@@ -260,7 +260,7 @@ export default function ProfessoresPage() {
               <input
                 value={form.full_name}
                 onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Nome do profissional"
               />
             </div>
@@ -271,7 +271,7 @@ export default function ProfessoresPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="email@exemplo.com"
                 />
               </div>
@@ -281,7 +281,7 @@ export default function ProfessoresPage() {
                   type="password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Mínimo 6 caracteres"
                 />
               </div>
@@ -292,7 +292,7 @@ export default function ProfessoresPage() {
                 <input
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="(11) 99999-9999"
                 />
               </div>
@@ -301,7 +301,7 @@ export default function ProfessoresPage() {
                 <select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value as StaffRole })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="professor">Professor(a)</option>
                   <option value="fisioterapeuta">Fisioterapeuta</option>
@@ -331,7 +331,7 @@ export default function ProfessoresPage() {
               <input
                 value={editItem.full_name ?? ''}
                 onChange={(e) => setEditItem({ ...editItem, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <div>
@@ -339,7 +339,7 @@ export default function ProfessoresPage() {
               <input
                 value={editItem.phone ?? ''}
                 onChange={(e) => setEditItem({ ...editItem, phone: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
             <div>
@@ -347,7 +347,7 @@ export default function ProfessoresPage() {
               <select
                 value={editItem.role}
                 onChange={(e) => setEditItem({ ...editItem, role: e.target.value as PilatesUser['role'] })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="professor">Professor(a)</option>
                 <option value="fisioterapeuta">Fisioterapeuta</option>
@@ -361,7 +361,7 @@ export default function ProfessoresPage() {
                 <select
                   value={editItem.pay_mode ?? ''}
                   onChange={(e) => setEditItem({ ...editItem, pay_mode: e.target.value || null })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Não definida</option>
                   <option value="per_class">Por aula</option>
@@ -381,7 +381,7 @@ export default function ProfessoresPage() {
                   value={editItem.pay_rate ?? ''}
                   onChange={(e) => setEditItem({ ...editItem, pay_rate: e.target.value ? Number(e.target.value) : null })}
                   placeholder={editItem.pay_mode === 'percent' ? 'Ex: 50' : 'Ex: 30.00'}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>

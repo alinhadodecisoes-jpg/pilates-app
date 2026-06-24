@@ -59,7 +59,7 @@ function Input({ label, ...props }: { label: string } & React.InputHTMLAttribute
       <label className="block text-xs text-slate-400 mb-1">{label}</label>
       <input
         {...props}
-        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
       />
     </div>
   );
@@ -71,7 +71,7 @@ function TextArea({ label, ...props }: { label: string } & React.TextareaHTMLAtt
       <label className="block text-xs text-slate-400 mb-1">{label}</label>
       <textarea
         {...props}
-        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
       />
     </div>
   );
@@ -183,8 +183,8 @@ export default function NovaAvaliacaoPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-10">
       <div className="flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-slate-400 hover:text-white text-sm">← Voltar</button>
-        <h1 className="text-2xl font-bold text-white">Nova Avaliação Física</h1>
+        <button onClick={() => router.back()} className="text-slate-400 hover:text-ink text-sm">← Voltar</button>
+        <h1 className="text-2xl font-bold text-ink">Nova Avaliação Física</h1>
       </div>
 
       {/* Aluno + Data */}
@@ -196,7 +196,7 @@ export default function NovaAvaliacaoPage() {
             <select
               value={form.user_id}
               onChange={(e) => setForm({ ...form, user_id: e.target.value })}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="">Selecione...</option>
               {alunos.map((a) => (
@@ -305,7 +305,7 @@ export default function NovaAvaliacaoPage() {
                 onChange={(e) =>
                   setPhotos({ ...photos, [angle]: e.target.files?.[0] ?? null })
                 }
-                className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-slate-700 file:text-white hover:file:bg-slate-600"
+                className="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-slate-700 file:text-ink hover:file:bg-slate-600"
               />
               {photos[angle] && (
                 <p className="text-green-400 text-xs mt-1">✅ {photos[angle]!.name}</p>
@@ -364,7 +364,7 @@ export default function NovaAvaliacaoPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-colors"
+        className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-ink font-semibold py-3 rounded-xl transition-colors"
       >
         {saving ? 'Salvando...' : 'Salvar Avaliação'}
       </button>

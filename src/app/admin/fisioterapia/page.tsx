@@ -194,7 +194,7 @@ export default function FisioterapiaAdminPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Sessões de Fisioterapia</h1>
+        <h1 className="text-2xl font-bold text-ink">Sessões de Fisioterapia</h1>
         <div className="flex gap-2">
           <Button variant="secondary" size="md" onClick={() => { setPatientError(''); setShowPatient(true); }}>+ Novo Paciente</Button>
           <Button variant="primary" size="md" onClick={openCreate}>+ Nova Sessão</Button>
@@ -206,7 +206,7 @@ export default function FisioterapiaAdminPage() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+          className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-ink focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
         >
           <option value="all">Todos os Status</option>
           <option value="scheduled">Agendadas</option>
@@ -243,7 +243,7 @@ export default function FisioterapiaAdminPage() {
                   const cfg = STATUS_CONFIG[s.status] ?? STATUS_CONFIG.scheduled;
                   return (
                     <tr key={s.id} className="hover:bg-slate-750 transition-colors">
-                      <td className="px-5 py-4 text-white">
+                      <td className="px-5 py-4 text-ink">
                         {(s.aluno as any)?.full_name || (s.aluno as any)?.email || '—'}
                       </td>
                       <td className="px-5 py-4 text-slate-300">
@@ -292,7 +292,7 @@ export default function FisioterapiaAdminPage() {
                 <select
                   value={form.user_id}
                   onChange={(e) => setForm({ ...form, user_id: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Selecione...</option>
                   {alunos.map((a) => (
@@ -307,7 +307,7 @@ export default function FisioterapiaAdminPage() {
                 <select
                   value={form.therapist_id}
                   onChange={(e) => setForm({ ...form, therapist_id: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">Nenhum</option>
                   {therapists.map((t) => (
@@ -323,7 +323,7 @@ export default function FisioterapiaAdminPage() {
                   type="date"
                   value={form.session_date}
                   onChange={(e) => setForm({ ...form, session_date: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
@@ -331,7 +331,7 @@ export default function FisioterapiaAdminPage() {
                 <select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value as SessionStatus })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   <option value="scheduled">Agendada</option>
                   <option value="completed">Concluída</option>
@@ -345,7 +345,7 @@ export default function FisioterapiaAdminPage() {
                 <input
                   value={form.therapy_type}
                   onChange={(e) => setForm({ ...form, therapy_type: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Ex: RPG, Pilates Clínico"
                 />
               </div>
@@ -356,7 +356,7 @@ export default function FisioterapiaAdminPage() {
                   min={15}
                   value={form.duration_minutes}
                   onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -368,7 +368,7 @@ export default function FisioterapiaAdminPage() {
                 min="0"
                 value={form.cost}
                 onChange={(e) => setForm({ ...form, cost: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="0.00"
               />
             </div>
@@ -378,7 +378,7 @@ export default function FisioterapiaAdminPage() {
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={2}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
                 placeholder="Notas opcionais..."
               />
             </div>
@@ -407,7 +407,7 @@ export default function FisioterapiaAdminPage() {
               <input
                 value={patientForm.full_name}
                 onChange={(e) => setPatientForm({ ...patientForm, full_name: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Nome do paciente"
               />
             </div>
@@ -417,7 +417,7 @@ export default function FisioterapiaAdminPage() {
                 <input
                   value={patientForm.phone}
                   onChange={(e) => setPatientForm({ ...patientForm, phone: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="(21) 99999-9999"
                 />
               </div>
@@ -427,7 +427,7 @@ export default function FisioterapiaAdminPage() {
                   type="email"
                   value={patientForm.email}
                   onChange={(e) => setPatientForm({ ...patientForm, email: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="email@exemplo.com"
                 />
               </div>

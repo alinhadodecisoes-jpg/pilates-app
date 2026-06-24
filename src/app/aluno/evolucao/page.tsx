@@ -38,7 +38,7 @@ function StatCard({ label, value, unit }: { label: string; value: string | numbe
   return (
     <div className="bg-slate-700/50 rounded-lg p-3 text-center">
       <p className="text-xs text-slate-400 mb-1">{label}</p>
-      <p className="text-lg font-bold text-white">
+      <p className="text-lg font-bold text-ink">
         {value != null ? `${value}${unit ? ' ' + unit : ''}` : '—'}
       </p>
     </div>
@@ -118,7 +118,7 @@ export default function EvolucaoPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Minha Evolução</h1>
+        <h1 className="text-2xl font-bold text-ink">Minha Evolução</h1>
         {latest && (
           <button
             onClick={() => {
@@ -146,7 +146,7 @@ export default function EvolucaoPage() {
                 footer: `Documento confidencial — Daimach.Movement | ${new Date().toLocaleDateString('pt-BR')}`,
               });
             }}
-            className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm"
+            className="bg-slate-700 hover:bg-slate-600 text-ink px-4 py-2 rounded-xl text-sm"
           >
             🖨️ Exportar PDF
           </button>
@@ -167,7 +167,7 @@ export default function EvolucaoPage() {
               <div className="p-4 border-b border-slate-700 flex items-center gap-3">
                 <span className="text-2xl">📏</span>
                 <div>
-                  <h2 className="font-bold text-white">Última Avaliação</h2>
+                  <h2 className="font-bold text-ink">Última Avaliação</h2>
                   <p className="text-xs text-slate-400">
                     {new Date(latest.evaluation_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                   </p>
@@ -212,7 +212,7 @@ export default function EvolucaoPage() {
                 key={tab}
                 onClick={() => setSelectedTab(tab)}
                 className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  selectedTab === tab ? 'bg-green-600 text-white' : 'text-slate-400 hover:text-white'
+                  selectedTab === tab ? 'bg-green-600 text-ink' : 'text-slate-400 hover:text-ink'
                 }`}
               >
                 {label}
@@ -229,7 +229,7 @@ export default function EvolucaoPage() {
               {evaluations.length >= 2 && (
                 <>
                   <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-                    <h3 className="text-white font-semibold mb-4">Peso ao longo do tempo (kg)</h3>
+                    <h3 className="text-ink font-semibold mb-4">Peso ao longo do tempo (kg)</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -243,7 +243,7 @@ export default function EvolucaoPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-                      <h3 className="text-white font-semibold mb-3 text-sm">IMC</h3>
+                      <h3 className="text-ink font-semibold mb-3 text-sm">IMC</h3>
                       <ResponsiveContainer width="100%" height={160}>
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -256,7 +256,7 @@ export default function EvolucaoPage() {
                     </div>
 
                     <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-                      <h3 className="text-white font-semibold mb-3 text-sm">% Gordura</h3>
+                      <h3 className="text-ink font-semibold mb-3 text-sm">% Gordura</h3>
                       <ResponsiveContainer width="100%" height={160}>
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -269,7 +269,7 @@ export default function EvolucaoPage() {
                     </div>
 
                     <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 sm:col-span-2">
-                      <h3 className="text-white font-semibold mb-3 text-sm">Cintura (cm)</h3>
+                      <h3 className="text-ink font-semibold mb-3 text-sm">Cintura (cm)</h3>
                       <ResponsiveContainer width="100%" height={140}>
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -292,7 +292,7 @@ export default function EvolucaoPage() {
               {[...evaluations].reverse().map((ev) => (
                 <div key={ev.id} className="bg-slate-800 rounded-xl border border-slate-700 p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="font-semibold text-white">
+                    <p className="font-semibold text-ink">
                       {new Date(ev.evaluation_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                     </p>
                     {ev.bmi && (
@@ -302,11 +302,11 @@ export default function EvolucaoPage() {
                     )}
                   </div>
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs">
-                    {ev.weight && <div><span className="text-slate-400">Peso:</span> <span className="text-white">{ev.weight}kg</span></div>}
-                    {ev.body_fat && <div><span className="text-slate-400">Gordura:</span> <span className="text-white">{ev.body_fat}%</span></div>}
-                    {ev.muscle_mass && <div><span className="text-slate-400">Músculo:</span> <span className="text-white">{ev.muscle_mass}kg</span></div>}
-                    {ev.measurements?.waist && <div><span className="text-slate-400">Cintura:</span> <span className="text-white">{ev.measurements.waist}cm</span></div>}
-                    {ev.measurements?.hip && <div><span className="text-slate-400">Quadril:</span> <span className="text-white">{ev.measurements.hip}cm</span></div>}
+                    {ev.weight && <div><span className="text-slate-400">Peso:</span> <span className="text-ink">{ev.weight}kg</span></div>}
+                    {ev.body_fat && <div><span className="text-slate-400">Gordura:</span> <span className="text-ink">{ev.body_fat}%</span></div>}
+                    {ev.muscle_mass && <div><span className="text-slate-400">Músculo:</span> <span className="text-ink">{ev.muscle_mass}kg</span></div>}
+                    {ev.measurements?.waist && <div><span className="text-slate-400">Cintura:</span> <span className="text-ink">{ev.measurements.waist}cm</span></div>}
+                    {ev.measurements?.hip && <div><span className="text-slate-400">Quadril:</span> <span className="text-ink">{ev.measurements.hip}cm</span></div>}
                   </div>
                   {ev.goals && <p className="text-xs text-slate-400 mt-2">🎯 {ev.goals}</p>}
                 </div>
@@ -331,7 +331,7 @@ export default function EvolucaoPage() {
                         <select
                           value={compareIdx[0]}
                           onChange={(e) => setCompareIdx([Number(e.target.value), compareIdx[1]])}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
                         >
                           {evaluations.map((ev, i) => (
                             <option key={ev.id} value={i}>
@@ -345,7 +345,7 @@ export default function EvolucaoPage() {
                         <select
                           value={compareIdx[1]}
                           onChange={(e) => setCompareIdx([compareIdx[0], Number(e.target.value)])}
-                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-ink text-sm"
                         >
                           {evaluations.map((ev, i) => (
                             <option key={ev.id} value={i}>
@@ -364,7 +364,7 @@ export default function EvolucaoPage() {
                     if (!urlA && !urlB) return null;
                     return (
                       <div key={angle} className="bg-slate-800 rounded-xl border border-slate-700 p-4">
-                        <h3 className="text-white font-semibold mb-3 capitalize">{angle}</h3>
+                        <h3 className="text-ink font-semibold mb-3 capitalize">{angle}</h3>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="text-center">
                             <p className="text-xs text-slate-400 mb-2">

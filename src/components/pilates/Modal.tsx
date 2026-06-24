@@ -46,10 +46,10 @@ export function Modal({
       {/* max-h-[90vh] + flex-col: header e botões fixos, conteúdo rola por dentro */}
       <div className={`relative bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl w-full ${SIZE_CLASS[size]} max-h-[90vh] flex flex-col`}>
         <div className="flex items-center justify-between p-5 border-b border-slate-700 shrink-0">
-          <h3 className="text-lg font-bold text-white">{title}</h3>
+          <h3 className="text-lg font-bold text-ink">{title}</h3>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-700"
+            className="text-slate-400 hover:text-ink transition-colors p-1 rounded-lg hover:bg-slate-700"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
