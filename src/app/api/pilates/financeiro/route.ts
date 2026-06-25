@@ -45,8 +45,24 @@ export async function GET(req: NextRequest) {
       db.from('plans_pilates').select('id, name, price'),
     ]);
 
-    const totalRevenue = paymentsRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+    const mensalidadesRevenue = paymentsRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
     const totalPending = pendingRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+    // Receita de FISIOTERAPIA: sessões pagas nos últimos 30 dias (custo − desconto)
+    let physioRevenue = 0;
+    const { data: physioPaid, error: physioErr } = await db
+      .from('physical_therapy_sessions')
+      .select('cost, discount')
+      .eq('paid', true)
+      .gte('session_date', thirtyDaysAgo.toISOString().split('T')[0]);
+    if (!physioErr) {
+      physioRevenue = (physioPaid ?? []).reduce(
+        (s: number, p: { cost: number | null; discount: number | null }) =>
+          s + Math.max(0, (Number(p.cost) || 0) - (Number(p.discount) || 0)),
+        0,
+      );
+    }
+    const totalRevenue = mensalidadesRevenue + physioRevenue;
 
     const users = alunosRes.data ?? [];
     const subs = subsRes.data ?? [];
@@ -91,6 +107,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       summary: {
         totalRevenue,
+        mensalidadesRevenue,
+        physioRevenue,
         totalPending,
         alunosAtivos: users.filter((u: any) => u.status === 'ativo' && !isOverdue(u)).length,
         inadimplentes: users.filter((u: any) => isOverdue(u)).length,

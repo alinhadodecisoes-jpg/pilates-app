@@ -46,6 +46,15 @@ ALTER TABLE class_sessions
   ADD COLUMN IF NOT EXISTS cancel_reason TEXT,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
+-- Sessões de fisioterapia: horário, pagamento, desconto, duração e notas
+ALTER TABLE physical_therapy_sessions
+  ADD COLUMN IF NOT EXISTS session_time TIME,
+  ADD COLUMN IF NOT EXISTS paid BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS payment_method TEXT,
+  ADD COLUMN IF NOT EXISTS discount NUMERIC DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS duration_minutes INT,
+  ADD COLUMN IF NOT EXISTS notes TEXT;
+
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'class_sessions_class_id_session_date_key') THEN
     BEGIN

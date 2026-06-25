@@ -110,23 +110,59 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // --- Sessões ---
-    if (action === 'create_session' || action === 'update_session') {
-      const { id, user_id, therapist_id, session_date, therapy_type, cost, status } = body;
-      // physical_therapy_sessions só tem: user_id, therapist_id, session_date, therapy_type, cost, status
-      const payload = {
-        user_id, therapist_id: therapist_id || null, session_date,
-        therapy_type: therapy_type || null,
-        cost: cost ? Number(cost) : null, status,
-      };
-      if (action === 'update_session') {
-        const { error } = await db.from('physical_therapy_sessions').update(payload).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await db.from('physical_therapy_sessions').insert(payload);
-        if (error) throw error;
-      }
+    // --- Sessões (criar/editar/várias) ---
+    const buildPayload = (b: Record<string, unknown>) => ({
+      user_id: b.user_id,
+      therapist_id: b.therapist_id || null,
+      session_date: b.session_date,
+      session_time: b.session_time || null,
+      therapy_type: b.therapy_type || null,
+      duration_minutes: b.duration_minutes ? Number(b.duration_minutes) : null,
+      cost: b.cost ? Number(b.cost) : null,
+      discount: b.discount ? Number(b.discount) : 0,
+      paid: !!b.paid,
+      payment_method: b.payment_method || null,
+      status: b.status || 'scheduled',
+      notes: b.notes || null,
+    });
+    // Campos base (existem mesmo antes de rodar o SQL das colunas novas)
+    const baseOnly = (p: Record<string, unknown>) => ({
+      user_id: p.user_id, therapist_id: p.therapist_id, session_date: p.session_date,
+      therapy_type: p.therapy_type, cost: p.cost, status: p.status,
+    });
+    const missingCol = (e: { message?: string } | null) =>
+      !!e && /column .* does not exist|could not find|schema cache/i.test(e.message ?? '');
+
+    if (action === 'create_session') {
+      const payload = buildPayload(body);
+      let { error } = await db.from('physical_therapy_sessions').insert(payload);
+      if (missingCol(error)) ({ error } = await db.from('physical_therapy_sessions').insert(baseOnly(payload)));
+      if (error) throw error;
       return NextResponse.json({ success: true });
+    }
+
+    if (action === 'update_session') {
+      const payload = buildPayload(body);
+      let { error } = await db.from('physical_therapy_sessions').update(payload).eq('id', body.id);
+      if (missingCol(error)) ({ error } = await db.from('physical_therapy_sessions').update(baseOnly(payload)).eq('id', body.id));
+      if (error) throw error;
+      return NextResponse.json({ success: true });
+    }
+
+    // Várias sessões de uma vez (ex.: 10 sessões, semanal, sempre seg às 10h)
+    if (action === 'create_sessions_bulk') {
+      const n = Math.max(1, Math.min(60, Number(body.count) || 1));
+      const stepDays = body.frequency === 'daily' ? 1 : body.frequency === 'biweekly' ? 14 : 7;
+      const start = new Date(String(body.session_date) + 'T12:00:00');
+      const base = buildPayload(body);
+      const rows = Array.from({ length: n }, (_, i) => {
+        const d = new Date(start); d.setDate(d.getDate() + i * stepDays);
+        return { ...base, session_date: d.toISOString().slice(0, 10) };
+      });
+      let { error } = await db.from('physical_therapy_sessions').insert(rows);
+      if (missingCol(error)) ({ error } = await db.from('physical_therapy_sessions').insert(rows.map(baseOnly)));
+      if (error) throw error;
+      return NextResponse.json({ success: true, count: rows.length });
     }
 
     return NextResponse.json({ error: 'ação desconhecida' }, { status: 400 });

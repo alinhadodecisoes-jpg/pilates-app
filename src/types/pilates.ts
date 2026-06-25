@@ -84,9 +84,13 @@ export interface PhysicalTherapySession {
   user_id: string;
   therapist_id?: string | null;
   session_date: string;
+  session_time?: string | null;
   therapy_type?: string | null;
   duration_minutes?: number | null;
   cost?: number | null;
+  discount?: number | null;
+  paid?: boolean | null;
+  payment_method?: string | null;
   status: 'scheduled' | 'completed' | 'canceled';
   notes?: string | null;
   created_at?: string;
